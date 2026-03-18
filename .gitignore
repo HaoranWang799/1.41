@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.DS_Store
+public/.DS_Store
+public/images/.DS_Store
+public/images/covers/.DS_Store
+public/videos/.DS_Store
+src/.DS_Store

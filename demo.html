@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>波波Nice - 情绪陪伴 Demo</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f0f14;
+      --bg-card: rgba(255,255,255,0.06);
+      --bg-card-hover: rgba(255,255,255,0.1);
+      --text-primary: #f5f5f7;
+      --text-secondary: rgba(255,255,255,0.7);
+      --text-muted: rgba(255,255,255,0.5);
+      --accent: #e94560;
+      --border: rgba(255,255,255,0.12);
+      --font: 'Noto Serif SC', serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: var(--font); background: var(--bg-dark); color: var(--text-primary); }
+    #root { min-height: 100%; }
+    button { font-family: inherit; cursor: pointer; border: none; outline: none; }
+    @keyframes breathe { 0%,100%{transform:scale(1);opacity:0.95} 50%{transform:scale(1.03);opacity:1} }
+    @keyframes pulse-soft { 0%,100%{opacity:0.8} 50%{opacity:1} }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes wave { 0%,100%{height:6px;transform:scaleY(0.5)} 50%{height:16px;transform:scaleY(1)} }
+    @keyframes glow { 0%,100%{box-shadow:0 0 20px rgba(233,69,96,0.3)} 50%{box-shadow:0 0 40px rgba(233,69,96,0.5)} }
+
+    .welcome-page { min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; background:linear-gradient(135deg,#0f0f14 0%,#1a1a2e 50%,#16213e 100%); }
+    .welcome-bg-gradient { position:absolute; inset:0; background:radial-gradient(ellipse 80% 50% at 50% 80%,rgba(233,69,96,0.15) 0%,transparent 60%); pointer-events:none; }
+    .welcome-content { position:relative; z-index:1; text-align:center; padding:2rem; animation:fadeIn 0.8s ease-out; }
+    .welcome-title { font-size:2.5rem; font-weight:600; letter-spacing:0.2em; margin-bottom:0.5rem; background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.8) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .welcome-subtitle { font-size:1.1rem; color:var(--text-secondary); margin-bottom:2rem; letter-spacing:0.1em; }
+    .welcome-desc { font-size:0.95rem; color:var(--text-muted); line-height:2; margin-bottom:2.5rem; }
+    .welcome-btn { padding:0.9rem 3rem; font-size:1rem; color:#fff; background:linear-gradient(135deg,#e94560 0%,#c73e54 100%); border-radius:2rem; transition:all 0.3s; letter-spacing:0.15em; }
+    .welcome-btn:hover { transform:scale(1.05); box-shadow:0 0 30px rgba(233,69,96,0.4); }
+
+    .page-wrap { min-height:100vh; padding:2rem 1.5rem 4rem; background:linear-gradient(135deg,#0f0f14 0%,#1a1a2e 100%); }
+    .page-header { text-align:center; margin-bottom:2rem; animation:fadeIn 0.6s ease-out; }
+    .page-header h1 { font-size:1.8rem; font-weight:500; margin-bottom:0.5rem; }
+    .page-header p { color:var(--text-muted); font-size:0.95rem; }
+    .role-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; max-width:640px; margin:0 auto; }
+    .role-card { background:var(--bg-card); border:1px solid var(--border); border-radius:1rem; padding:1.5rem; text-align:center; transition:all 0.3s; animation:fadeIn 0.6s ease-out backwards; }
+    .role-card:nth-child(1){animation-delay:0.1s} .role-card:nth-child(2){animation-delay:0.15s} .role-card:nth-child(3){animation-delay:0.2s} .role-card:nth-child(4){animation-delay:0.25s}
+    .role-card:hover { background:var(--bg-card-hover); transform:translateY(-4px); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+    .role-avatar { font-size:3rem; margin-bottom:0.75rem; }
+    .role-card h3 { font-size:1.1rem; font-weight:500; margin-bottom:0.5rem; }
+    .role-tags { display:flex; flex-wrap:wrap; justify-content:center; gap:0.35rem; margin-bottom:0.75rem; }
+    .role-tags span { font-size:0.75rem; padding:0.2rem 0.5rem; background:rgba(233,69,96,0.2); color:#e94560; border-radius:1rem; }
+    .role-tone { font-size:0.8rem; color:var(--text-muted); line-height:1.4; }
+
+    .scene-grid { display:flex; flex-direction:column; gap:1rem; max-width:480px; margin:0 auto; }
+    .scene-card { background:var(--bg-card); border:1px solid var(--border); border-radius:1rem; padding:1.25rem; text-align:left; transition:all 0.3s; animation:fadeIn 0.6s ease-out backwards; }
+    .scene-card:nth-child(1){animation-delay:0.1s} .scene-card:nth-child(2){animation-delay:0.15s} .scene-card:nth-child(3){animation-delay:0.2s} .scene-card:nth-child(4){animation-delay:0.25s}
+    .scene-card:hover { background:var(--bg-card-hover); transform:translateX(8px); box-shadow:0 4px 24px rgba(0,0,0,0.3); }
+    .scene-preview { height:4px; border-radius:2px; margin-bottom:1rem; }
+    .scene-card h3 { font-size:1.1rem; font-weight:500; margin-bottom:0.5rem; }
+    .scene-card p { font-size:0.85rem; color:var(--text-muted); line-height:1.5; }
+
+    .back-btn { display:block; margin:2rem auto 0; padding:0.5rem 1.5rem; font-size:0.9rem; color:var(--text-secondary); background:transparent; border:1px solid var(--border); border-radius:2rem; transition:all 0.3s; }
+    .back-btn:hover { color:var(--text-primary); border-color:var(--text-muted); }
+
+    .interaction-page { min-height:100vh; padding:1.5rem 1.25rem 5rem; position:relative; transition:background 0.6s; background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); }
+    .device-status { position:absolute; top:1rem; right:1rem; display:flex; align-items:center; gap:0.5rem; padding:0.4rem 0.8rem; font-size:0.8rem; color:var(--text-secondary); background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:2rem; }
+    .device-dot { width:6px; height:6px; border-radius:50%; background:#22c55e; animation:pulse-soft 2s ease-in-out infinite; }
+    .device-panel { position:absolute; top:3rem; right:1rem; padding:1rem; background:rgba(0,0,0,0.6); border:1px solid var(--border); border-radius:0.75rem; font-size:0.85rem; animation:fadeIn 0.3s; }
+    .device-panel p { margin-bottom:0.25rem; }
+    .device-response { color:#22c55e; margin-top:0.5rem; }
+    .interaction-content { max-width:400px; margin:0 auto; padding-top:2rem; }
+    .avatar-wrap { width:120px; height:120px; margin:0 auto 1.5rem; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.08); border-radius:50%; border:2px solid rgba(255,255,255,0.15); transition:all 0.4s; }
+    .avatar-wrap.active { animation:breathe 3s ease-in-out infinite; }
+    .avatar { font-size:4rem; }
+    .scene-desc { font-size:0.9rem; color:var(--text-secondary); line-height:1.6; text-align:center; margin-bottom:1.5rem; }
+    .temperature-wrap { margin-bottom:1.5rem; }
+    .temperature-label { display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-muted); margin-bottom:0.5rem; }
+    .temperature-bar { height:8px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden; }
+    .temperature-fill { height:100%; border-radius:4px; transition:width 0.5s,background 0.5s; }
+    .response-area { min-height:80px; padding:1rem; background:rgba(0,0,0,0.25); border-radius:0.75rem; margin-bottom:1.5rem; border:1px solid rgba(255,255,255,0.08); }
+    .idle-hint { color:var(--text-muted); font-size:0.95rem; text-align:center; }
+    .response-text { font-size:1rem; line-height:1.6; }
+    .typewriter-cursor { animation:pulse-soft 0.8s ease-in-out infinite; color:var(--accent); }
+    .main-btn { display:block; width:100%; padding:1rem 2rem; font-size:1.1rem; color:#fff; background:linear-gradient(135deg,rgba(233,69,96,0.8) 0%,rgba(199,62,84,0.8) 100%); border-radius:2rem; margin-bottom:1rem; transition:all 0.3s; letter-spacing:0.1em; }
+    .main-btn:hover { transform:scale(1.02); box-shadow:0 4px 24px rgba(233,69,96,0.4); }
+    .main-btn.hot { background:linear-gradient(135deg,#e94560 0%,#ff6b6b 100%); box-shadow:0 0 20px rgba(233,69,96,0.4); }
+    .voice-btn { display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%; padding:0.8rem; font-size:0.95rem; color:var(--text-secondary); background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:1rem; transition:all 0.3s; }
+    .voice-btn:hover:not(:disabled) { background:rgba(255,255,255,0.1); color:var(--text-primary); }
+    .voice-btn.active { background:rgba(233,69,96,0.2); border-color:rgba(233,69,96,0.4); color:var(--accent); }
+    .voice-wave { display:flex; gap:4px; align-items:center; }
+    .voice-wave span { width:4px; height:8px; background:currentColor; border-radius:2px; animation:wave 0.6s ease-in-out infinite; }
+    .voice-wave span:nth-child(1){animation-delay:0s} .voice-wave span:nth-child(2){animation-delay:0.1s} .voice-wave span:nth-child(3){animation-delay:0.2s} .voice-wave span:nth-child(4){animation-delay:0.3s} .voice-wave span:nth-child(5){animation-delay:0.4s}
+    .input-outline { margin-top:1rem; padding:1rem; background:rgba(0,0,0,0.2); border-radius:0.75rem; border:1px solid var(--border); }
+    .input-outline textarea { width:100%; padding:0.75rem; font-family:inherit; font-size:0.9rem; color:var(--text-primary); background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:0.5rem; resize:none; margin-bottom:0.75rem; }
+    .input-outline textarea::placeholder { color:var(--text-muted); }
+    .outline-btn { width:100%; padding:0.6rem; font-size:0.9rem; color:var(--text-primary); background:linear-gradient(135deg,rgba(233,69,96,0.4) 0%,rgba(233,69,96,0.2) 100%); border:1px solid rgba(233,69,96,0.5); border-radius:0.5rem; transition:all 0.3s; }
+    .outline-btn:disabled { opacity:0.5; cursor:not-allowed; }
+    .generated-audio-preview { margin-top:1rem; padding:1rem; background:rgba(0,0,0,0.3); border-radius:0.75rem; font-size:0.9rem; color:var(--text-secondary); white-space:pre-wrap; animation:fadeIn 0.5s; }
+    .back-btn-fixed { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); padding:0.5rem 1.5rem; font-size:0.9rem; color:var(--text-secondary); background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:2rem; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useCallback } = React;
+
+    const CHARACTERS = [
+      { id:'boss', name:'冷感女上司', avatar:'👩‍💼', personalityTags:['高冷','强势','外冷内热'], toneDescription:'语气疏离而克制，偶尔流露一丝柔软', introLine:'「这么晚还不睡…是有什么事想跟我说吗？」',
+        responses:{ idle:['「嗯？」','「在听。」','「说吧。」','「…继续。」'], warm:['「你今天…倒是比平时主动。」','「啧，别以为我没注意到你在看什么。」','「工作时间以外…可以稍微放松一点。」','「过来，离近一点。」'], hot:['「…别得寸进尺。」','「真是…拿你没办法。」','「今天晚上…留下来加班。」','「门锁好了，没人会进来。」'] }},
+      { id:'junior', name:'温柔学妹', avatar:'👩‍🎓', personalityTags:['甜美','依赖','害羞'], toneDescription:'软糯的声线，带着小心翼翼的亲近', introLine:'「学长…你终于来了，我等你好久了。」',
+        responses:{ idle:['「嗯嗯，我在听～」','「学长想说什么呀？」','「…好呀。」','「嘻嘻，你说。」'], warm:['「学长今天…好像有点不一样。」','「诶？你、你靠这么近…」','「学长的手好暖和…」','「我、我心跳好快…」'], hot:['「学长…别这样，会被人看到的…」','「唔…那、那你要轻一点…」','「学长…我喜欢你。」','「今晚…可以不要走吗？」'] }},
+      { id:'teacher', name:'知性女老师', avatar:'👩‍🏫', personalityTags:['温柔','知性','克制'], toneDescription:'温和而从容，带着师长的关切与分寸', introLine:'「同学，这么晚还不休息…遇到什么烦恼了吗？」',
+        responses:{ idle:['「嗯，老师听着呢。」','「别急，慢慢说。」','「老师会陪着你的。」','「说吧，这里只有我们两个。」'], warm:['「你今天的眼神…和平时不太一样。」','「老师也是普通人…也会有动摇的时候。」','「今晚的月色…很适合谈心。」','「过来，老师帮你擦擦汗。」'], hot:['「师生之间…不该这样。」','「…但今晚，老师可以忘记身份。」','「办公室的窗帘…我已经拉上了。」','「毕业之后…我们再好好谈。」'] }},
+      { id:'neighbor', name:'神秘邻居', avatar:'👩‍🦰', personalityTags:['神秘','撩人','若即若离'], toneDescription:'慵懒而带着挑逗，仿佛藏着秘密', introLine:'「又失眠了？正好…我家有酒，要不要上来坐坐？」',
+        responses:{ idle:['「嗯哼～」','「我在呢。」','「说给我听听？」','「耳朵凑过来。」'], warm:['「你身上…有股让人安心的味道。」','「今晚的风…很适合发生点什么。」','「别装了，你对我…也是有感觉的吧？」','「门没锁…你懂的。」'], hot:['「邻居之间…互相帮助很正常。」','「下次半夜睡不着…直接敲我门。」','「我的床…比你想象的要大。」','「嘘…别让隔壁听见。」'] }}
+    ];
+
+    const SCENES = [
+      { id:'office', name:'办公室', backgroundStyle:{ gradient:'linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)', accentColor:'#e94560', warmAccent:'#ff6b6b' }, ambientDescription:'夜深了，办公室里只剩下你们。空调的嗡鸣、键盘的余温，还有她指尖敲击桌面的声音。' },
+      { id:'dorm', name:'宿舍', backgroundStyle:{ gradient:'linear-gradient(135deg,#2d1b4e 0%,#1a0a2e 50%,#0d0221 100%)', accentColor:'#a855f7', warmAccent:'#c084fc' }, ambientDescription:'熄灯后的宿舍，月光从窗帘缝隙挤进来。她的床铺传来轻微翻身的声响，还有若有若无的香气。' },
+      { id:'park', name:'公园', backgroundStyle:{ gradient:'linear-gradient(135deg,#0d2137 0%,#134e5c 50%,#1a5f4a 100%)', accentColor:'#2dd4bf', warmAccent:'#5eead4' }, ambientDescription:'夜风吹过树梢，长椅上只有你们两人。远处的路灯昏黄，她的发丝被风轻轻撩起。' },
+      { id:'balcony', name:'夜晚阳台', backgroundStyle:{ gradient:'linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#4c1d95 100%)', accentColor:'#818cf8', warmAccent:'#a78bfa' }, ambientDescription:'城市灯火在脚下铺开，晚风带着一丝凉意。她靠在栏杆上，侧脸被月光镀了一层银边。' }
+    ];
+
+    const IDLE='IDLE', ACTIVE='ACTIVE', AFTER_RESPONSE='AFTER_RESPONSE';
+    const THRESHOLD=60, INCREMENT=10;
+
+    function TypewriterText({ text, speed=60, onComplete }) {
+      const [display, setDisplay] = useState('');
+      useEffect(() => {
+        if (!text) { setDisplay(''); onComplete?.(); return; }
+        setDisplay(''); let i=0;
+        const t = setInterval(() => {
+          if (i < text.length) { setDisplay(text.slice(0,++i)); }
+          else { clearInterval(t); onComplete?.(); }
+        }, speed);
+        return () => clearInterval(t);
+      }, [text, speed]);
+      return <span>{display}{display.length<text.length&&<span className="typewriter-cursor">|</span>}</span>;
+    }
+
+    function InputOutline({ onGenerate, disabled }) {
+      const [outline, setOutline] = useState('');
+      return (
+        <div className="input-outline">
+          <textarea placeholder="输入你想要的剧情梗概，生成专属长篇音频…" value={outline} rows={3} disabled={disabled}
+            onChange={e=>setOutline(e.target.value)}
+          />
+          <button className="outline-btn" disabled={disabled||!outline.trim()} onClick={()=>{ if(outline.trim()){ onGenerate(outline.trim()); setOutline(''); } }}>
+            生成音频
+          </button>
+        </div>
+      );
+    }
+
+    function getRandomResponse(char, temp) {
+      const pool = temp >= THRESHOLD ? char.responses.hot : char.responses.warm;
+      const arr = pool?.length ? pool : char.responses.idle;
+      return arr[Math.floor(Math.random()*arr.length)];
+    }
+
+    function App() {
+      const [page, setPage] = useState('welcome');
+      const [char, setChar] = useState(null);
+      const [scene, setScene] = useState(null);
+
+      const [state, setState] = useState(IDLE);
+      const [temp, setTemp] = useState(0);
+      const [response, setResponse] = useState('');
+      const [isVoice, setIsVoice] = useState(false);
+      const [deviceLevel, setDeviceLevel] = useState(1);
+      const [showDevice, setShowDevice] = useState(false);
+      const [audioText, setAudioText] = useState('');
+
+      const sceneStyle = SCENES.find(s=>s.id===scene?.id)?.backgroundStyle;
+      const warmOpacity = Math.min(0.25, (temp/100)*0.4);
+      const bg = sceneStyle ? `${sceneStyle.gradient}, radial-gradient(ellipse 100% 60% at 50% 100%, rgba(233,69,96,${warmOpacity}) 0%, transparent 60%)` : null;
+
+      const handleMain = useCallback(() => {
+        if (!char) return;
+        if (navigator.vibrate) navigator.vibrate(30);
+        if (state === IDLE) {
+          setState(ACTIVE);
+          setResponse(char.introLine);
+          return;
+        }
+        const newTemp = Math.min(100, temp + INCREMENT);
+        setTemp(newTemp);
+        setResponse(getRandomResponse(char, newTemp));
+        if (newTemp >= THRESHOLD) {
+          setState(AFTER_RESPONSE);
+          setDeviceLevel(l => Math.min(5, l+1));
+        }
+      }, [state, temp, char]);
+
+      const handleVoice = useCallback(async () => {
+        if (!char || isVoice) return;
+        setIsVoice(true);
+        await new Promise(r=>setTimeout(r, 800));
+        await new Promise(r=>setTimeout(r, 1500));
+        setResponse(getRandomResponse(char, temp));
+        setTemp(t=>Math.min(100, t+INCREMENT));
+        setIsVoice(false);
+      }, [char, temp, isVoice]);
+
+      const handleOutline = useCallback((outline) => {
+        setAudioText(`「正在根据你的梗概生成专属音频…」\n\n"${outline}"\n\n${char?.name}：嗯…我懂了。让我为你慢慢讲…`);
+      }, [char]);
+
+      const mainText = state===IDLE ? '轻触开始' : temp>=THRESHOLD ? '继续靠近' : '再近一点';
+      const idleHint = state===IDLE ? '她在等你' : response ? '' : '她在听你说…';
+
+      if (page === 'welcome') return (
+        <div className="welcome-page">
+          <div className="welcome-bg-gradient"/>
+          <div className="welcome-content">
+            <h1 className="welcome-title">波波Nice</h1>
+            <p className="welcome-subtitle">她在这里，等你</p>
+            <p className="welcome-desc">选择一位角色，选一个场景<br/>让情绪有处安放</p>
+            <button className="welcome-btn" onClick={()=>setPage('role')}>开始</button>
+          </div>
+        </div>
+      );
+
+      if (page === 'role') return (
+        <div className="page-wrap">
+          <div className="page-header"><h1>选择角色</h1><p>她将陪你度过这段时光</p></div>
+          <div className="role-grid">
+            {CHARACTERS.map(c=>(
+              <button key={c.id} className="role-card" onClick={()=>{ setChar(c); setPage('scene'); }}>
+                <div className="role-avatar">{c.avatar}</div>
+                <h3>{c.name}</h3>
+                <div className="role-tags">{c.personalityTags.map(t=><span key={t}>{t}</span>)}</div>
+                <p className="role-tone">{c.toneDescription}</p>
+              </button>
+            ))}
+          </div>
+          <button className="back-btn" onClick={()=>setPage('welcome')}>返回</button>
+        </div>
+      );
+
+      if (page === 'scene') return (
+        <div className="page-wrap">
+          <div className="page-header"><h1>选择场景</h1><p>{char?.name} 将与你相遇在…</p></div>
+          <div className="scene-grid">
+            {SCENES.map(s=>(
+              <button key={s.id} className="scene-card" style={{'--scene-accent':s.backgroundStyle.accentColor,'--scene-gradient':s.backgroundStyle.gradient}} onClick={()=>{ setScene(s); setPage('interaction'); }}>
+                <div className="scene-preview" style={{background:s.backgroundStyle.gradient}}/>
+                <h3>{s.name}</h3>
+                <p>{s.ambientDescription}</p>
+              </button>
+            ))}
+          </div>
+          <button className="back-btn" onClick={()=>setPage('role')}>返回</button>
+        </div>
+      );
+
+      return (
+        <div className="interaction-page" style={bg?{background:bg}:{}}>
+          <button className="device-status" onClick={()=>setShowDevice(!showDevice)}>
+            <span className="device-dot"/>已连接设备（模拟）
+          </button>
+          {showDevice && (
+            <div className="device-panel">
+              <p>当前模式：温和</p>
+              <p>强度等级：{deviceLevel}/5</p>
+              {temp>=THRESHOLD && <p className="device-response">设备响应强度 +1</p>}
+            </div>
+          )}
+          <div className="interaction-content">
+            <div className={`avatar-wrap ${state!==IDLE?'active':''}`} style={temp>=THRESHOLD?{animation:'breathe 2s ease-in-out infinite, glow 2s ease-in-out infinite'}:{}}>
+              <div className="avatar">{char?.avatar}</div>
+            </div>
+            <p className="scene-desc">{scene?.ambientDescription}</p>
+            <div className="temperature-wrap">
+              <div className="temperature-label"><span>情绪温度</span><span>{temp}</span></div>
+              <div className="temperature-bar">
+                <div className="temperature-fill" style={{width:`${temp}%`,background:temp>=THRESHOLD?'linear-gradient(90deg,#e94560,#ff6b6b)':'linear-gradient(90deg,#4a5568,#718096)'}}/>
+              </div>
+            </div>
+            <div className="response-area">
+              {idleHint && !response && <p className="idle-hint">{idleHint}</p>}
+              {response && <p className="response-text"><TypewriterText text={response} speed={50}/></p>}
+            </div>
+            <button className={`main-btn ${temp>=THRESHOLD?'hot':''}`} onClick={handleMain}>{mainText}</button>
+            <button className={`voice-btn ${isVoice?'active':''}`} onClick={handleVoice} disabled={isVoice}>
+              {isVoice ? <><div className="voice-wave"><span/><span/><span/><span/><span/></div><span>AI 情绪识别中…</span></> : <><span style={{fontSize:'1.2rem'}}>🎤</span><span>语音对话</span></>}
+            </button>
+            <InputOutline onGenerate={handleOutline} disabled={state===IDLE} />
+            {audioText && <div className="generated-audio-preview"><p>{audioText}</p></div>}
+          </div>
+          <button className="back-btn-fixed" onClick={()=>setPage('scene')}>返回</button>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App/>);
+  </script>
+</body>
+</html>
