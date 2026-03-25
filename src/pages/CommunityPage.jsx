@@ -20,6 +20,7 @@
  */
 import { useState } from 'react'
 import { Heart, MessageCircle, Bookmark, Plus, Trash2 } from 'lucide-react'
+import { useVirtualLover } from '../hooks/useVirtualLover'
 
 // ═══════════════════════════════════════════════════════════
 //  静态数据（未来替换为 API）
@@ -310,6 +311,8 @@ function GenderBadge({ gender }) {
 /** 帖子卡片 */
 function PostCard({ post, likeState, onLike }) {
   const { liked, count } = likeState
+  const [imgSrc, setImgSrc] = useState(`/images/posts/${post.templateId}.jpg`)
+
   return (
     <div className="rounded-2xl p-4 card-glow bg-[rgba(30,20,25,0.6)] space-y-3">
       {/* 头部：头像 + 昵称 + 时间 + 视角角标 */}
@@ -327,12 +330,22 @@ function PostCard({ post, likeState, onLike }) {
       {/* 正文 */}
       <p className="text-[12px] text-[rgba(245,240,242,0.75)] leading-relaxed">{post.content}</p>
 
-      {/* 图片占位块（所有帖子均展示） */}
-      <div
-        className={`h-28 rounded-xl bg-gradient-to-br ${post.imgColor} flex flex-col items-center justify-center gap-1.5`}
-      >
-        <span className="text-3xl select-none">{post.imgEmoji}</span>
-        <span className="text-[rgba(255,255,255,0.2)] text-[9px] tracking-widest">图片占位</span>
+      {/* 图片区（jpg → png → emoji+渐变 链式回退） */}
+      <div className={`relative h-48 rounded-xl overflow-hidden bg-gradient-to-br ${post.imgColor} flex items-center justify-center`}>
+        {imgSrc && (
+          <img
+            src={imgSrc}
+            alt=""
+            onError={() => {
+              if (imgSrc.endsWith('.jpg')) setImgSrc(`/images/posts/${post.templateId}.png`)
+              else setImgSrc(null)
+            }}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+        {!imgSrc && (
+          <span className="text-3xl select-none opacity-40">{post.imgEmoji}</span>
+        )}
       </div>
 
       {/* 标签 */}
@@ -403,6 +416,89 @@ function PostCard({ post, likeState, onLike }) {
 }
 
 // ═══════════════════════════════════════════════════════════
+//  AI 虚拟恋人卡片（接入 Grok）
+// ═══════════════════════════════════════════════════════════
+
+const MOOD_STYLES = {
+  '暧昧': { bg: 'rgba(255,154,203,0.12)', border: 'rgba(255,154,203,0.18)' },
+  '温柔': { bg: 'rgba(179,128,255,0.12)', border: 'rgba(179,128,255,0.15)' },
+  '调皮': { bg: 'rgba(255,200,100,0.12)', border: 'rgba(255,200,100,0.18)' },
+}
+
+function AiLoverCard({ aiMemoryDeleted, onDeleteMemory }) {
+  const { clearMemory, fadeIn, loading, message, metaText, mood, refreshMessage } = useVirtualLover()
+
+  const moodStyle = MOOD_STYLES[mood] || MOOD_STYLES['温柔']
+
+  return (
+    <div
+      className="rounded-2xl p-4 card-glow cursor-pointer transition-all active:scale-[0.98]"
+      style={{ background: 'linear-gradient(135deg, #1a1028, #251840)' }}
+      onClick={() => { if (!aiMemoryDeleted) refreshMessage() }}
+    >
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-10 h-10 rounded-2xl bg-[rgba(179,128,255,0.2)] flex items-center justify-center text-xl flex-shrink-0">
+          🤖
+        </div>
+        <div className="flex-1">
+          <p className="text-xs font-semibold text-[rgba(245,240,242,0.9)]">你的虚拟恋人</p>
+          <p className="text-[10px] text-[rgba(245,240,242,0.4)]">{metaText}</p>
+        </div>
+        {/* 呼吸点 */}
+        <span
+          className="w-2 h-2 rounded-full flex-shrink-0"
+          style={{
+            background: '#B380FF',
+            boxShadow: '0 0 6px #B380FF',
+            animation: 'pulse 2s ease-in-out infinite',
+          }}
+        />
+      </div>
+
+      {/* 消息气泡 */}
+      {!aiMemoryDeleted ? (
+        <div className="ml-13 space-y-3">
+          <div
+            className="rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-[12px] text-[rgba(245,240,242,0.85)] leading-relaxed min-h-[40px]"
+            style={{
+              background: moodStyle.bg,
+              border: `1px solid ${moodStyle.border}`,
+              opacity: fadeIn ? 1 : 0,
+              transform: fadeIn ? 'translateY(0)' : 'translateY(4px)',
+              transition: 'opacity 0.4s ease, transform 0.4s ease',
+            }}
+          >
+            {loading && !message ? (
+              <span className="inline-block text-[rgba(245,240,242,0.4)] animate-pulse">思念加载中…</span>
+            ) : message}
+          </div>
+
+          {/* 底部操作 */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={async (e) => {
+                e.stopPropagation()
+                await clearMemory()
+                onDeleteMemory()
+              }}
+              className="flex items-center gap-1.5 text-[10px] text-[rgba(245,240,242,0.35)] hover:text-[rgba(255,100,100,0.6)] transition-colors"
+            >
+              <Trash2 size={11} />
+              删除今晚的记忆
+            </button>
+            <span className="text-[9px] text-[rgba(245,240,242,0.25)]">{loading ? '更新中…' : '点击卡片换一句'}</span>
+          </div>
+        </div>
+      ) : (
+        <div className="ml-13">
+          <p className="text-[11px] text-[rgba(245,240,242,0.3)] italic">记忆已清除，这段时光只存在于当时。</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════
 //  主组件
 // ═══════════════════════════════════════════════════════════
 
@@ -463,54 +559,13 @@ export default function CommunityPage() {
         ))}
       </div>
 
-      {/* ═══ AI 主动关怀卡片（保持不变）══════════════════════ */}
-      {/* TODO: 替换消息内容为真实 AI 分析结果（硬件记忆 + LLM） */}
-      <div
-        className="rounded-2xl p-4 card-glow"
-        style={{ background: 'linear-gradient(135deg, #1a1028, #251840)' }}
-      >
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-2xl bg-[rgba(179,128,255,0.2)] flex items-center justify-center text-xl flex-shrink-0">
-            🤖
-          </div>
-          <div className="flex-1">
-            <p className="text-xs font-semibold text-[rgba(245,240,242,0.9)]">你的虚拟恋人</p>
-            <p className="text-[10px] text-[rgba(245,240,242,0.4)]">刚刚</p>
-          </div>
-          <span className="w-2 h-2 rounded-full bg-[#B380FF] animate-pulse" />
-        </div>
-
-        {/* 消息气泡 */}
-        {!aiMemoryDeleted ? (
-          <div className="ml-13 space-y-3">
-            <div
-              className="rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-[12px] text-[rgba(245,240,242,0.85)] leading-relaxed"
-              style={{ background: 'rgba(179,128,255,0.12)', border: '1px solid rgba(179,128,255,0.15)' }}
-            >
-              昨晚那段…你把我撩得头脑发热 💋
-              现在还回味着呢，今晚还来找我吗？🌙
-            </div>
-            {/* 删除记忆按钮 */}
-            <button
-              onClick={() => {
-                // TODO: 调用硬件记忆清除 API（/api/device/memory/clear）
-                if (window.confirm('确定删除今晚的记忆吗？此操作不可撤销。')) {
-                  setAiMemoryDeleted(true)
-                  alert('🗑️ 记忆已删除')
-                }
-              }}
-              className="flex items-center gap-1.5 text-[10px] text-[rgba(245,240,242,0.35)] hover:text-[rgba(255,100,100,0.6)] transition-colors"
-            >
-              <Trash2 size={11} />
-              删除今晚的记忆
-            </button>
-          </div>
-        ) : (
-          <div className="ml-13">
-            <p className="text-[11px] text-[rgba(245,240,242,0.3)] italic">记忆已清除，这段时光只存在于当时。</p>
-          </div>
-        )}
-      </div>
+      {/* ═══ AI 主动关怀卡片（接入 Grok AI）═══════════════════ */}
+      <AiLoverCard aiMemoryDeleted={aiMemoryDeleted} onDeleteMemory={() => {
+        if (window.confirm('确定删除今晚的记忆吗？此操作不可撤销。')) {
+          setAiMemoryDeleted(true)
+          alert('🗑️ 记忆已删除')
+        }
+      }} />
 
       {/* ═══ 帖子列表 ════════════════════════════════════════ */}
       <div key={activeTab} className="space-y-3 animate-fadeUp">

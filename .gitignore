@@ -1,6 +1,8 @@
 node_modules/
 dist/
 .DS_Store
+server/.env
+server/.env.*
 public/.DS_Store
 public/images/.DS_Store
 public/images/covers/.DS_Store

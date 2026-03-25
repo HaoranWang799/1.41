@@ -27,6 +27,7 @@
  */
 import { useState, useEffect } from 'react'
 import { ChevronRight, Zap, Utensils, Dumbbell, X } from 'lucide-react'
+import { usePlanPool } from '../hooks/usePlanPool'
 
 // ═══════════════════════════════════════════════════════════
 //  静态数据（未来替换为 API）
@@ -196,6 +197,22 @@ const THINKING_STEPS = [
   '评估激素水平与训练状态...',
   '生成个性化训练方案...',
 ]
+
+function buildHealthPlanPayload() {
+  return {
+    todayStats: TODAY_STATS,
+    weeklyTrend: BAR_DATA,
+    detailSummary: {
+      avgDuration: DURATION_DETAIL.avgDisplay,
+      statusDistribution: STATUS_DETAIL.distribution
+        .map((item) => `${item.label}${item.pct}%`)
+        .join('、'),
+      myAvgIntensity: INTENSITY_DETAIL.myAvg,
+      platformAvgIntensity: INTENSITY_DETAIL.platformAvg,
+      hardTrend: HARD_DETAIL.trend,
+    },
+  }
+}
 
 // ═══════════════════════════════════════════════════════════
 //  弹窗内容组件（每个指标独立渲染）
@@ -599,28 +616,47 @@ function ThinkingState({ step }) {
 // ═══════════════════════════════════════════════════════════
 
 export default function HealthPage() {
-  // ── 训练计划索引（0–2，随机切换） ──────────────────────
-  // TODO: 接入 AI 引擎根据真实健康数据生成个性化计划
-  const [planIdx, setPlanIdx] = useState(0)
+  // ── 方案池（替代旧的单次 AI 请求） ──────────────────────
+  const {
+    currentPlan,
+    planVisible,
+    isSwitching,
+    isFallbackMode,
+    isCurrentPlanUpgrading,
+    handleGeneratePlan,
+  } = usePlanPool(buildHealthPlanPayload)
 
-  // ── 训练计划是否可见（首次加载时隐藏，点击 AI 按钮后显示）──
-  // TODO: 真实接入后此状态由 API 成功返回来控制
-  const [planVisible, setPlanVisible] = useState(false)
-
-  // ── AI 分析加载状态 ──────────────────────────────────────
-  // TODO: 替换为真实 AI 分析 API 请求状态（/api/ai/health-plan）
-  const [isAnalyzing, setIsAnalyzing]   = useState(false)
-  // thinkingStep: 当前思考步骤（0–3），驱动 ThinkingState 文案切换
+  // ── 切换动画期间循环切换 ThinkingState 步骤 ────────────
   const [thinkingStep, setThinkingStep] = useState(0)
+  useEffect(() => {
+    if (!isSwitching) { setThinkingStep(0); return }
+    // 1700ms 动画内均匀切换所有步骤
+    const ticker = setInterval(() => {
+      setThinkingStep((s) => (s + 1) % THINKING_STEPS.length)
+    }, Math.floor(1700 / THINKING_STEPS.length))
+    return () => clearInterval(ticker)
+  }, [isSwitching])
 
   // ── 健康小贴士轮播 ──────────────────────────────────────
   const [tipIdx, setTipIdx] = useState(0)
+  const activeTips = Array.from(
+    new Set([...(currentPlan?.recoveryTips || []), ...HEALTH_TIPS])
+  ).slice(0, 6)
+  const tipCount = 6
+
   useEffect(() => {
+    setTipIdx(0)
+    if (tipCount <= 1) return undefined
     const t = setInterval(() => {
-      setTipIdx((i) => (i + 1) % HEALTH_TIPS.length)
+      setTipIdx((i) => (i + 1) % tipCount)
     }, 4000)
     return () => clearInterval(t)
-  }, [])
+  }, [tipCount])
+
+  // ── 当前计划数据 ─────────────────────────────────────────
+  const diet     = currentPlan?.dietSuggestions     || []
+  const exercise = currentPlan?.exerciseSuggestions || []
+  const vib      = currentPlan?.vibrationSuggestion || null
 
   // ── 指标弹窗状态 ─────────────────────────────────────────
   // activeMetric: 'duration' | 'status' | 'intensity' | 'hardScore' | null
@@ -631,35 +667,6 @@ export default function HealthPage() {
   const [showShareModal, setShowShareModal] = useState(false)
 
   // ── 当前计划数据 ─────────────────────────────────────────
-  const diet     = DIET_PLANS[planIdx]
-  const exercise = EXERCISE_PLANS[planIdx]
-  const vib      = VIBRATION_MODES[planIdx]
-
-  // ── AI 分析点击（3s 思考动画，每 0.75s 切换一条文案）────
-  // TODO: 替换为真实 /api/ai/health-plan 流式请求；
-  //       每条流式日志对应一个 thinkingStep 更新
-  const handleAIAnalyze = () => {
-    if (isAnalyzing) return
-    setIsAnalyzing(true)
-    setThinkingStep(0)
-    setPlanVisible(false)   // 隐藏上一次计划，进入思考状态
-    // 避免重复选中同一套方案
-    const next = (planIdx + 1 + Math.floor(Math.random() * (DIET_PLANS.length - 1))) % DIET_PLANS.length
-    // 每 750ms 推进一步文案（共 4 步 = 3s）
-    let step = 0
-    const ticker = setInterval(() => {
-      step += 1
-      if (step < THINKING_STEPS.length) {
-        setThinkingStep(step)
-      } else {
-        clearInterval(ticker)
-        setPlanIdx(next)
-        setPlanVisible(true)   // 思考完成，展示新生成的计划
-        setIsAnalyzing(false)
-      }
-    }, 750)
-  }
-
   return (
     <div className="px-4 pt-4 pb-8 space-y-5">
 
@@ -830,18 +837,18 @@ export default function HealthPage() {
         {/* ── AI 分析按钮（唯一触发入口）────────────────────── */}
         {/* TODO: 替换为真实 AI 分析 API（/api/ai/health-plan） */}
         <button
-          onClick={handleAIAnalyze}
-          disabled={isAnalyzing}
+          onClick={handleGeneratePlan}
+          disabled={isSwitching}
           className={`
             w-full mb-4 py-3 rounded-2xl flex items-center justify-center gap-2.5
             text-sm font-medium transition-all active:scale-[0.98]
-            ${isAnalyzing
+            ${isSwitching
               ? 'bg-[rgba(179,128,255,0.1)] text-[rgba(179,128,255,0.5)] cursor-not-allowed'
               : 'bg-[rgba(179,128,255,0.12)] text-[#B380FF] border border-[rgba(179,128,255,0.2)] hover:bg-[rgba(179,128,255,0.18)]'
             }
           `}
         >
-          {isAnalyzing ? (
+          {isSwitching ? (
             <>
               <span
                 className="w-4 h-4 rounded-full border-2 border-[rgba(179,128,255,0.3)] border-t-[#B380FF]"
@@ -855,25 +862,46 @@ export default function HealthPage() {
         </button>
 
         {/* ── 计划内容区三态：思考中 / 占位提示 / 计划内容 ── */}
-        {isAnalyzing ? (
-          /* 思考动画（3s，每 0.75s 切换一条文案） */
+        {isSwitching ? (
+          /* 思考动画（1.5s，每 375ms 切换一条文案） */
           <ThinkingState step={thinkingStep} />
         ) : !planVisible ? (
           /* 占位提示：初始状态 & 重新生成前的空态 */
-          /* TODO: 真实接入后此占位替换为骨架屏或 loading 态 */
           <div className="flex flex-col items-center justify-center py-10 gap-3 text-center animate-fadeUp">
             <span className="text-4xl select-none">✨</span>
             <p className="text-[12px] text-[rgba(245,240,242,0.45)] leading-relaxed">
-              点击上方按钮<br />AI 将根据你的健康数据生成专属训练计划
+              {isFallbackMode ? '网络异常，已切换本地模板' : '点击上方按钮'}<br />AI 将根据你的健康数据生成专属训练计划
             </p>
           </div>
         ) : (
           <>
+            {/* AI 总结 */}
+            <div className="mb-3 rounded-xl p-3 bg-[rgba(179,128,255,0.08)] border border-[rgba(179,128,255,0.12)]">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[11px] font-semibold text-[rgba(245,240,242,0.85)]">AI 分析结论</p>
+                {/* 来源徽章 */}
+                {(() => {
+                  const bs = currentPlan?._backendSource
+                  const isFixed = currentPlan?.source === 'fixed'
+                  if (isCurrentPlanUpgrading)
+                    return <span className="text-[9px] px-2 py-0.5 rounded-full bg-[rgba(100,255,150,0.1)] text-[rgba(100,255,150,0.75)]">AI 优化中…</span>
+                  if (isFixed)
+                    return <span className="text-[9px] px-2 py-0.5 rounded-full bg-[rgba(100,255,150,0.1)] text-[rgba(100,255,150,0.75)]">✓ AI分析</span>
+                  if (bs === 'grok' || bs === 'cache')
+                    return <span className="text-[9px] px-2 py-0.5 rounded-full bg-[rgba(100,255,150,0.1)] text-[rgba(100,255,150,0.75)]">✓ AI 生成</span>
+                  return <span className="text-[9px] px-2 py-0.5 rounded-full bg-[rgba(100,255,150,0.1)] text-[rgba(100,255,150,0.75)]">✓ AI分析</span>
+                })()}
+              </div>
+              <p className="mt-1.5 text-[11px] leading-relaxed text-[rgba(245,240,242,0.62)]">
+                {currentPlan?.summary}
+              </p>
+            </div>
+
             {/* 饮食建议 */}
             <div className="mb-3">
               <div className="flex items-center gap-1.5 mb-2">
                 <Utensils size={12} className="text-[rgba(245,240,242,0.4)]" />
-                <p className="text-[10px] text-[rgba(245,240,242,0.45)] tracking-wider">饮食建议 — 增加锌、镁摄入</p>
+                <p className="text-[10px] text-[rgba(245,240,242,0.45)] tracking-wider">饮食建议 — {currentPlan?.dietFocus}</p>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {diet.map((item) => (
@@ -904,7 +932,7 @@ export default function HealthPage() {
                     icon={Dumbbell}
                     title={item.name}
                     sub={item.plan}
-                    onDetail={() => alert(`📋 ${item.name}\n${item.plan}\n\n（详细教程即将上线）`)}
+                    onDetail={() => alert(`📋 ${item.name}\n${item.plan}\n\n推荐原因：${item.reason || '根据你的近期数据匹配该训练。'}`)}
                   />
                 ))}
               </div>
@@ -920,31 +948,37 @@ export default function HealthPage() {
                 <Zap size={12} className="text-[rgba(245,240,242,0.4)]" />
                 <p className="text-[10px] text-[rgba(245,240,242,0.45)] tracking-wider">下次震动频率建议</p>
               </div>
-              <div
-                className="rounded-xl p-3 flex items-center gap-3"
-                style={{ background: 'linear-gradient(135deg, rgba(255,154,203,0.08), rgba(179,128,255,0.08))' }}
-              >
-                <div className="flex-1">
-                  <p className="text-xs font-semibold text-[#FF9ACB] mb-0.5">{vib.mode}</p>
-                  <p className="text-[10px] text-[rgba(245,240,242,0.5)] leading-relaxed">{vib.desc}</p>
-                </div>
-                <button
-                  onClick={() => alert(`🎛️ 震动模式：${vib.mode}\n${vib.desc}\n\n（设备控制功能即将接入）`)}
-                  className="flex-shrink-0 flex items-center gap-1 text-[10px] text-[rgba(179,128,255,0.6)] hover:text-[#B380FF] transition-colors"
+              {vib && (
+                <div
+                  className="rounded-xl p-3 flex items-center gap-3"
+                  style={{ background: 'linear-gradient(135deg, rgba(255,154,203,0.08), rgba(179,128,255,0.08))' }}
                 >
-                  详情 <ChevronRight size={11} />
-                </button>
-              </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-[#FF9ACB] mb-0.5">{vib.mode}</p>
+                    <p className="text-[10px] text-[rgba(245,240,242,0.5)] leading-relaxed">{vib.desc}</p>
+                  </div>
+                  <button
+                    onClick={() => alert(`🎛️ 震动模式：${vib.mode}\n${vib.desc}\n\n推荐原因：${vib.reason || '已结合你的近期状态和训练目标调整。'}`)}
+                    className="flex-shrink-0 flex items-center gap-1 text-[10px] text-[rgba(179,128,255,0.6)] hover:text-[#B380FF] transition-colors"
+                  >
+                    详情 <ChevronRight size={11} />
+                  </button>
+                </div>
+              )}
             </div>
           </>
         )}
       </section>
 
-      {/* ═══ 健康小贴士（自动轮播） ═════════════════════════ */}
+      {/* ═══ 健康小贴士（自动轮播 + 点击切换） ════════════ */}
       {/* TODO: 替换为 AI 生成的个性化贴士（/api/health/tips） */}
       <section
-        className="rounded-2xl p-4 card-glow flex items-start gap-3"
+        className="rounded-2xl p-4 card-glow flex items-start gap-3 cursor-pointer select-none active:scale-[0.99] transition-transform"
         style={{ background: 'linear-gradient(135deg, #1a1028, #1e1528)' }}
+        onClick={() => {
+          if (tipCount <= 1) return
+          setTipIdx((i) => (i + 1) % tipCount)
+        }}
       >
         <span className="text-lg flex-shrink-0 mt-0.5">💡</span>
         <div className="flex-1">
@@ -953,11 +987,11 @@ export default function HealthPage() {
             key={tipIdx}           /* key 变化时触发 animate-fadeUp 重播 */
             className="text-[12px] text-[rgba(245,240,242,0.75)] leading-relaxed animate-fadeUp"
           >
-            {HEALTH_TIPS[tipIdx]}
+            {activeTips[tipIdx]}
           </p>
-          {/* 小圆点指示器 */}
+          {/* 小圆点指示器（固定 6 个） */}
           <div className="flex gap-1 mt-2">
-            {HEALTH_TIPS.map((_, i) => (
+            {Array.from({ length: tipCount }).map((_, i) => (
               <span
                 key={i}
                 className={`inline-block h-1 rounded-full transition-all ${

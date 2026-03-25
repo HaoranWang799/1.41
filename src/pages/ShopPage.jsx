@@ -23,7 +23,7 @@ import { X, Play, Crown } from 'lucide-react'
 // 卡片封面使用视频的剧本 ID（视频文件放于 public/videos/{id}.mp4）
 // 包含：智能推荐区 'boss' + 官方更新区全部 6 张（o1–o6）
 // 若对应视频文件不存在，会自动回退到图片/emoji，不报错
-const CARD_VIDEO_IDS = ['boss', 'o1', 'o2', 'o3', 'o4', 'o5', 'o6']
+const CARD_VIDEO_IDS = ['boss', 'o1', 'o2']
 
 // ═══════════════════════════════════════════════════════════
 //  静态数据（未来替换为 API）
@@ -617,7 +617,7 @@ function SectionCard({ item, onBuy, badge, badgeStyle, showAuthor, showDownloads
 function FreePackCard({ item, onClick }) {
   return (
     <div
-      className="relative flex-shrink-0 w-32 rounded-2xl p-3 cursor-pointer card-glow bg-[rgba(30,20,25,0.6)] hover:bg-[rgba(50,30,40,0.7)] transition-colors"
+      className="relative flex-shrink-0 w-32 snap-start rounded-2xl p-3 cursor-pointer card-glow bg-[rgba(30,20,25,0.6)] hover:bg-[rgba(50,30,40,0.7)] transition-colors"
       onClick={onClick}
     >
       <span className="absolute top-2 right-2 bg-[#FF9ACB] text-[9px] font-bold text-[#1a0a12] rounded-full px-1.5 py-0.5">
@@ -640,6 +640,59 @@ function SectionTitle({ icon, title, sub }) {
       {icon && <span className="text-base">{icon}</span>}
       <span className="text-sm font-semibold text-[rgba(245,240,242,0.85)]">{title}</span>
       {sub && <span className="text-[10px] text-[rgba(245,240,242,0.4)]">{sub}</span>}
+    </div>
+  )
+}
+
+/** 横向滚动行（移动端滑动 + 桌面端鼠标拖拽） */
+function HorizontalScrollRow({ children, className = '', style }) {
+  const rowRef = useRef(null)
+  const dragRef = useRef({ active: false, startX: 0, startLeft: 0, moved: false })
+
+  const onMouseDown = (e) => {
+    if (e.button !== 0) return
+    const el = rowRef.current
+    if (!el) return
+    dragRef.current = {
+      active: true,
+      startX: e.clientX,
+      startLeft: el.scrollLeft,
+      moved: false,
+    }
+  }
+
+  const onMouseMove = (e) => {
+    const el = rowRef.current
+    if (!el || !dragRef.current.active) return
+    const dx = e.clientX - dragRef.current.startX
+    if (Math.abs(dx) > 3) dragRef.current.moved = true
+    el.scrollLeft = dragRef.current.startLeft - dx
+    e.preventDefault()
+  }
+
+  const stopDragging = () => {
+    dragRef.current.active = false
+  }
+
+  const onClickCapture = (e) => {
+    if (!dragRef.current.moved) return
+    e.preventDefault()
+    e.stopPropagation()
+    dragRef.current.moved = false
+  }
+
+  return (
+    <div
+      ref={rowRef}
+      className={`flex gap-3 overflow-x-auto scrollbar-hide pb-1 select-none cursor-grab active:cursor-grabbing ${className}`}
+      style={style}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={stopDragging}
+      onMouseLeave={stopDragging}
+      onClickCapture={onClickCapture}
+    >
+      {children}
     </div>
   )
 }
@@ -747,7 +800,7 @@ export default function ShopPage() {
       <section>
         <SectionTitle icon="🎯" title="智能推荐为你" sub="根据你的偏好" />
         {/* TODO: 替换推荐列表为真实个性化算法 API */}
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+        <HorizontalScrollRow>
           {RECOMMENDED.map((item) => (
             <RecommendedCard
               key={item.id}
@@ -756,14 +809,14 @@ export default function ShopPage() {
               onCardClick={recordTemplateClick}
             />
           ))}
-        </div>
+        </HorizontalScrollRow>
       </section>
 
       {/* ═══ 官方更新专区 ════════════════════════════════════ */}
       {/* TODO: 替换为 /api/shop/official 的真实数据 */}
       <section>
         <SectionTitle icon="🏅" title="官方更新" sub="品质保障" />
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+        <HorizontalScrollRow>
           {OFFICIAL_UPDATES.map((item) => (
             <SectionCard
               key={item.id}
@@ -775,7 +828,7 @@ export default function ShopPage() {
               isVIP={isVIP}
             />
           ))}
-        </div>
+        </HorizontalScrollRow>
       </section>
 
       {/* ═══ 激励视频广告横幅 ════════════════════════════════ */}
@@ -799,7 +852,7 @@ export default function ShopPage() {
       {/* TODO: 替换为 /api/shop/free 的真实数据 */}
       <section>
         <SectionTitle icon="🆓" title="免费专区" sub="永久免费" />
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+        <HorizontalScrollRow>
           {FREE_SECTION_CARDS.map((item) => (
             <SectionCard
               key={item.id}
@@ -811,7 +864,7 @@ export default function ShopPage() {
               isVIP={isVIP}
             />
           ))}
-        </div>
+        </HorizontalScrollRow>
       </section>
 
       {/* ═══ 免费内容专区（礼包 + 每日限免 + 基础库）════════ */}
@@ -820,7 +873,10 @@ export default function ShopPage() {
 
         {/* 新用户礼包 */}
         <p className="text-[10px] text-[rgba(245,240,242,0.4)] mb-2 tracking-wider">新用户礼包</p>
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 mb-4">
+        <HorizontalScrollRow
+          className="pb-2 mb-4 px-1 snap-x snap-mandatory touch-pan-x"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
           {FREE_PACKS.map((item) => (
             <FreePackCard
               key={item.id}
@@ -828,28 +884,59 @@ export default function ShopPage() {
               onClick={() => { recordTemplateClick(); handleBuy({ ...item, price: { type: 'free' } }) }}
             />
           ))}
-        </div>
+        </HorizontalScrollRow>
 
         {/* 每日限免 */}
         <p className="text-[10px] text-[rgba(245,240,242,0.4)] mb-2 tracking-wider">每日限免</p>
         <div
-          className="rounded-2xl p-4 flex items-center gap-3 mb-4 card-glow cursor-pointer"
-          style={{ background: 'linear-gradient(135deg, #1e1028, #2a1840)' }}
+          className="relative overflow-hidden rounded-[24px] p-4 mb-4 card-glow cursor-pointer"
+          style={{ background: 'linear-gradient(135deg, #231033 0%, #31194c 58%, #24112f 100%)' }}
           onClick={() => { recordTemplateClick(); handleBuy({ ...DAILY_FREE, price: { type: 'free' } }) }}
         >
-          <span className="text-3xl">{DAILY_FREE.emoji}</span>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-0.5">
-              <p className="text-xs font-semibold text-[rgba(245,240,242,0.9)]">{DAILY_FREE.title}</p>
-              <span className="bg-[#FF9ACB] text-[9px] font-bold text-[#1a0a12] rounded-full px-1.5 py-0.5">今日限免</span>
+          <div
+            className="absolute -top-8 -right-6 w-28 h-28 rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(255,154,203,0.22) 0%, rgba(255,154,203,0.03) 62%, transparent 72%)' }}
+          />
+          <div
+            className="absolute bottom-[-22px] right-10 w-20 h-20 rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(179,128,255,0.18) 0%, rgba(179,128,255,0.03) 60%, transparent 72%)' }}
+          />
+
+          <div className="relative flex items-center gap-3">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
+              style={{ background: 'linear-gradient(145deg, rgba(255,154,203,0.16), rgba(255,255,255,0.04))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}
+            >
+              <span>{DAILY_FREE.emoji}</span>
             </div>
-            <p className="text-[10px] text-[rgba(245,240,242,0.4)]">{DAILY_FREE.device} · {DAILY_FREE.downloads} 下载</p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] line-through text-[rgba(245,240,242,0.3)]">原价 {DAILY_FREE.originalLabel}</span>
-              <span className="text-[10px] font-bold text-[#FF9ACB]">今日免费</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-3 mb-1">
+                <span className="inline-flex items-center rounded-full px-2 py-1 text-[9px] font-bold tracking-wide text-[#2a1020] bg-[#FF9ACB] shadow-[0_4px_12px_rgba(255,154,203,0.25)]">
+                  今日限免
+                </span>
+                <span className="text-[9px] text-[rgba(245,240,242,0.42)] tracking-wider">24H 福利</span>
+              </div>
+              <p className="text-[15px] leading-tight font-bold text-[rgba(250,244,247,0.96)] mb-1">
+                {DAILY_FREE.title}
+              </p>
+              <p className="text-[11px] text-[rgba(245,240,242,0.5)]">
+                {DAILY_FREE.device} · {DAILY_FREE.downloads} 下载
+              </p>
+              <div className="flex items-end justify-between gap-3 mt-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] line-through text-[rgba(245,240,242,0.28)]">
+                    原价 {DAILY_FREE.originalLabel}
+                  </span>
+                  <span className="text-[12px] font-bold text-[#FF9ACB]">
+                    今日免费
+                  </span>
+                </div>
+                <button className="rounded-full px-4 py-2 text-[11px] font-semibold text-[#2a1020] bg-[linear-gradient(135deg,#ffb2d6,#ff8cc8)] shadow-[0_10px_24px_rgba(255,154,203,0.28)] active:scale-[0.98] transition-transform">
+                  免费领取
+                </button>
+              </div>
             </div>
           </div>
-          <button className="btn-main rounded-xl px-3 py-1.5 text-white text-[11px]">领取</button>
         </div>
 
         {/* 基础模板库 */}
@@ -876,7 +963,7 @@ export default function ShopPage() {
       {/* TODO: 替换为 /api/shop/user-creations 的真实数据 */}
       <section>
         <SectionTitle icon="✏️" title="用户二创" sub="社区精选" />
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+        <HorizontalScrollRow>
           {USER_CREATIONS.map((item) => (
             <SectionCard
               key={item.id}
@@ -889,14 +976,14 @@ export default function ShopPage() {
               isVIP={isVIP}
             />
           ))}
-        </div>
+        </HorizontalScrollRow>
       </section>
 
       {/* ═══ 热门榜单 ════════════════════════════════════════ */}
       {/* TODO: 替换为 /api/shop/hot?sortBy=downloads 的真实数据 */}
       <section>
         <SectionTitle icon="🔥" title="热门榜单" sub="下载最多" />
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+        <HorizontalScrollRow>
           {HOT_LIST.map((item) => (
             <SectionCard
               key={item.id}
@@ -909,14 +996,14 @@ export default function ShopPage() {
               isVIP={isVIP}
             />
           ))}
-        </div>
+        </HorizontalScrollRow>
       </section>
 
       {/* ═══ 彩虹专区（LGBTQ+）══════════════════════════════ */}
       {/* TODO: 替换为 /api/shop/rainbow 的真实数据 */}
       <section>
         <SectionTitle icon="🌈" title="彩虹专区" sub="多元 · 包容 · 平等" />
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+        <HorizontalScrollRow>
           {RAINBOW_LIST.map((item) => (
             <SectionCard
               key={item.id}
@@ -928,7 +1015,7 @@ export default function ShopPage() {
               isVIP={isVIP}
             />
           ))}
-        </div>
+        </HorizontalScrollRow>
       </section>
 
       {/* ═══ 独家定制专区（多模态）══════════════════════════ */}
@@ -945,7 +1032,7 @@ export default function ShopPage() {
           </span>
           <span className="text-[10px] text-[rgba(245,240,242,0.4)] ml-auto">语音 / 视频互动</span>
         </div>
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+        <HorizontalScrollRow>
           {EXCLUSIVE_CUSTOM.map((item) => (
             <SectionCard
               key={item.id}
@@ -958,7 +1045,7 @@ export default function ShopPage() {
               isVIP={isVIP}
             />
           ))}
-        </div>
+        </HorizontalScrollRow>
         <p className="text-[9px] text-[rgba(245,240,242,0.25)] text-center mt-2">
           · 独家定制支持实时语音 / 视频互动，体验全面升级 ·
         </p>

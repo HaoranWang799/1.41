@@ -26,7 +26,16 @@
  * TODO: ScriptCard 的 emoji 头像区域后续替换为真实图片 <img>
  */
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Mic, Sparkles, ArrowLeft } from 'lucide-react'
+import { Mic, Sparkles, ArrowLeft, Pause, Play } from 'lucide-react'
+import {
+  HeaderStatusBar,
+  SceneTimeline,
+  ModeSwitchTabs,
+  RhythmModeGrid,
+  AiParameterCards,
+  DeviceStatusFooter,
+  getStageIndexByProgress,
+} from '../components/InteractEnhancements'
 
 // ═══════════════════════════════════════════════════════════
 //  角色数据
@@ -716,6 +725,9 @@ export default function HomePage() {
   // ── 剧本详情弹窗 ─────────────────────────────────────────
   const [showScriptDetail, setShowScriptDetail] = useState(false)
 
+  // ── 播放暂停状态 ─────────────────────────────────────────
+  const [isPaused, setIsPaused] = useState(false)
+
   // ── 交互模式背景类型（video → image → emoji 链式回退）──
   const [bgType, setBgType] = useState('video')
 
@@ -730,6 +742,19 @@ export default function HomePage() {
 
   // ── 剧本进度（0-100，初始 35）────────────────────────────
   const [progressValue, setProgressValue] = useState(35)
+
+  // ── 新增：控制模式切换（'ai' | 'manual'）────────────────
+  // TODO: 接入后端后可持久化用户偏好到 /api/user/preferences
+  const [controlMode, setControlMode] = useState('ai')
+
+  // ── 新增：AI节奏模式选择 ─────────────────────────────────
+  // TODO: 接入 /api/ai/set-rhythm-mode 后传递实际模式参数
+  const [rhythmMode, setRhythmMode] = useState('adaptive')
+
+  // ── 新增：AI参数（独立于旧手动 slider，0-100 范围）────────
+  // TODO: 接入 /api/ai/set-param 后传递 aiIntens / aiFreq
+  const [aiIntens, setAiIntens] = useState(50)
+  const [aiFreq,   setAiFreq]   = useState(36.8)
 
   // ── Refs ─────────────────────────────────────────────────
   const typingTimerRef = useRef(null)
@@ -854,6 +879,12 @@ export default function HomePage() {
     setIntens(5)
     setTight(5)
     setProgressValue(35)
+    // 进入时重置新增 state
+    setControlMode('ai')
+    setRhythmMode('adaptive')
+    setAiIntens(50)
+    setAiFreq(36.8)
+    setIsPaused(false)
     setView('interact')
   }, [])
 
@@ -865,8 +896,24 @@ export default function HomePage() {
     setTemperature(0)
     setDisplayedText('')
     setShowHearts(false)
+    setIsPaused(false)
     setShowScriptDetail(false)
   }, [])
+
+  // ── 暂停/继续播放（同步控制背景音频）──────────────────────
+  const togglePause = useCallback(() => {
+    const nextPaused = !isPaused
+    setIsPaused(nextPaused)
+    if (!audioRef.current) return
+    if (nextPaused) {
+      audioRef.current.pause()
+      return
+    }
+    audioRef.current.play().catch(() => {
+      // 浏览器可能拦截手动恢复播放，失败时保留暂停状态
+      setIsPaused(true)
+    })
+  }, [isPaused])
 
   // ── 主按钮点击 ───────────────────────────────────────────
   const handleMainClick = useCallback(() => {
@@ -1207,7 +1254,7 @@ export default function HomePage() {
             视图 B：交互模式（新设计）
         ══════════════════════════════════════════════════ */}
         {view === 'interact' && activeScript && (
-          <div className="relative flex flex-col gap-4 animate-fadeUp">
+          <div className="relative flex flex-col gap-3 animate-fadeUp">
 
             {/* ── 交互模式背景（video → image → emoji 链式回退）── */}
             {/* 视频路径：/videos/{charId}.mp4 · 图片路径：/images/covers/{charId}.jpg */}
@@ -1221,7 +1268,7 @@ export default function HomePage() {
                   src={`/videos/${activeScript.charId}.mp4`}
                   autoPlay loop muted playsInline
                   onError={() => setBgType('image')}
-                  className="absolute inset-0 w-full h-full object-cover opacity-20"
+                  className="absolute inset-0 w-full h-full object-cover opacity-35"
                 />
               )}
               {/* 第二优先：图片背景（视频加载失败时，jpg → png → emoji 链式回退） */}
@@ -1236,7 +1283,7 @@ export default function HomePage() {
                       setBgType('emoji')
                     }
                   }}
-                  className="absolute inset-0 w-full h-full object-cover opacity-20"
+                  className="absolute inset-0 w-full h-full object-cover opacity-35"
                 />
               )}
               {/* 最终回退：大 emoji 水印（图片也失败时） */}
@@ -1247,7 +1294,13 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* ── 顶部：左侧返回按钮 + 右侧剧本详情按钮 ─────────── */}
+            {/* 背景深色渐变遮罩（降低人物图对前景文字的干扰） */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ zIndex: 1, background: 'linear-gradient(180deg, rgba(8,4,10,0.36) 0%, rgba(8,4,10,0.12) 30%, rgba(8,4,10,0.36) 72%, rgba(8,4,10,0.62) 100%)' }}
+            />
+
+            {/* ── ① 顶部：左侧返回按钮 + 右侧剧本详情按钮 ──────── */}
             <div className="relative z-10 flex justify-between items-center">
               <button
                 onClick={exitInteract}
@@ -1263,95 +1316,148 @@ export default function HomePage() {
               </button>
             </div>
 
-            {/* ── 场景氛围文字 ─────────────────────────────────── */}
-            <p className="relative z-10 text-[11px] text-center text-[rgba(245,240,242,0.45)] italic leading-relaxed">
+            {/* ── ② [新增] 顶部设备状态栏 ─────────────────────────
+                TODO: connected/battery 由蓝牙Hook下发；mode/remainingMin 由 session 下发 */}
+            <HeaderStatusBar />
+
+            {/* ── ④ 场景氛围文字（弱化，辅助氛围） */}
+            <p className="relative z-10 text-[10px] text-center text-[rgba(245,240,242,0.35)] italic leading-relaxed">
               {ambianceText}
             </p>
 
-            {/* ── 角色回应文字（打字机效果）────────────────────── */}
-            <div className="relative z-10 min-h-[60px] rounded-2xl px-4 py-4 flex items-center justify-center text-center card-glow bg-[rgba(15,8,15,0.72)]">
-              {displayedText ? (
-                <p className={`text-sm font-light text-[#f5f0f2] leading-relaxed tracking-wide ${isTyping ? 'typewriter-cursor' : ''}`}>
-                  {displayedText}
-                </p>
-              ) : (
-                <p className="text-xs text-[rgba(245,240,242,0.2)] italic">等待回应…</p>
-              )}
-            </div>
-
-            {/* ── 音波（频率联动，freq 越大动画越快）────────────── */}
-            <div className="relative z-10 rounded-2xl px-4 py-2 card-glow bg-[rgba(15,8,15,0.55)]">
-              <Waveform freq={freq} />
-            </div>
-
-            {/* ── 剧本进度条（可拖动，视频播放器风格）────────────── */}
-            <div className="relative z-10 px-1">
-              {/* 时间显示（随 progressValue 实时更新） */}
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[10px] text-[rgba(245,240,242,0.6)] tabular-nums font-medium">
-                  {formatTime(Math.round(progressValue / 100 * TOTAL_SECONDS))}
-                </span>
-                <span className="text-[10px] text-[rgba(245,240,242,0.25)] tabular-nums">
-                  {formatTime(TOTAL_SECONDS)}
-                </span>
+            {/* ── ⑤-⑧ 主播放卡：对白 + 音波 + 进度条 + 场景节点（四区合一） */}
+            <div className="relative z-10 rounded-2xl px-4 pt-4 pb-4 bg-[rgba(10,5,12,0.62)] border border-[rgba(255,255,255,0.08)] flex flex-col gap-3">
+              {/* 对白区 */}
+              <div className="min-h-[52px] flex items-center justify-center text-center">
+                {displayedText ? (
+                  <p className={`text-sm font-light text-[#f5f0f2] leading-relaxed tracking-wide ${isTyping ? 'typewriter-cursor' : ''}`}>
+                    {displayedText}
+                  </p>
+                ) : (
+                  <p className="text-xs text-[rgba(245,240,242,0.2)] italic">等待回应…</p>
+                )}
               </div>
 
-              {/* 进度条容器（高潮标记 + range 滑块） */}
-              <div className="relative w-full">
-                {/* 高潮标记点（轨道上方，呼吸动画，pointer-events-none 不遮挡拖动） */}
-                <div className="absolute w-full pointer-events-none" style={{ top: '-7px', zIndex: 4 }}>
-                  {[20, 50, 80].map(pct => (
-                    <div
-                      key={pct}
-                      className="absolute w-2.5 h-2.5 rounded-full animate-pulse"
-                      style={{
-                        left: `${pct}%`,
-                        transform: 'translateX(-50%)',
-                        background: 'linear-gradient(135deg, #FF9ACB, #B380FF)',
-                        opacity: pct <= progressValue ? 1 : 0.4,
-                        boxShadow: pct <= progressValue ? '0 0 6px #FF9ACB' : 'none',
-                      }}
-                    />
-                  ))}
+              <div className="h-px bg-[rgba(255,255,255,0.06)]" />
+
+              {/* 音波 */}
+              <Waveform freq={isPaused ? 1 : freq} />
+
+              {/* 播放进度 */}
+              <div className="flex items-center gap-2.5">
+                <button
+                  onClick={togglePause}
+                  className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 flex-shrink-0"
+                  style={
+                    isPaused
+                      ? {
+                          background: 'rgba(179,128,255,0.18)',
+                          border: '1px solid rgba(179,128,255,0.45)',
+                          boxShadow: '0 0 12px rgba(179,128,255,0.2)',
+                        }
+                      : {
+                          background: 'rgba(255,255,255,0.06)',
+                          border: '1px solid rgba(255,255,255,0.16)',
+                        }
+                  }
+                  aria-label={isPaused ? '继续播放' : '暂停播放'}
+                  title={isPaused ? '继续播放' : '暂停播放'}
+                >
+                  {isPaused
+                    ? <Play size={13} className="text-[#f5f0f2] ml-0.5" />
+                    : <Pause size={13} className="text-[rgba(245,240,242,0.72)]" />}
+                </button>
+
+                <div className="flex-1">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-[10px] text-[rgba(245,240,242,0.55)] tabular-nums font-medium">
+                      {formatTime(Math.round(progressValue / 100 * TOTAL_SECONDS))}
+                    </span>
+                    <span className="text-[10px] text-[rgba(245,240,242,0.22)] tabular-nums">
+                      {formatTime(TOTAL_SECONDS)}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={progressValue}
+                    onChange={e => setProgressValue(Number(e.target.value))}
+                    className="w-full h-1 rounded-full outline-none cursor-pointer appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer"
+                    style={{ background: `linear-gradient(90deg, #FF9ACB ${progressValue}%, rgba(255,255,255,0.12) ${progressValue}%)` }}
+                  />
                 </div>
-
-                {/* 可拖动 range 滑块 */}
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={progressValue}
-                  onChange={e => setProgressValue(Number(e.target.value))}
-                  className="w-full h-1 rounded-full outline-none cursor-pointer appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer"
-                  style={{ background: `linear-gradient(90deg, #FF9ACB ${progressValue}%, rgba(255,255,255,0.12) ${progressValue}%)` }}
-                />
               </div>
 
-              <p className="text-[8px] text-center text-[rgba(245,240,242,0.18)] mt-1.5 tracking-widest">· 剧情进度 ·</p>
+              <div className="h-px bg-[rgba(255,255,255,0.05)]" />
+
+              {/* 场景节点（嵌入主卡，不再独立卦块）
+                  TODO: onStageChange 后续触发 /api/session/jump-to-stage */}
+              <SceneTimeline
+                stageIndex={getStageIndexByProgress(progressValue)}
+                onStageChange={(idx) => {
+                  const stagePcts = [0, 16, 32, 48, 64]
+                  if (stagePcts[idx] !== undefined) setProgressValue(stagePcts[idx])
+                }}
+              />
             </div>
 
-            {/* ── 三个控制滑块（频率 / 强度 / 紧度）────────────── */}
-            {/* TODO: 滑块值变化后调用真实蓝牙设备控制接口 (setDeviceParam) */}
-            <div className="relative z-10 rounded-2xl p-4 card-glow bg-[rgba(15,8,15,0.72)] space-y-4">
-              <SliderControl icon="📶" label="频率" value={freq}   onChange={setFreq}   />
-              <SliderControl icon="💪" label="强度" value={intens} onChange={setIntens} />
-              <SliderControl icon="🔒" label="紧度" value={tight}  onChange={setTight}  />
+            {/* ── 控制区 ─────────────────────────────────────────────── */}
+
+            {/* AI 智能 — 点击开启，preset点击后自动退出 */}
+            <button
+              onClick={() => setControlMode('ai')}
+              className="relative z-10 w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[13px] font-semibold transition-all duration-200 active:scale-[0.98]"
+              style={
+                controlMode === 'ai'
+                  ? { background: 'linear-gradient(135deg, #FF9ACB, #B380FF)', color: '#fff', boxShadow: '0 2px 16px rgba(255,154,203,0.3)' }
+                  : { background: 'rgba(255,255,255,0.07)', color: 'rgba(245,240,242,0.45)', border: '1px solid rgba(255,255,255,0.1)' }
+              }
+            >
+              <span className="text-base select-none">✦</span>
+              AI 智能
+              {controlMode === 'ai' && <span className="text-[10px] font-normal opacity-80">· 开启中</span>}
+            </button>
+
+            {/* 节奏模式（始终显示） */}
+            <RhythmModeGrid selectedMode={rhythmMode} onChange={(v) => { setRhythmMode(v); setControlMode('manual'); }} />
+
+            {/* 统一参数卡 */}
+            <div className="relative z-10 rounded-2xl p-4 bg-[rgba(10,5,12,0.62)] border border-[rgba(255,255,255,0.08)] flex flex-col gap-4">
+
+              {/* AI 参数区（始终显示） */}
+              <>
+                <AiParameterCards
+                  aiIntens={aiIntens}
+                  onAiIntensChange={(value) => { setAiIntens(value); setControlMode('manual'); }}
+                  aiFreq={aiFreq}
+                  onAiFreqChange={(value) => { setAiFreq(value); setControlMode('manual'); }}
+                />
+                <div className="h-px bg-[rgba(255,255,255,0.07)]" />
+              </>
+
+              {/* 手动调节滑杆（始终可见） */}
+              <SliderControl icon="📶" label="频率" value={freq}   onChange={(v) => { setFreq(v);   setControlMode('manual'); }} />
+              <SliderControl icon="💪" label="强度" value={intens} onChange={(v) => { setIntens(v); setControlMode('manual'); }} />
+              <SliderControl icon="🔒" label="紧度" value={tight}  onChange={(v) => { setTight(v);  setControlMode('manual'); }} />
             </div>
 
-            {/* ── 预设模式按钮（轻柔 / 标准 / 高潮）────────────── */}
-            {/* TODO: 接入真实设备后预设直接映射到设备控制参数 */}
+            {/* 快捷预设（点击自动退出 AI 模式） */}
             <div className="relative z-10 grid grid-cols-3 gap-2">
               {PRESETS.map(preset => (
                 <button
                   key={preset.id}
-                  onClick={() => { setFreq(preset.freq); setIntens(preset.intens); setTight(preset.tight) }}
-                  className="py-2.5 rounded-2xl text-center text-[11px] font-medium transition-all active:scale-95 card-glow bg-[rgba(30,20,25,0.75)] text-[rgba(245,240,242,0.7)] hover:bg-[rgba(50,30,40,0.75)]"
+                  onClick={() => { setControlMode('manual'); setFreq(preset.freq); setIntens(preset.intens); setTight(preset.tight); }}
+                  className="py-2.5 rounded-2xl text-center text-[11px] font-medium transition-all active:scale-95 bg-[rgba(20,12,18,0.62)] border border-[rgba(255,255,255,0.08)] text-[rgba(245,240,242,0.65)] hover:bg-[rgba(40,24,32,0.62)]"
                 >
                   <span className="block text-lg mb-0.5 select-none">{preset.emoji}</span>
                   {preset.label}
                 </button>
               ))}
             </div>
+
+            {/* ── 底部设备状态卡片 */}
+            <DeviceStatusFooter />
 
           </div>
         )}
@@ -1361,12 +1467,12 @@ export default function HomePage() {
       {/* ── 剧本详情弹窗 ──────────────────────────────────────── */}
       {showScriptDetail && activeScript && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center"
+          className="fixed inset-0 z-[60] flex items-end justify-center"
           style={{ background: 'rgba(0,0,0,0.65)' }}
           onClick={() => setShowScriptDetail(false)}
         >
           <div
-            className="w-full max-w-[430px] rounded-t-3xl px-5 pt-5 pb-8 animate-fadeUp"
+            className="w-full max-w-[430px] max-h-[calc(100vh-1rem)] overflow-y-auto rounded-t-3xl px-5 pt-5 pb-24 animate-fadeUp"
             style={{ background: 'linear-gradient(180deg, #1e0f1a 0%, #120a18 100%)' }}
             onClick={e => e.stopPropagation()}
           >
