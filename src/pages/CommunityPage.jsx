@@ -307,6 +307,12 @@ function GenderBadge({ gender }) {
 function PostCard({ post, likeState, onLike }) {
   const { liked, count } = likeState
   const [imgSrc, setImgSrc] = useState(`/images/posts/${post.templateId}.jpg`)
+  const tags = Array.isArray(post.tags) ? post.tags : []
+  const topComments = Array.isArray(post.topComments) ? post.topComments : []
+  const comments = Number(post.comments || 0)
+  const bookmarks = Number(post.bookmarks || 0)
+  const imgColor = post.imgColor || 'from-[#1a1028] to-[#251840]'
+  const imgEmoji = post.imgEmoji || post.avatar || '✨'
 
   return (
     <div className="rounded-2xl p-4 card-glow bg-[rgba(30,20,25,0.6)] space-y-3">
@@ -326,7 +332,7 @@ function PostCard({ post, likeState, onLike }) {
       <p className="text-[12px] text-[rgba(245,240,242,0.75)] leading-relaxed">{post.content}</p>
 
       {/* 图片区（jpg → png → emoji+渐变 链式回退） */}
-      <div className={`relative h-48 rounded-xl overflow-hidden bg-gradient-to-br ${post.imgColor} flex items-center justify-center`}>
+      <div className={`relative h-48 rounded-xl overflow-hidden bg-gradient-to-br ${imgColor} flex items-center justify-center`}>
         {imgSrc && (
           <img
             src={imgSrc}
@@ -339,13 +345,13 @@ function PostCard({ post, likeState, onLike }) {
           />
         )}
         {!imgSrc && (
-          <span className="text-3xl select-none opacity-40">{post.imgEmoji}</span>
+          <span className="text-3xl select-none opacity-40">{imgEmoji}</span>
         )}
       </div>
 
       {/* 标签 */}
       <div className="flex gap-1.5 flex-wrap">
-        {post.tags.map((tag) => (
+        {tags.map((tag) => (
           <span
             key={tag}
             className="text-[10px] bg-[rgba(179,128,255,0.12)] text-[rgba(179,128,255,0.7)] rounded-full px-2 py-0.5"
@@ -386,7 +392,7 @@ function PostCard({ post, likeState, onLike }) {
           onClick={() => alert('💬 评论功能即将开放')}
         >
           <MessageCircle size={14} className="text-[rgba(245,240,242,0.4)]" />
-          <span className="text-[11px] text-[rgba(245,240,242,0.45)]">{post.comments}</span>
+          <span className="text-[11px] text-[rgba(245,240,242,0.45)]">{comments}</span>
         </button>
         {/* 收藏 */}
         <button
@@ -394,14 +400,14 @@ function PostCard({ post, likeState, onLike }) {
           onClick={() => alert('🔖 已收藏（演示）')}
         >
           <Bookmark size={14} className="text-[rgba(245,240,242,0.4)]" />
-          <span className="text-[11px] text-[rgba(245,240,242,0.45)]">{post.bookmarks}</span>
+          <span className="text-[11px] text-[rgba(245,240,242,0.45)]">{bookmarks}</span>
         </button>
       </div>
 
       {/* 热门评论（带点赞数） */}
-      {post.topComments.length > 0 && (
+      {topComments.length > 0 && (
         <div className="space-y-1.5">
-          {post.topComments.map((c, i) => (
+          {topComments.map((c, i) => (
             <TopComment key={i} comment={c} />
           ))}
         </div>

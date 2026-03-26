@@ -14,6 +14,19 @@ const browserBaseUrl = typeof window !== 'undefined'
   ? String(import.meta.env?.VITE_API_BASE_URL || '').trim().replace(/\/$/, '')
   : ''
 
+function isStaticOnlyHost() {
+  if (typeof window === 'undefined') return false
+  if (browserBaseUrl) return false
+
+  const host = window.location.hostname.toLowerCase()
+  return (
+    host.endsWith('github.io') ||
+    host.endsWith('netlify.app') ||
+    host.endsWith('pages.dev') ||
+    host.endsWith('vercel.app')
+  )
+}
+
 // 配置常量
 const CONFIG = {
   BASE_URL: browserBaseUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:3100'),
@@ -43,6 +56,17 @@ export async function request(path, options = {}) {
     retryCount = 0,
     fallback,
   } = options
+
+  if (isStaticOnlyHost() && path.startsWith('/api/')) {
+    const error = new Error('当前静态站点未配置后端 API，请设置 VITE_API_BASE_URL')
+    error.status = 0
+
+    if (fallback) {
+      return fallback(error)
+    }
+
+    throw error
+  }
 
   // 构建完整 URL
   const url = new URL(`${CONFIG.BASE_URL}${path}`, typeof window !== 'undefined' ? window.location.origin : undefined)
@@ -129,7 +153,7 @@ export async function request(path, options = {}) {
     })
 
     // 重试逻辑
-    if (retryCount > 0) {
+    if (retryCount > 0 && (!error.status || error.status >= 500 || error.status === 408 || error.status === 429)) {
       console.log(`🔄 [API] 重试 ${CONFIG.RETRY_COUNT - retryCount + 1}/${CONFIG.RETRY_COUNT}`)
       await new Promise(r => setTimeout(r, 500)) // 延迟 500ms 后重试
       return request(path, {

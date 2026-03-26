@@ -78,14 +78,14 @@ function useCommunity() {
       if (requestId !== requestIdRef.current) return
 
       // 处理错误情况
-      if (!data.posts) {
+      if (!Array.isArray(data.posts)) {
         setError('无法加载帖子')
         setPosts([])
         return
       }
 
       // 成功情况
-      setPosts(data.posts || [])
+      setPosts(data.posts)
       setCurrentTab(data.tab || tab)
       setCurrentPage(data.page || page)
       setHasMore(data.hasMore || false)

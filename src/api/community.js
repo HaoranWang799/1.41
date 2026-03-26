@@ -7,7 +7,43 @@
  *   • 支持 mock fallback（请求失败时返回本地帖子）
  */
 
-import { get, withMockFallback, withRetry } from './client'
+import { get, withRetry } from './client'
+
+function normalizeCommunityPost(post = {}, index = 0, tab = '体验分享') {
+  return {
+    id: post.id ?? `${tab}-${index + 1}`,
+    templateId: post.templateId || `community-${tab}-${index + 1}`,
+    templateName: post.templateName || '',
+    avatar: post.avatar || '✨',
+    name: post.name || '匿名用户',
+    time: post.time || '刚刚',
+    gender: post.gender || '',
+    content: post.content || '暂无内容',
+    imgColor: post.imgColor || 'from-[#1a1028] to-[#251840]',
+    imgEmoji: post.imgEmoji || post.avatar || '✨',
+    likes: Number(post.likes || 0),
+    comments: Number(post.comments || 0),
+    bookmarks: Number(post.bookmarks || 0),
+    tags: Array.isArray(post.tags) ? post.tags : [],
+    topComments: Array.isArray(post.topComments) ? post.topComments : [],
+  }
+}
+
+function normalizeCommunityResponse(serverData = {}, tab = '体验分享', page = 1) {
+  const posts = Array.isArray(serverData.posts)
+    ? serverData.posts.map((post, index) => normalizeCommunityPost(post, index, tab))
+    : []
+
+  return {
+    posts,
+    tab: serverData.tab || tab,
+    page: Number(serverData.page || page),
+    hasMore: Boolean(serverData.hasMore),
+    total: Number(serverData.total || posts.length),
+    source: serverData._provider === 'mock' ? 'mock' : 'live',
+    provider: serverData._provider,
+  }
+}
 
 /**
  * 获取社区帖子
@@ -47,16 +83,7 @@ export async function fetchCommunityPosts(options = {}) {
 
     // 后端返回 { ok: true, data: { posts, tab, page, hasMore, total, _provider, ... } }
     if (response.ok && response.data) {
-      const serverData = response.data
-      return {
-        posts: serverData.posts || [],
-        tab: serverData.tab || tab,
-        page: serverData.page || page,
-        hasMore: serverData.hasMore || false,
-        total: serverData.total || 0,
-        source: serverData._provider === 'mock' ? 'mock' : 'live',
-        provider: serverData._provider,
-      }
+      return normalizeCommunityResponse(response.data, tab, page)
     } else if (response.error) {
       console.error('❌ [Community API] 请求失败:', response.error.message)
       throw new Error(response.error.message || '请求失败')
@@ -102,7 +129,9 @@ function getMockPosts(tab = '体验分享', page = 1, limit = 5) {
 
   const allPosts = mockPosts[tab] || mockPosts['体验分享']
   const startIndex = (page - 1) * limit
-  const posts = allPosts.slice(startIndex, startIndex + limit)
+  const posts = allPosts
+    .slice(startIndex, startIndex + limit)
+    .map((post, index) => normalizeCommunityPost(post, startIndex + index, tab))
 
   return {
     posts,
