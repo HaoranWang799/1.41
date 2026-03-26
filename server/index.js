@@ -10,6 +10,7 @@
 import { config } from 'dotenv'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import { existsSync } from 'fs'
 import express from 'express'
 import { errorHandler } from './middleware/errorHandler.js'
 import loverRoutes from './routes/lover.js'
@@ -21,9 +22,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 config({ path: join(__dirname, '.env') })
 
 const app = express()
-const FRONTEND_URL = String(
-  process.env.FRONTEND_URL || 'https://haoranwang799.github.io/your-s-her-1.1/'
-).trim()
+const DIST_DIR = join(__dirname, '..', 'dist')
 
 // ── CORS 中间件 ──────────────────────────────────────────
 const CORS_ALLOW_ORIGINS = String(process.env.CORS_ALLOW_ORIGINS || '*')
@@ -56,25 +55,23 @@ app.use((req, res, next) => {
 
 app.use(express.json())
 
-// ── 根路径：跳转到前端页面，避免访问后端域名时出现 Cannot GET / ──
-app.get('/', (_req, res) => {
-  if (FRONTEND_URL) {
-    return res.redirect(302, FRONTEND_URL)
-  }
-
-  return res.status(200).json({
-    ok: true,
-    message: 'API server is running',
-  })
-})
-
 // ── API 路由 ──────────────────────────────────────────────
 app.use('/api/lover', loverRoutes)
 app.use('/api/health', healthRoutes)
 app.use('/api/community', communityRoutes)
 
-// ── 错误处理中间件（必须在所有路由之后）──────────────────
+// ── 错误处理中间件（必须在 API 路由之后）──────────────────
 app.use(errorHandler)
+
+// ── 托管前端静态文件（dist/），SPA fallback ──────────────
+if (existsSync(DIST_DIR)) {
+  app.use(express.static(DIST_DIR))
+  app.get('*', (_req, res) => {
+    res.sendFile(join(DIST_DIR, 'index.html'))
+  })
+} else {
+  app.get('/', (_req, res) => res.json({ ok: true, message: 'API server running' }))
+}
 
 // ── 启动 ──────────────────────────────────────────────────
 const PORT = parseInt(process.env.PORT || 3100)

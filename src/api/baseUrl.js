@@ -4,8 +4,6 @@ function normalizeBaseUrl(value) {
   return raw.replace(/\/+$/, '')
 }
 
-const DEFAULT_PRODUCTION_API_BASE_URL = 'https://your-s-her-11-production.up.railway.app'
-
 function normalizePath(path) {
   const raw = String(path || '').trim()
   if (!raw) return '/'
@@ -14,17 +12,14 @@ function normalizePath(path) {
 
 export function getApiRuntimeInfo() {
   const envBaseUrl = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL)
-  const fallbackProductionBaseUrl = import.meta.env.PROD
-    ? DEFAULT_PRODUCTION_API_BASE_URL
-    : ''
-  const configuredBaseUrl = envBaseUrl || fallbackProductionBaseUrl
+  const configuredBaseUrl = envBaseUrl
 
   return {
     configuredBaseUrl,
     envBaseUrl,
-    fallbackProductionBaseUrl,
+    fallbackProductionBaseUrl: '',
     isUsingEnvBaseUrl: Boolean(envBaseUrl),
-    isUsingProductionFallbackBaseUrl: Boolean(!envBaseUrl && fallbackProductionBaseUrl),
+    isUsingProductionFallbackBaseUrl: false,
     mode: import.meta.env.MODE,
     isProduction: Boolean(import.meta.env.PROD),
     isDevelopment: Boolean(import.meta.env.DEV),
