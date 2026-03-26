@@ -3,6 +3,7 @@ dist/
 .DS_Store
 server/.env
 server/.env.*
+!server/.env.example
 public/.DS_Store
 public/images/.DS_Store
 public/images/covers/.DS_Store
