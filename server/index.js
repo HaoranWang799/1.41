@@ -21,6 +21,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 config({ path: join(__dirname, '.env') })
 
 const app = express()
+const FRONTEND_URL = String(
+  process.env.FRONTEND_URL || 'https://haoranwang799.github.io/your-s-her-1.1/'
+).trim()
 
 // ── CORS 中间件 ──────────────────────────────────────────
 const CORS_ALLOW_ORIGINS = String(process.env.CORS_ALLOW_ORIGINS || '*')
@@ -52,6 +55,18 @@ app.use((req, res, next) => {
 })
 
 app.use(express.json())
+
+// ── 根路径：跳转到前端页面，避免访问后端域名时出现 Cannot GET / ──
+app.get('/', (_req, res) => {
+  if (FRONTEND_URL) {
+    return res.redirect(302, FRONTEND_URL)
+  }
+
+  return res.status(200).json({
+    ok: true,
+    message: 'API server is running',
+  })
+})
 
 // ── API 路由 ──────────────────────────────────────────────
 app.use('/api/lover', loverRoutes)
