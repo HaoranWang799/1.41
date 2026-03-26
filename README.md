@@ -81,9 +81,13 @@ npm run dev
 
 ### 当前仓库默认生产配置
 
-当前仓库已经内置生产环境 API 基地址：
+当前仓库已经内置生产环境 API 基地址，并且代码里还有一层生产默认兜底：
 
 `VITE_API_BASE_URL=https://your-s-her-11-production.up.railway.app`
+
+即使 GitHub Pages 部署过程中没有正确读取 `.env.production`，生产构建也会优先回落到：
+
+`https://your-s-her-11-production.up.railway.app`
 
 因此重新构建前端后，生产环境请求会直接发往：
 

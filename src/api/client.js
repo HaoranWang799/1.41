@@ -40,12 +40,9 @@ function createApiError(message, extras = {}) {
 
 function logRequestStart(method, path, requestUrl) {
   const runtime = getApiRuntimeInfo()
-  console.log(`🚀 [API] ${method} ${path}`, {
-    requestUrl,
-    usingEnvBaseUrl: runtime.isUsingEnvBaseUrl,
-    configuredBaseUrl: runtime.configuredBaseUrl || '(relative /api)',
-    mode: runtime.mode,
-  })
+  console.log(
+    `🚀 [API] ${method} ${path} -> ${requestUrl} | envBase=${runtime.isUsingEnvBaseUrl} | prodFallbackBase=${runtime.isUsingProductionFallbackBaseUrl} | mode=${runtime.mode}`
+  )
 }
 
 function extractProviderInfo(responseData) {
@@ -91,6 +88,7 @@ export async function request(path, options = {}) {
         code: 'API_BASE_URL_MISSING',
         requestUrl,
         usingEnvBaseUrl: false,
+        usingProductionFallbackBaseUrl: false,
       }
     )
 
@@ -168,24 +166,20 @@ export async function request(path, options = {}) {
     // 日志
     const providerInfo = extractProviderInfo(responseData)
 
-    console.log(`✅ [API] ${method} ${path}`, {
-      requestUrl,
-      usingEnvBaseUrl: getApiRuntimeInfo().isUsingEnvBaseUrl,
-      provider: providerInfo.provider,
-      fallback: providerInfo.fallback,
-      response: responseData,
-    })
+    const runtime = getApiRuntimeInfo()
+    console.log(
+      `✅ [API] ${method} ${path} -> ${requestUrl} | envBase=${runtime.isUsingEnvBaseUrl} | prodFallbackBase=${runtime.isUsingProductionFallbackBaseUrl} | provider=${providerInfo.provider || 'unknown'} | fallback=${providerInfo.fallback}`,
+      { response: responseData }
+    )
 
     return responseData
   } catch (error) {
     // 日志
-    console.error(`❌ [API] ${method} ${path}`, {
-      error: error.message,
-      status: error.status,
-      requestUrl,
-      usingEnvBaseUrl: getApiRuntimeInfo().isUsingEnvBaseUrl,
-      retryCount,
-    })
+    const runtime = getApiRuntimeInfo()
+    console.error(
+      `❌ [API] ${method} ${path} -> ${requestUrl} | envBase=${runtime.isUsingEnvBaseUrl} | prodFallbackBase=${runtime.isUsingProductionFallbackBaseUrl} | status=${error.status || 'unknown'} | retryCount=${retryCount} | reason=${error.message}`,
+      error
+    )
 
     // 重试逻辑
     if (retryCount > 0 && (!error.status || error.status >= 500 || error.status === 408 || error.status === 429)) {
