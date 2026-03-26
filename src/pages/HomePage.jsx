@@ -23,9 +23,9 @@ import { CHARACTERS } from '../data/characters'
 import { SCENES } from '../data/scenes'
 import { SCRIPTS, SCRIPT_DESCRIPTIONS, BG_VIDEO_IDS } from '../data/scripts'
 import { PRESETS, TOTAL_SECONDS, pick, formatTime, generateHearts } from '../data/interactData'
-import { generateScript as generateScriptApi } from '../api/scripts'
+import { generateScriptText as generateScriptTextApi, generateScriptAudio as generateScriptAudioApi } from '../api/scripts'
 
-// ── 生成等待区：轮播暧昧文案 ─────────────────────────────────
+// ── 生成等待区：圆形进度 + 轮播暧昧文案 ─────────────────────
 const TEASER_LINES = [
   '她已经感受到你了…',
   '神经网络正在为你物色…',
@@ -37,11 +37,15 @@ const TEASER_LINES = [
   '别急，她正在换衣服…',
 ]
 
-function GeneratingTeaser() {
+const CIRCLE_RADIUS = 38
+const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS // ≈ 238.76
+
+function GeneratingProgress({ progress, phase, onEnter }) {
   const [idx, setIdx] = useState(0)
   const [visible, setVisible] = useState(true)
 
   useEffect(() => {
+    if (phase === 'done') return
     const cycle = setInterval(() => {
       setVisible(false)
       setTimeout(() => {
@@ -50,7 +54,10 @@ function GeneratingTeaser() {
       }, 400)
     }, 2000)
     return () => clearInterval(cycle)
-  }, [])
+  }, [phase])
+
+  const offset = CIRCLE_CIRCUMFERENCE * (1 - progress / 100)
+  const isDone = phase === 'done'
 
   return (
     <section className="animate-fadeUp">
@@ -59,20 +66,72 @@ function GeneratingTeaser() {
         <h2 className="text-sm font-semibold text-[rgba(245,240,242,0.85)] tracking-wide">为你定制</h2>
       </div>
       <div
-        className="rounded-2xl flex items-center justify-center py-16"
+        className="rounded-2xl flex flex-col items-center justify-center py-10 gap-5"
         style={{ background: 'linear-gradient(135deg, rgba(179,128,255,0.10), rgba(255,154,203,0.08))' }}
       >
-        <p
-          className="text-[15px] font-medium tracking-wide text-center px-6 transition-opacity duration-300"
-          style={{
-            opacity: visible ? 1 : 0,
-            background: 'linear-gradient(135deg, #FF9ACB, #B380FF)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
-        >
-          {TEASER_LINES[idx]}
-        </p>
+        {/* 圆形进度环 */}
+        <div className="relative" style={{ width: 96, height: 96 }}>
+          <svg width="96" height="96" style={{ transform: 'rotate(-90deg)' }}>
+            {/* 轨道 */}
+            <circle
+              cx="48" cy="48" r={CIRCLE_RADIUS}
+              fill="none"
+              stroke="rgba(255,255,255,0.08)"
+              strokeWidth="5"
+            />
+            {/* 进度弧 */}
+            <circle
+              cx="48" cy="48" r={CIRCLE_RADIUS}
+              fill="none"
+              stroke="url(#progGrad)"
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeDasharray={CIRCLE_CIRCUMFERENCE}
+              strokeDashoffset={offset}
+              style={{ transition: 'stroke-dashoffset 0.4s ease' }}
+            />
+            <defs>
+              <linearGradient id="progGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#FF9ACB" />
+                <stop offset="100%" stopColor="#B380FF" />
+              </linearGradient>
+            </defs>
+          </svg>
+          {/* 中心文字 */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            {isDone
+              ? <span className="text-2xl">✨</span>
+              : <span className="text-white font-bold text-base">{progress}%</span>
+            }
+          </div>
+        </div>
+
+        {/* 文案 / 进入按钮 */}
+        {isDone ? (
+          <button
+            onClick={onEnter}
+            className="px-6 py-2.5 rounded-full text-white text-sm font-semibold"
+            style={{
+              background: 'linear-gradient(135deg, #FF9ACB, #B380FF)',
+              boxShadow: '0 0 18px rgba(179,128,255,0.5)',
+              animation: 'pulse 1.6s ease-in-out infinite',
+            }}
+          >
+            现在进入 →
+          </button>
+        ) : (
+          <p
+            className="text-[14px] font-medium tracking-wide text-center px-6 transition-opacity duration-400"
+            style={{
+              opacity: visible ? 1 : 0,
+              background: 'linear-gradient(135deg, #FF9ACB, #B380FF)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            {TEASER_LINES[idx]}
+          </p>
+        )}
       </div>
     </section>
   )
@@ -88,6 +147,11 @@ export default function HomePage() {
   // generatedScripts: AI 接口返回的角色数组
   const [generatedScripts, setGeneratedScripts] = useState([])
   const [isGenerating, setIsGenerating] = useState(false)
+  // 生成进度（0-100）和阶段（null | 'text' | 'audio' | 'done'）
+  const [genProgress, setGenProgress] = useState(0)
+  const [genPhase,    setGenPhase]    = useState(null)
+  // 计时器 ref，用于跨 await 清理
+  const genTimerRef = useRef(null)
 
   // ── 定制剧本选择状态 ─────────────────────────────────────
   // TODO: 接入后端后，selectedCharId / selectedSceneId 可持久化到用户偏好
@@ -426,58 +490,107 @@ export default function HomePage() {
     }, 1500)
   }, [isVoiceActive, increaseTemp, triggerDeviceNotif, triggerAvatarPop, typeText, pickResponse])
 
-  // ── 自定义剧本生成（接入 Grok + Fish Audio TTS）────────────
+  // ── 自定义剧本生成（B方案：Grok + Fish Audio 两段式进度）────
   const handleGenerate = useCallback(async () => {
     if (!customPrompt.trim()) {
       alert('✨ 请先描述你的幻想场景和角色，让 AI 为你创造专属剧本。')
       return
     }
+
+    // ── 初始化 ───────────────────────────────────────────
     setIsGenerating(true)
     setGeneratedScripts([])
+    setGenProgress(0)
+    setGenPhase('text')
+
+    // 清理残留计时器
+    if (genTimerRef.current) clearInterval(genTimerRef.current)
+
+    // ── Phase 1：等待 LLM，每 1s 涨 20%，上限 45% ───────
+    genTimerRef.current = setInterval(() => {
+      setGenProgress(p => {
+        if (p >= 45) { clearInterval(genTimerRef.current); return p }
+        return p + 20
+      })
+    }, 1000)
+
+    let character
     try {
-      const { character, audioBase64 } = await generateScriptApi(customPrompt.trim())
-      const ts = Date.now()
-      const witchChar  = CHARACTERS.find(c => c.id === 'witch')
-      const knightChar = CHARACTERS.find(c => c.id === 'knight')
-      setGeneratedScripts([
-        {
-          id:             `ai-${ts}-a`,
-          charId:         'witch',
-          isAIGenerated:  true,
-          sceneId:        'balcony',
-          cover:          witchChar.emoji,
-          coverEmoji:     witchChar.emoji,
-          tag:            'AI 生成',
-          downloads:      'AI 生成',
-          rating:         null,
-          name:           witchChar.name,
-          personalityTag: witchChar.tag,
-          openingLine:    character.openingLine,
-          gradient:       'from-[#1a0a30] to-[#3a1060]',
-          audioBase64:    audioBase64 || null,
-        },
-        {
-          id:             `ai-${ts}-b`,
-          charId:         'knight',
-          isAIGenerated:  true,
-          sceneId:        'balcony',
-          cover:          knightChar.emoji,
-          coverEmoji:     knightChar.emoji,
-          tag:            'AI 生成',
-          downloads:      'AI 生成',
-          rating:         null,
-          name:           knightChar.name,
-          personalityTag: knightChar.tag,
-          openingLine:    character.openingLine,
-          gradient:       'from-[#0d1a3a] to-[#1a3860]',
-          audioBase64:    audioBase64 || null,
-        },
-      ])
+      const result = await generateScriptTextApi(customPrompt.trim())
+      character = result.character
     } catch (err) {
-      alert(`✨ 生成失败：${err.message}`)
-    } finally {
+      clearInterval(genTimerRef.current)
       setIsGenerating(false)
+      setGenPhase(null)
+      alert(`✨ 生成失败：${err.message}`)
+      return
     }
+
+    // LLM 完成 → 跳到 50%，进入 Phase 2
+    clearInterval(genTimerRef.current)
+    setGenProgress(50)
+    setGenPhase('audio')
+
+    // ── Phase 2：等待 TTS，每 0.6s 涨 10%，上限 88% ─────
+    genTimerRef.current = setInterval(() => {
+      setGenProgress(p => {
+        if (p >= 88) { clearInterval(genTimerRef.current); return p }
+        return p + 10
+      })
+    }, 600)
+
+    let audioBase64 = null
+    try {
+      const result = await generateScriptAudioApi(character.openingLine)
+      audioBase64 = result.audioBase64
+    } catch (err) {
+      console.warn('TTS 失败，降级无音频:', err.message)
+    }
+
+    // TTS 完成 → 构建卡片数据，跳到 100%，等用户点"现在进入"
+    clearInterval(genTimerRef.current)
+
+    const ts = Date.now()
+    const witchChar  = CHARACTERS.find(c => c.id === 'witch')
+    const knightChar = CHARACTERS.find(c => c.id === 'knight')
+    setGeneratedScripts([
+      {
+        id:             `ai-${ts}-a`,
+        charId:         'witch',
+        isAIGenerated:  true,
+        sceneId:        'balcony',
+        cover:          witchChar.emoji,
+        coverEmoji:     witchChar.emoji,
+        tag:            'AI 生成',
+        downloads:      'AI 生成',
+        rating:         null,
+        name:           witchChar.name,
+        personalityTag: witchChar.tag,
+        openingLine:    character.openingLine,
+        gradient:       'from-[#1a0a30] to-[#3a1060]',
+        audioBase64:    audioBase64 || null,
+      },
+      {
+        id:             `ai-${ts}-b`,
+        charId:         'knight',
+        isAIGenerated:  true,
+        sceneId:        'balcony',
+        cover:          knightChar.emoji,
+        coverEmoji:     knightChar.emoji,
+        tag:            'AI 生成',
+        downloads:      'AI 生成',
+        rating:         null,
+        name:           knightChar.name,
+        personalityTag: knightChar.tag,
+        openingLine:    character.openingLine,
+        gradient:       'from-[#0d1a3a] to-[#1a3860]',
+        audioBase64:    audioBase64 || null,
+      },
+    ])
+
+    setGenProgress(100)
+    setGenPhase('done')
+    // isGenerating 保持 true，等用户点"现在进入"按钮后再 false
   }, [customPrompt])
 
   // ── 定制剧本：点击"开始互动" ──────────────────────────────
@@ -570,6 +683,7 @@ export default function HomePage() {
     return () => {
       if (typingTimerRef.current) clearInterval(typingTimerRef.current)
       if (heartsTimerRef.current) clearTimeout(heartsTimerRef.current)
+      if (genTimerRef.current)    clearInterval(genTimerRef.current)
     }
   }, [])
 
@@ -648,8 +762,17 @@ export default function HomePage() {
               </div>
             </section>
 
-            {/* ── ② 生成等待区：轮播暧昧文案 ── */}
-            {isGenerating && <GeneratingTeaser />}
+            {/* ── ② 生成等待区：圆形进度 + 暧昧文案 ── */}
+            {isGenerating && (
+              <GeneratingProgress
+                progress={genProgress}
+                phase={genPhase}
+                onEnter={() => {
+                  setIsGenerating(false)
+                  setGenPhase(null)
+                }}
+              />
+            )}
 
             {/* ── ③ 为你定制（生成后出现，两个并排定制卡片供选择）── */}
             {generatedScripts.length > 0 && (

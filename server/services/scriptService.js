@@ -35,6 +35,42 @@ function sanitizeCharacter(raw) {
  * @param {string} [apiKeyOverride] - 可选 Grok API Key 覆盖
  * @returns {{ character: object, audioBase64: string|null }}
  */
+/**
+ * 只调 Grok，返回角色 JSON（不含 TTS）
+ */
+export async function generateScriptText(prompt, apiKeyOverride = '') {
+  console.log(`🎭 [ScriptService] 生成文案，prompt: "${prompt.slice(0, 30)}…"`)
+  let rawCharacter
+  try {
+    rawCharacter = await generateStructuredJson({
+      systemPrompt: SYSTEM_PROMPT,
+      userPrompt: prompt,
+      temperature: 0.9,
+      maxTokens: 200,
+      timeoutMs: 10000,
+      apiKeyOverride,
+    })
+  } catch (err) {
+    throw new Error(`角色生成失败: ${err.message}`)
+  }
+  const character = sanitizeCharacter(rawCharacter)
+  console.log(`✅ [ScriptService] 文案完成: ${character.name} / "${character.openingLine}"`)
+  return { character }
+}
+
+/**
+ * 只调 Fish Audio TTS，返回 audioBase64
+ */
+export async function generateScriptAudio(openingLine, apiKeyOverride = '') {
+  let audioBase64 = null
+  try {
+    audioBase64 = await textToSpeech(openingLine, apiKeyOverride)
+  } catch (err) {
+    console.warn(`⚠️ [ScriptService] TTS 失败: ${err.message}`)
+  }
+  return { audioBase64 }
+}
+
 export async function generateScript(prompt, apiKeyOverride = '') {
   console.log(`🎭 [ScriptService] 开始生成，prompt: "${prompt.slice(0, 30)}…"`)
 

@@ -3,10 +3,12 @@
  */
 
 import { Router } from 'express'
-import { generateScriptHandler } from '../controllers/scriptController.js'
+import { generateScriptHandler, generateTextHandler, generateAudioHandler } from '../controllers/scriptController.js'
 
 const router = Router()
 
 router.post('/generate', generateScriptHandler)
+router.post('/generate-text', generateTextHandler)
+router.post('/generate-audio', generateAudioHandler)
 
 export default router
