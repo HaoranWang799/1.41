@@ -775,7 +775,7 @@ export default function HomePage() {
             )}
 
             {/* ── ③ 为你定制（生成后出现，两个并排定制卡片供选择）── */}
-            {generatedScripts.length > 0 && (
+            {generatedScripts.length > 0 && !isGenerating && (
               <section className="animate-fadeUp">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-sm">✨</span>
