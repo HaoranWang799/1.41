@@ -58,7 +58,7 @@ export async function request(path, options = {}) {
   } = options
 
   if (isStaticOnlyHost() && path.startsWith('/api/')) {
-    const error = new Error('当前静态站点未配置后端 API，请设置 VITE_API_BASE_URL')
+    const error = new Error('当前静态站点未配置真实后端 API。请先部署 server，再在前端设置 VITE_API_BASE_URL=https://你的后端域名')
     error.status = 0
 
     if (fallback) {

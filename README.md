@@ -22,14 +22,31 @@ npm install
 npm run dev
 ```
 
-## Railway 部署配置
+## 真实 API 部署
 
-当前项目支持前后端同域或分离部署。若前端与后端分开部署（常见于 Railway），请配置以下环境变量：
+当前仓库包含两部分：
 
-1. 前端服务变量：
+- 前端：Vite 静态站点
+- 后端：Express API，入口在 `server/index.js`
+
+如果你把前端直接发到 GitHub Pages、Netlify、Vercel 静态托管，而没有单独部署 `server/`，那么以下请求一定会失败：
+
+- `POST /api/lover/message`
+- `POST /api/health/plan`
+- `GET /api/community/posts`
+
+这类场景下出现 `405` 不是前端代码坏了，而是静态站点本身没有后端路由。
+
+### 推荐部署方式
+
+1. 把前端部署到 GitHub Pages / Netlify / Vercel 中任意一个
+2. 把 `server/` 单独部署到 Railway / Render / Fly.io 等支持 Node.js 的平台
+3. 在前端构建环境变量中设置：
+
 `VITE_API_BASE_URL=https://你的后端域名`
 
-2. 后端服务变量：
+4. 在后端环境变量中设置：
+
 `GROK_API_KEY=你的xAI密钥`
 
 `PORT=3102`
@@ -37,8 +54,30 @@ npm run dev
 `CORS_ALLOW_ORIGINS=https://你的前端域名`
 
 说明：
+
 - `CORS_ALLOW_ORIGINS` 支持逗号分隔多个来源，示例：`https://a.app,https://b.app`
-- 若前端未设置 `VITE_API_BASE_URL`，默认使用相对路径 `/api`（本地 Vite 代理场景）
+- 若前端未设置 `VITE_API_BASE_URL`，默认只适用于本地开发时的相对路径 `/api` + Vite 代理
+- GitHub Pages 不能直接运行 `server/index.js`
+
+### GitHub Pages 接真实 API
+
+如果前端发布在 GitHub Pages，例如：
+
+`https://haoranwang799.github.io/your-s-her-1.1/`
+
+那么后端必须是单独域名，例如：
+
+`https://your-s-her-api-production.up.railway.app`
+
+此时前端构建变量必须设置为：
+
+`VITE_API_BASE_URL=https://your-s-her-api-production.up.railway.app`
+
+后端的 `CORS_ALLOW_ORIGINS` 必须包含你的 GitHub Pages 域名：
+
+`CORS_ALLOW_ORIGINS=https://haoranwang799.github.io`
+
+注意：如果后端只允许主域名，而前端运行在 GitHub Pages 子路径下，`origin` 仍然是 `https://haoranwang799.github.io`，不是完整路径。
 
 ## 页面流程
 
