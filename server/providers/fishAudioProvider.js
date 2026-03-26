@@ -7,7 +7,7 @@
 
 const FISH_AUDIO_TTS_URL = 'https://api.fish.audio/v1/tts'
 const VOICE_ID = 'fb43143e46f44cc6ad7d06230215bab6'
-const TTS_TIMEOUT_MS = 12000
+const TTS_TIMEOUT_MS = 1800000 // 30 minutes
 
 /**
  * 文本转语音
@@ -23,7 +23,7 @@ export async function textToSpeech(text, apiKeyOverride = '') {
   if (!apiKey) throw new Error('FISH_AUDIO_API_KEY is not set')
 
   // 截断防止超长请求
-  const truncated = String(text || '').trim().slice(0, 80)
+  const truncated = String(text || '').trim().slice(0, 2000)
   if (!truncated) throw new Error('TTS 文本不能为空')
 
   const controller = new AbortController()

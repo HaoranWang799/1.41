@@ -24,7 +24,7 @@ function sanitizeCharacter(raw) {
   return {
     name:           String(raw?.name            || '神秘角色').trim().slice(0, 10),
     personalityTag: String(raw?.personalityTag  || '神秘 / 诱惑').trim().slice(0, 20),
-    openingLine:    String(raw?.openingLine      || '等你来找我…').trim().slice(0, 50),
+    openingLine:    String(raw?.openingLine      || '等你来找我…').trim().slice(0, 2000),
     gradient:       String(raw?.gradient        || 'from-[#1a0a30] to-[#3a1060]').trim(),
   }
 }
@@ -46,7 +46,7 @@ export async function generateScriptText(prompt, apiKeyOverride = '') {
       systemPrompt: SYSTEM_PROMPT,
       userPrompt: prompt,
       temperature: 0.9,
-      maxTokens: 200,
+      maxTokens: 600,
       timeoutMs: 10000,
       apiKeyOverride,
     })
@@ -81,7 +81,7 @@ export async function generateScript(prompt, apiKeyOverride = '') {
       systemPrompt: SYSTEM_PROMPT,
       userPrompt: prompt,
       temperature: 0.9,
-      maxTokens: 200,
+      maxTokens: 600,
       timeoutMs: 10000,
       apiKeyOverride,
     })
