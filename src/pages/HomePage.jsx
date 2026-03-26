@@ -195,6 +195,9 @@ export default function HomePage() {
   // ── TTS 音频总时长（秒），AI 模式下动态更新 ──────────────
   const [audioDuration, setAudioDuration] = useState(TOTAL_SECONDS)
 
+  // ── 音波实时振幅（10 根条的 0-1 值，null = 使用 CSS 动画）─
+  const [waveformLevels, setWaveformLevels] = useState(null)
+
   // ── 新增：控制模式切换（'ai' | 'manual'）────────────────
   // TODO: 接入后端后可持久化用户偏好到 /api/user/preferences
   const [controlMode, setControlMode] = useState('ai')
@@ -227,6 +230,11 @@ export default function HomePage() {
   const audioRef = useRef(null)
   const openingAudioRef = useRef(null)
   const pendingOpeningLineRef = useRef(null)
+  // Web Audio API refs（音波可视化）
+  const audioCtxRef      = useRef(null)
+  const analyserRef      = useRef(null)
+  const waveAnimFrameRef = useRef(null)
+  const connectedElRef   = useRef(null)
 
   // 同步 temperature 到 ref（供 interval 回调读取最新值）
   useEffect(() => { temperatureRef.current = temperature }, [temperature])
@@ -448,6 +456,53 @@ export default function HomePage() {
     setShowScriptDetail(false)
   }, [])
 
+  // ── 音波分析器启停 ─────────────────────────────────────────
+  const startWaveAnalysis = useCallback((audioEl) => {
+    if (!audioEl || typeof window === 'undefined') return
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext
+      if (!AudioCtx) return
+      if (!audioCtxRef.current) audioCtxRef.current = new AudioCtx()
+      const ctx = audioCtxRef.current
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {})
+      if (!analyserRef.current) {
+        const analyser = ctx.createAnalyser()
+        analyser.fftSize = 64
+        analyser.smoothingTimeConstant = 0.75
+        analyser.connect(ctx.destination)
+        analyserRef.current = analyser
+      }
+      // 每个 audio 元素只能 createMediaElementSource 一次
+      if (connectedElRef.current !== audioEl) {
+        const source = ctx.createMediaElementSource(audioEl)
+        source.connect(analyserRef.current)
+        connectedElRef.current = audioEl
+      }
+      if (waveAnimFrameRef.current) cancelAnimationFrame(waveAnimFrameRef.current)
+      const analyser = analyserRef.current
+      const bufLen = analyser.frequencyBinCount // 32
+      const data = new Uint8Array(bufLen)
+      const tick = () => {
+        analyser.getByteFrequencyData(data)
+        const levels = Array.from({ length: 10 }, (_, i) => {
+          const bin = Math.min(Math.floor((i / 10) * bufLen), bufLen - 1)
+          return data[bin] / 255
+        })
+        setWaveformLevels(levels)
+        waveAnimFrameRef.current = requestAnimationFrame(tick)
+      }
+      waveAnimFrameRef.current = requestAnimationFrame(tick)
+    } catch { /* Web Audio 不可用，保留 CSS 动画 */ }
+  }, [])
+
+  const stopWaveAnalysis = useCallback(() => {
+    if (waveAnimFrameRef.current) {
+      cancelAnimationFrame(waveAnimFrameRef.current)
+      waveAnimFrameRef.current = null
+    }
+    setWaveformLevels(null)
+  }, [])
+
   // ── 暂停/继续播放（同步控制背景音频）──────────────────────
   const togglePause = useCallback(() => {
     const nextPaused = !isPaused
@@ -459,10 +514,15 @@ export default function HomePage() {
     }
     // TTS 开场白（AI 生成剧本）
     if (openingAudioRef.current) {
-      if (nextPaused) openingAudioRef.current.pause()
-      else openingAudioRef.current.play().catch(() => setIsPaused(true))
+      if (nextPaused) {
+        openingAudioRef.current.pause()
+        stopWaveAnalysis()
+      } else {
+        openingAudioRef.current.play().catch(() => setIsPaused(true))
+        startWaveAnalysis(openingAudioRef.current)
+      }
     }
-  }, [isPaused])
+  }, [isPaused, startWaveAnalysis, stopWaveAnalysis])
 
   // ── 主按钮点击 ───────────────────────────────────────────
   const handleMainClick = useCallback(() => {
@@ -662,14 +722,17 @@ export default function HomePage() {
         }
       })
       audio.addEventListener('ended', () => {
+        stopWaveAnalysis()
         setProgressValue(100)
         setIsPaused(true)
       })
       audio.play().catch(() => {})
+      startWaveAnalysis(audio)
     } else {
       setAudioDuration(TOTAL_SECONDS)
     }
     return () => {
+      stopWaveAnalysis()
       if (openingAudioRef.current) {
         openingAudioRef.current.pause()
         openingAudioRef.current = null
@@ -1028,7 +1091,7 @@ export default function HomePage() {
               <div className="h-px bg-[rgba(255,255,255,0.06)]" />
 
               {/* 音波 */}
-              <Waveform freq={isPaused ? 1 : freq} />
+              <Waveform freq={isPaused ? 1 : freq} levels={isPaused ? null : waveformLevels} />
 
               {/* 播放进度 */}
               <div className="flex items-center gap-2.5">

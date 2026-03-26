@@ -15,21 +15,24 @@ export function VoiceWave() {
   )
 }
 
-/** 音波进度条（10 根竖条，速度随频率滑块变化） */
-export function Waveform({ freq = 5 }) {
+/** 音波进度条（10 根竖条，速度随频率滑块变化）
+ *  levels: 实时振幅数组（10 个 0-1 值），有值时走实时路径，null 走 CSS 动画 */
+export function Waveform({ freq = 5, levels = null }) {
   const dur = 1.2 - (freq - 1) * 0.111
   return (
     <div className="flex items-center justify-center gap-[3px] h-9 px-1">
       {BAR_OFFSETS.map((offset, i) => {
-        const h = 30 + ((i * 13 + 7) % 40)
+        const baseH = 30 + ((i * 13 + 7) % 40)
+        const liveH = levels ? Math.max(8, Math.round(levels[i] * 100)) : null
         return (
           <div
             key={i}
             className="rounded-full origin-center"
             style={{
               width: '4px',
-              height: `${h}%`,
-              animation: `waveBar ${(dur + offset * 0.1).toFixed(2)}s ease-in-out ${offset}s infinite`,
+              height: liveH !== null ? `${liveH}%` : `${baseH}%`,
+              transition: liveH !== null ? 'height 0.06s ease-out' : undefined,
+              animation: liveH !== null ? 'none' : `waveBar ${(dur + offset * 0.1).toFixed(2)}s ease-in-out ${offset}s infinite`,
               background: 'linear-gradient(to top, #FF9ACB, #B380FF)',
             }}
           />
