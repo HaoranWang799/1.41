@@ -538,15 +538,23 @@ export default function CommunityPage() {
     <div className="relative px-4 pt-4 pb-24 space-y-4 page-enter">
 
       {/* ═══ 顶部 Tab ════════════════════════════════════════ */}
-      <div className="flex gap-1 bg-[rgba(255,255,255,0.04)] rounded-2xl p-1 page-section page-delay-1">
+      <div className="relative flex bg-[rgba(255,255,255,0.04)] rounded-2xl p-1 page-section page-delay-1">
+        {/* 滑动高亮块 */}
+        <div
+          className="absolute top-1 bottom-1 rounded-xl bg-[rgba(255,154,203,0.15)] transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+          style={{
+            width: `calc(${100 / TABS.length}% - 2px)`,
+            transform: `translateX(calc(${TABS.indexOf(currentTab)} * (100% + 2px)))`,
+          }}
+        />
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => switchTab(tab)}
             className={`
-              flex-1 py-2 rounded-xl text-[11px] font-medium transition-colors duration-150
+              relative flex-1 py-2 rounded-xl text-[11px] font-medium transition-colors duration-200
               ${currentTab === tab
-                ? 'bg-[rgba(255,154,203,0.15)] text-[#FF9ACB]'
+                ? 'text-[#FF9ACB]'
                 : 'text-[rgba(245,240,242,0.45)]'
               }
             `}
