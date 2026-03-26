@@ -526,9 +526,9 @@ export default function HomePage() {
       return
     }
 
-    // LLM 完成 → 跳到 50%，进入 Phase 2
+    // LLM 完成 → 跳到至少 50%（防止 timer 函数式更新竞态导致回退）
     clearInterval(genTimerRef.current)
-    setGenProgress(50)
+    setGenProgress(prev => Math.max(prev, 50))
     setGenPhase('audio')
 
     // ── Phase 2：等待 TTS，每 0.6s 涨 10%，上限 88% ─────
