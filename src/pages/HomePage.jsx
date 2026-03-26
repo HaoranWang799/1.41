@@ -428,9 +428,9 @@ export default function HomePage() {
   }, [selectedCharId, selectedSceneId, enterInteract])
 
   // ── 交互模式背景音乐（演示版，文件路径：public/audio/demo.mp3）────
-  // TODO: 接入真实场景配乐后，可根据 activeScript.id 动态选择音频文件
+  // AI 生成的剧本不播放背景音，只播 TTS 开场白语音
   useEffect(() => {
-    if (view === 'interact') {
+    if (view === 'interact' && activeScript?.charId !== 'ai') {
       // 进入交互模式：创建音频实例并循环播放
       audioRef.current = new Audio('/audio/demo.mp3')
       audioRef.current.loop = true
