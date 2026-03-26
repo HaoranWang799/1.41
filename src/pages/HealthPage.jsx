@@ -9,7 +9,6 @@
 import { useState, useEffect } from 'react'
 import { Zap, Utensils, Dumbbell, ChevronRight } from 'lucide-react'
 import { usePlanPool } from '../hooks/usePlanPool'
-import { clearStoredGrokApiKey, getStoredGrokApiKey, setStoredGrokApiKey } from '../api/grokKey'
 import {
   TODAY_STATS, BAR_DATA,
   HEALTH_TIPS, THINKING_STEPS,
@@ -17,7 +16,7 @@ import {
 } from '../data/healthData'
 import { MetricModal } from '../components/health/MetricModals'
 import {
-  GrokApiConfigModal, ScoreRing, MetricCell,
+  ScoreRing, MetricCell,
   PlanRow, ThinkingState,
 } from '../components/health/HealthWidgets'
 
@@ -69,31 +68,8 @@ export default function HealthPage() {
   // activeMetric: 'duration' | 'status' | 'intensity' | 'hardScore' | null
   // TODO: 弹窗数据未来可从 /api/device/metric-detail?type={activeMetric} 动态拉取
   const [activeMetric, setActiveMetric] = useState(null)
-  const [tipTapCount, setTipTapCount] = useState(0)
-  const [showGrokApiModal, setShowGrokApiModal] = useState(false)
-  const [grokApiKeyInput, setGrokApiKeyInput] = useState('')
-  const [hasSavedGrokApiKey, setHasSavedGrokApiKey] = useState(() => Boolean(getStoredGrokApiKey()))
-
   // ── 分享战绩弹窗状态 ─────────────────────────────────────
   const [showShareModal, setShowShareModal] = useState(false)
-
-  const openGrokApiModal = () => {
-    setGrokApiKeyInput(getStoredGrokApiKey())
-    setShowGrokApiModal(true)
-  }
-
-  const handleSaveGrokApiKey = () => {
-    setStoredGrokApiKey(grokApiKeyInput)
-    setHasSavedGrokApiKey(Boolean(getStoredGrokApiKey()))
-    setShowGrokApiModal(false)
-  }
-
-  const handleClearGrokApiKey = () => {
-    clearStoredGrokApiKey()
-    setGrokApiKeyInput('')
-    setHasSavedGrokApiKey(false)
-    setShowGrokApiModal(false)
-  }
 
   // ── 当前计划数据 ─────────────────────────────────────────
   return (
@@ -407,14 +383,6 @@ export default function HealthPage() {
         onClick={() => {
           if (tipCount <= 1) return
           setTipIdx((i) => (i + 1) % tipCount)
-          setTipTapCount((count) => {
-            const next = count + 1
-            if (next >= 6) {
-              openGrokApiModal()
-              return 0
-            }
-            return next
-          })
         }}
       >
         <span className="text-lg flex-shrink-0 mt-0.5">💡</span>
@@ -445,16 +413,6 @@ export default function HealthPage() {
       <MetricModal
         metric={activeMetric}
         onClose={() => setActiveMetric(null)}
-      />
-
-      <GrokApiConfigModal
-        open={showGrokApiModal}
-        value={grokApiKeyInput}
-        onChange={setGrokApiKeyInput}
-        hasSavedKey={hasSavedGrokApiKey}
-        onClose={() => setShowGrokApiModal(false)}
-        onSave={handleSaveGrokApiKey}
-        onClear={handleClearGrokApiKey}
       />
 
       {/* ═══ 猛男战绩分享卡弹窗 ══════════════════════════════ */}

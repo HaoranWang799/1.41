@@ -9,7 +9,6 @@
  */
 
 import { buildApiUrl, getApiRuntimeInfo } from './baseUrl'
-import { getStoredGrokApiKey } from './grokKey'
 
 function isStaticOnlyHost() {
   if (typeof window === 'undefined') return false
@@ -102,12 +101,6 @@ export async function request(path, options = {}) {
   const defaultHeaders = {
     'Content-Type': 'application/json',
     ...headers,
-  }
-
-  // 自动注入 Grok API Key
-  const grokKey = getStoredGrokApiKey()
-  if (grokKey) {
-    defaultHeaders['x-grok-api-key'] = grokKey
   }
 
   // 准备请求体
