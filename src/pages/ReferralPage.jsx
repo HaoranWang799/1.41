@@ -86,9 +86,8 @@ export default function ReferralPage() {
               initial={{ width: 0 }}
               animate={{ width: `${progressPercent}%` }}
               transition={{ duration: 1.5, ease: "easeOut" }}
-              className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-[#A87CFF] to-[#FF2A6D] rounded-full relative overflow-hidden"
+              className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-[#A87CFF] to-[#FF2A6D] rounded-full overflow-hidden"
             >
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/hexellence.png')] opacity-20" />
               <motion.div 
                 animate={{ x: ['-100%', '100%'] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
