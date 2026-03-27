@@ -53,6 +53,10 @@ function pickLoverVariationCue() {
   return LOVER_VARIATION_CUES[Math.floor(Math.random() * LOVER_VARIATION_CUES.length)]
 }
 
+function normalizeText(text) {
+  return String(text || '').replace(/\s+/g, ' ').trim()
+}
+
 function areTextsEquivalent(left, right) {
   const normalizedLeft = normalizeText(left)
   const normalizedRight = normalizeText(right)
