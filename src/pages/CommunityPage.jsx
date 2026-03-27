@@ -426,7 +426,7 @@ const MOOD_STYLES = {
   '调皮': { bg: 'rgba(255,200,100,0.12)', border: 'rgba(255,200,100,0.18)' },
 }
 
-function AiLoverCard({ aiMemoryDeleted, onDeleteMemory }) {
+function AiLoverCard({ aiMemoryDeleted, onDeleteMemory, onResetMemory }) {
   const { clearMemory, fadeIn, fallback, loading, metaText, mood, provider, refreshMessage, text, timestamp } = useVirtualLover()
 
   const moodStyle = MOOD_STYLES[mood] || MOOD_STYLES['温柔']
@@ -435,7 +435,14 @@ function AiLoverCard({ aiMemoryDeleted, onDeleteMemory }) {
     <div
       className="rounded-2xl p-4 card-glow cursor-pointer transition-all active:scale-[0.98]"
       style={{ background: 'linear-gradient(135deg, #1a1028, #251840)' }}
-      onClick={() => { if (!aiMemoryDeleted) refreshMessage() }}
+      onClick={() => {
+        if (aiMemoryDeleted) {
+          onResetMemory()
+          refreshMessage()
+        } else {
+          refreshMessage()
+        }
+      }}
     >
       <div className="flex items-center gap-3 mb-3">
         <div className="w-10 h-10 rounded-2xl bg-[rgba(179,128,255,0.2)] flex items-center justify-center text-xl flex-shrink-0">
@@ -566,7 +573,7 @@ export default function CommunityPage() {
 
       {/* ═══ AI 主动关怀卡片（接入 Grok AI）═══════════════════ */}
       <div className="page-section page-delay-2">
-        <AiLoverCard aiMemoryDeleted={aiMemoryDeleted} onDeleteMemory={() => {
+        <AiLoverCard aiMemoryDeleted={aiMemoryDeleted} onResetMemory={() => setAiMemoryDeleted(false)} onDeleteMemory={() => {
           if (window.confirm('确定删除今晚的记忆吗？此操作不可撤销。')) {
             setAiMemoryDeleted(true)
             alert('🗑️ 记忆已删除')
