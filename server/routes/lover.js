@@ -5,7 +5,7 @@
  */
 
 import express from 'express'
-import { handlePostMessage, handleDeleteMemory } from '../controllers/loverController.js'
+import { handlePostMessage, handlePostBatch, handleDeleteMemory } from '../controllers/loverController.js'
 
 const router = express.Router()
 
@@ -14,6 +14,12 @@ const router = express.Router()
  * 生成虚拟助手消息
  */
 router.post('/message', handlePostMessage)
+
+/**
+ * POST /api/lover/batch
+ * 批量生成 10 条消息，前端弹药池使用
+ */
+router.post('/batch', handlePostBatch)
 
 /**
  * DELETE /api/lover/memory

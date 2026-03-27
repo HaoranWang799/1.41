@@ -7,7 +7,7 @@
  * 3. 返回格式化的响应
  */
 
-import { generateMessage, clearMemory } from '../services/loverService.js'
+import { generateMessage, generateBatch, clearMemory } from '../services/loverService.js'
 
 /**
  * POST /api/lover/message
@@ -23,6 +23,23 @@ export async function handlePostMessage(req, res, next) {
     res.json({
       ok: true,
       data: result,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * POST /api/lover/batch
+ * 批量生成 10 条消息，供前端弹药池使用
+ */
+export async function handlePostBatch(req, res, next) {
+  try {
+    const apiKeyOverride = String(req.headers['x-grok-api-key'] || '').trim()
+    const items = await generateBatch(apiKeyOverride)
+    res.json({
+      ok: true,
+      data: items,
     })
   } catch (error) {
     next(error)
@@ -48,5 +65,6 @@ export async function handleDeleteMemory(req, res, next) {
 
 export default {
   handlePostMessage,
+  handlePostBatch,
   handleDeleteMemory,
 }

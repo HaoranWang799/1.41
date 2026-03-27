@@ -97,14 +97,12 @@ export async function fetchVirtualLoverMessage(options = {}) {
  */
 export async function clearVirtualLoverMemory() {
   try {
-    // 真实请求
     const response = await del('/api/lover/memory', {
       ...withRetry(1),
       timeout: 5000,
     })
     return response
   } catch (error) {
-    // Mock 成功响应
     console.warn('❌ clearVirtualLoverMemory 失败，使用 mock 成功:', { reason: error.message })
     return {
       success: true,
@@ -113,7 +111,32 @@ export async function clearVirtualLoverMemory() {
   }
 }
 
+/**
+ * 批量获取虚拟恋人消息（10 条）
+ * 为前端弹药池服务
+ *
+ * @returns {Promise<Array<{text: string, mood: string}>>}
+ */
+export async function fetchVirtualLoverBatch() {
+  try {
+    const response = await post('/api/lover/batch', {}, {
+      timeout: 15000,
+    })
+
+    if (!response?.ok || !Array.isArray(response?.data)) {
+      throw new Error('批量接口返回无效')
+    }
+
+    console.log(`💥 [VirtualLover API] 批量获取完成，共 ${response.data.length} 条`)
+    return response.data
+  } catch (error) {
+    console.warn('❌ fetchVirtualLoverBatch 失败:', error.message)
+    return []
+  }
+}
+
 export default {
   fetchVirtualLoverMessage,
+  fetchVirtualLoverBatch,
   clearVirtualLoverMemory,
 }

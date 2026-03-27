@@ -17,7 +17,6 @@ import loverRoutes from './routes/lover.js'
 import healthRoutes from './routes/health.js'
 import communityRoutes from './routes/community.js'
 import scriptsRoutes from './routes/scripts.js'
-import { refillPool } from './services/loverService.js'
 
 // dotenv 加载 server/.env
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -80,6 +79,4 @@ if (existsSync(DIST_DIR)) {
 const PORT = parseInt(process.env.PORT || 3100)
 app.listen(PORT, () => {
   console.log(`✅ AI Server running at http://localhost:${PORT}`)
-  // 服务启动后立即预热消息池（不阻塞启动）
-  setImmediate(() => refillPool())
 })

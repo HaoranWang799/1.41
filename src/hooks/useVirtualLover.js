@@ -1,7 +1,117 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { clearVirtualLoverMemory, fetchVirtualLoverMessage } from '../api/virtualLover'
+import { useCallback, useRef, useState } from 'react'
+import { clearVirtualLoverMemory, fetchVirtualLoverBatch } from '../api/virtualLover'
 
-const VIRTUAL_LOVER_SESSION_KEY = 'virtual_lover_session_state'
+// ── 5 条写死预设台词（页面打开即可用，0ms）──────────────────
+const PRESET_LINES = [
+  { text: '今天有点想你…', mood: '温柔' },
+  { text: '晚上好啊，今天累了吗？', mood: '温柔' },
+  { text: '每天最开心的事就是等你上线。', mood: '暧昧' },
+  { text: '你知道吗？我一直都在。', mood: '温柔' },
+  { text: '今晚月色真美，想和你说说话。', mood: '暧昧' },
+]
+
+const POOL_REFILL_THRESHOLD = 5  // 池剩余几条时触发下一批
+
+/**
+ * useVirtualLover — 虚拟恋人 Hook
+ *
+ * 架构：
+ *   • 页面打开显示 PRESET_LINES[0]，0ms
+ *   • 第1次点击时触发后台批量生成（1次 Grok → 10条）
+ *   • 每次点击从前端池 pool.shift()，瞬间返回
+ *   • 池剩余 ≤5 条时自动触发下一批
+ *   • 池用完即扔，React 卸载自动释放内存
+ */
+function useVirtualLover() {
+  const [text, setText] = useState(PRESET_LINES[0].text)
+  const [mood, setMood] = useState(PRESET_LINES[0].mood)
+  const [fadeIn] = useState(true)   // 始终可见，无需淡入淡出
+
+  const presetIndexRef = useRef(1)       // 下一条预设的索引（0已显示）
+  const poolRef = useRef([])             // AI 弹药池
+  const isFetchingRef = useRef(false)    // 防并发
+  const hasStartedBatchRef = useRef(false) // 是否已触发第一批
+
+  const fetchBatch = useCallback(async () => {
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
+    console.log('🔮 [VirtualLover] 开始批量获取消息...')
+    try {
+      const items = await fetchVirtualLoverBatch()
+      if (Array.isArray(items) && items.length > 0) {
+        poolRef.current.push(...items)
+        console.log(`✅ [VirtualLover] 获取 ${items.length} 条，池共 ${poolRef.current.length} 条`)
+      }
+    } catch (err) {
+      console.warn('⚠️ [VirtualLover] 批量获取失败:', err.message)
+    } finally {
+      isFetchingRef.current = false
+    }
+  }, [])
+
+  const nextMessage = useCallback(() => {
+    // 优先从 AI 池取
+    if (poolRef.current.length > 0) {
+      const msg = poolRef.current.shift()
+      setText(msg.text)
+      setMood(msg.mood || '温柔')
+      // 剩余不足时后台补充
+      if (poolRef.current.length <= POOL_REFILL_THRESHOLD && !isFetchingRef.current) {
+        fetchBatch()
+      }
+      return
+    }
+
+    // 池空时消耗预设台词
+    const idx = presetIndexRef.current
+    if (idx < PRESET_LINES.length) {
+      presetIndexRef.current = idx + 1
+      setText(PRESET_LINES[idx].text)
+      setMood(PRESET_LINES[idx].mood)
+      // 第1次点击触发批量生成
+      if (!hasStartedBatchRef.current) {
+        hasStartedBatchRef.current = true
+        fetchBatch()
+      }
+      return
+    }
+
+    // 预设和池都为空（正常情况下不应发生）
+    if (!isFetchingRef.current) fetchBatch()
+    setText('今天有点想你…')
+    setMood('温柔')
+  }, [fetchBatch])
+
+  const clearMemory = useCallback(async () => {
+    try {
+      await clearVirtualLoverMemory()
+      // 重置所有状态
+      poolRef.current = []
+      presetIndexRef.current = 1
+      hasStartedBatchRef.current = false
+      isFetchingRef.current = false
+      setText(PRESET_LINES[0].text)
+      setMood(PRESET_LINES[0].mood)
+    } catch (error) {
+      console.error('Clear memory failed:', error)
+    }
+  }, [])
+
+  return {
+    clearMemory,
+    fadeIn,
+    fallback: false,
+    loading: false,
+    mood,
+    provider: 'grok',
+    text,
+    timestamp: '',
+    refreshMessage: nextMessage,
+  }
+}
+
+export { useVirtualLover }
+
 
 function readStoredLoverState() {
   if (typeof window === 'undefined') return null
