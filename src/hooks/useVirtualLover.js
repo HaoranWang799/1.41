@@ -45,6 +45,7 @@ function useVirtualLover() {
   const [timestamp, setTimestamp] = useState(() => storedState?.timestamp || '')
   const [loading, setLoading] = useState(() => !storedState?.text)
   const [fadeIn, setFadeIn] = useState(() => Boolean(storedState?.text))
+  const [bump, setBump] = useState(false)
   const textRef = useRef('')
   const requestIdRef = useRef(0)
   const inFlightRef = useRef(false)
@@ -69,21 +70,39 @@ function useVirtualLover() {
     const requestId = requestIdRef.current + 1
     requestIdRef.current = requestId
     inFlightRef.current = true
-    setLoading(true)
-    setFadeIn(false)
+
+    // 延迟 120ms 再淡出，快速响应（命中池）时直接跳过淡出
+    let fadeOutTimer = null
+    let didFadeOut = false
+    fadeOutTimer = setTimeout(() => {
+      if (requestId !== requestIdRef.current) return
+      didFadeOut = true
+      setLoading(true)
+      setFadeIn(false)
+    }, 120)
 
     try {
       const data = await fetchVirtualLoverMessage({ forceRefresh })
 
-      // 检查请求是否被新请求覆盖
-      if (requestId !== requestIdRef.current) return
+      if (requestId !== requestIdRef.current) {
+        clearTimeout(fadeOutTimer)
+        return
+      }
+      clearTimeout(fadeOutTimer)
 
       setText(data.text || '今天有点想你…')
       setMood(data.mood || '温柔')
       setProvider(data.provider || 'fallback')
       setFallback(Boolean(data.fallback))
       setTimestamp(data.timestamp || '')
+
+      if (!didFadeOut) {
+        // 快速响应：轻微弹跳感，不闪烁
+        setBump(true)
+        setTimeout(() => setBump(false), 120)
+      }
     } catch (error) {
+      clearTimeout(fadeOutTimer)
       if (requestId !== requestIdRef.current) return
       if (!textRef.current) {
         setText('暂时无法获取消息')
@@ -95,7 +114,11 @@ function useVirtualLover() {
         inFlightRef.current = false
       }
       setLoading(false)
-      requestAnimationFrame(() => setFadeIn(true))
+      if (didFadeOut) {
+        requestAnimationFrame(() => setFadeIn(true))
+      } else {
+        setFadeIn(true)
+      }
     }
   }, [])
 
@@ -121,6 +144,7 @@ function useVirtualLover() {
   }, [])
 
   return {
+    bump,
     clearMemory,
     fadeIn,
     fallback,
