@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import HeaderBar from '../components/ui/HeaderBar'
 import { useApp } from '../context/AppContext'
-import { Gift, Droplet, Users } from 'lucide-react'
+import { Gift, Droplet, Users, Copy, Check, Share2 } from 'lucide-react'
 
 const REFERRAL_CODE = 'LUNA2024'
 const REFERRAL_LINK = 'https://app.luna.com/ref/LUNA2024'
@@ -25,7 +25,8 @@ export default function ReferralPage() {
   const navigate = useNavigate()
   const { showToast } = useApp()
   const [copiedCode, setCopiedCode] = useState(false)
-  
+  const [copiedLink, setCopiedLink] = useState(false)
+
   // 模拟进度
   const invitedCount = 4
   const targetCount = 10
@@ -33,10 +34,14 @@ export default function ReferralPage() {
 
   const copy = (text, type) => {
     navigator.clipboard.writeText(text).catch(() => {})
-    setCopiedCode(true)
-    setTimeout(() => setCopiedCode(false), 2000)
-    // 娇喘弹窗
-    showToast('💦 啊... 主人的专属引诱码已沾满体液复制成功~', 'liquid')
+    if (type === 'code') {
+      setCopiedCode(true)
+      setTimeout(() => setCopiedCode(false), 2000)
+    } else {
+      setCopiedLink(true)
+      setTimeout(() => setCopiedLink(false), 2000)
+    }
+    showToast('💦 啊... 主人的专属引诱码已沾满体液复制成功~')
   }
 
   return (
