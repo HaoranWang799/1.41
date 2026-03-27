@@ -109,20 +109,20 @@ export default function ProfilePage() {
       <div className="px-4 mb-6" onClick={() => navigate('/referral')}>
         <div className="bg-gradient-to-r from-[#291515] to-[#1A0B0E] border border-[#FFB03A]/40 rounded-2xl p-4 flex items-center justify-between cursor-pointer active:scale-95 transition-transform shadow-[0_5px_25px_rgba(255,107,0,0.2)] relative overflow-hidden">
           <div className="absolute right-0 top-0 h-full w-2/3 bg-gradient-to-l from-[#FFB03A]/10 to-transparent pointer-events-none" />
-          <div className="flex items-center space-x-3 relative z-10">
-            <div className="p-2.5 bg-gradient-to-br from-[#FFD700] to-[#FF6B00] rounded-xl text-white shadow-[0_0_15px_rgba(255,107,0,0.5)]">
+          <div className="flex items-center space-x-3 relative z-10 min-w-0">
+            <div className="p-2.5 bg-gradient-to-br from-[#FFD700] to-[#FF6B00] rounded-xl text-white shadow-[0_0_15px_rgba(255,107,0,0.5)] shrink-0">
               <Gift size={20} className="fill-current" />
             </div>
-            <div>
-              <div className="text-sm font-bold text-[#F9EDF5] mb-0.5">
-                邀密友同享，解锁<span className="text-[#FFD700]">极乐特权</span>
+            <div className="min-w-0">
+              <div className="text-sm font-bold text-[#F9EDF5] mb-0.5 whitespace-nowrap">
+                邀友共享 · 解锁<span className="text-[#FFD700]">极乐特权</span>
               </div>
               <div className="text-[10px] text-[#9B859D]">
-                送TA <span className="text-[#FFD700]">7天体验</span>，您获 <span className="text-[#FFD700]">$50</span> 私密基金
+                送TA <span className="text-[#FFD700]">7天</span>，您获 <span className="text-[#FFD700]">$50</span> 私密基金
               </div>
             </div>
           </div>
-          <div className="bg-gradient-to-r from-[#FFD700] to-[#FF6B00] text-[#1A0A00] text-xs px-4 py-1.5 rounded-full font-extrabold shrink-0 relative z-10">
+          <div className="bg-gradient-to-r from-[#FFD700] to-[#FF6B00] text-[#1A0A00] text-xs px-3 py-1.5 rounded-full font-extrabold shrink-0 relative z-10 whitespace-nowrap">
             去分享
           </div>
         </div>

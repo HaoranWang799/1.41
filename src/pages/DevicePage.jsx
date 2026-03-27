@@ -152,7 +152,7 @@ export default function DevicePage() {
                   background: `linear-gradient(to right, #A87CFF 0%, #FF2A6D ${sensitivity}%, rgba(0,0,0,0.5) ${sensitivity}%, rgba(0,0,0,0.5) 100%)`
                 }}
               />
-              <style dangerouslySetContent={{__html: `
+              <style dangerouslySetInnerHTML={{__html: `
                 input[type=range]::-webkit-slider-thumb {
                   -webkit-appearance: none;
                   height: 20px;
