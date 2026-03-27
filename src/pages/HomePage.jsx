@@ -25,6 +25,40 @@ import { SCRIPTS, SCRIPT_DESCRIPTIONS, BG_VIDEO_IDS } from '../data/scripts'
 import { PRESETS, TOTAL_SECONDS, pick, formatTime, generateHearts } from '../data/interactData'
 import { generateScriptText as generateScriptTextApi, generateScriptAudio as generateScriptAudioApi } from '../api/scripts'
 
+// ── 输入提示词数据 ─────────────────────────────────
+const PROMPT_TABS = [
+  { id: 'hot',     label: '🔥 热门' },
+  { id: 'office',  label: '🏢 职场' },
+  { id: 'campus',  label: '🎓 校园' },
+  { id: 'fantasy', label: '🔒 禁忌' },
+]
+const PROMPT_SUGGESTIONS = {
+  hot: [
+    '办公室冷感女上司加班时突然变得温柔',
+    '寿舍深夜学妹对我说“学長…室友今晚不回了”',
+    '冁山跨年前女友雨夜敏看投奥',
+    '深夜超市锟居疑为邓邓少妇一直靠贴',
+  ],
+  office: [
+    '女上司奴隔玻璃给我传小纸条却幹刚刚啦着我看',
+    '秘书整理文件时身体不小心靠到我',
+    '最后一名员工加班时总裁关门前说“送你回去吧”',
+    '实习生在群发错文件被女上司投鄙视爆冷却',
+  ],
+  campus: [
+    '图书馆学妹挪到我旁边悦悦说“这题教我好不好”',
+    '博士生学姦暠安慑的饭址原来就括我一个人',
+    '班花说忘带内衣顺手就把小外套脚到我面前脱了',
+    '学妹说“学長，我就想问你一件事”然后目光不离开我',
+  ],
+  fantasy: [
+    '深夜出猟着了一哣独居的少妇，她说先别打报警',
+    '女神说只要输了两局孩屐就可以直接带我回家',
+    '老师和我一起走进了偿毺巧了空的资料室',
+    '前女友连夜发来十九条微信最后一条就三个字',
+  ],
+}
+
 // ── 生成等待区：圆形进度 + 轮播暧昧文案 ─────────────────────
 const TEASER_LINES = [
   '她已经感受到你了…',
@@ -832,21 +866,59 @@ export default function HomePage() {
               </div>
 
               <div className="flex gap-2">
+                <div className="relative flex-1 min-w-0">
                 <input
                   type="text"
                   value={customPrompt}
-                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  onChange={(e) => { setCustomPrompt(e.target.value); if (e.target.value) setShowSuggestions(false) }}
+                  onFocus={() => { if (!customPrompt) setShowSuggestions(true) }}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                   onKeyDown={(e) => e.key === 'Enter' && !isGenerating && handleGenerate()}
                   disabled={isGenerating}
                   placeholder="描述你心中的幻想场景和角色…"
                   className="
-                    flex-1 min-w-0 rounded-xl px-3 py-2.5 text-xs
+                    w-full rounded-xl px-3 py-2.5 text-xs
                     bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)]
                     text-[rgba(245,240,242,0.85)] placeholder-[rgba(245,240,242,0.3)]
                     focus:outline-none focus:border-[rgba(255,154,203,0.4)]
                     transition-colors disabled:opacity-60
                   "
                 />
+
+                {/* 提示词面板 */}
+                {showSuggestions && (
+                  <div className="absolute left-0 right-0 top-full mt-2 z-30 rounded-2xl overflow-hidden border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)]" style={{ background: 'linear-gradient(160deg,#1a0a22,#120818)' }}>
+                    {/* Tab 行 */}
+                    <div className="flex gap-1 p-2 pb-0">
+                      {PROMPT_TABS.map(t => (
+                        <button
+                          key={t.id}
+                          onMouseDown={e => { e.preventDefault(); setSuggestionTab(t.id) }}
+                          className={`flex-1 rounded-lg py-1.5 text-[10px] font-semibold transition-all ${
+                            suggestionTab === t.id
+                              ? 'bg-[#FF2A6D]/80 text-white'
+                              : 'text-[#9B859D] hover:text-white'
+                          }`}
+                        >
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                    {/* 建议列表 */}
+                    <div className="p-2 space-y-1">
+                      {PROMPT_SUGGESTIONS[suggestionTab].map((s, i) => (
+                        <button
+                          key={i}
+                          onMouseDown={e => { e.preventDefault(); setCustomPrompt(s); setShowSuggestions(false) }}
+                          className="w-full text-left px-3 py-2 rounded-xl text-xs text-[rgba(245,240,242,0.8)] hover:bg-white/8 active:scale-[0.98] transition-all leading-snug border border-transparent hover:border-white/10"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                </div>
                 <button
                   onClick={handleGenerate}
                   disabled={isGenerating}
