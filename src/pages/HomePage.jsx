@@ -273,7 +273,9 @@ export default function HomePage() {
   const canStartCustom = !!selectedCharId && !!selectedSceneId
 
   const handleHorizontalDragStart = useCallback((event) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return
+    // Touch uses native momentum scrolling; only keep custom drag for mouse.
+    if (event.pointerType !== 'mouse') return
+    if (event.button !== 0) return
     dragScrollStateRef.current = {
       pointerId: event.pointerId,
       container: event.currentTarget,
@@ -287,6 +289,7 @@ export default function HomePage() {
   }, [])
 
   const handleHorizontalDragMove = useCallback((event) => {
+    if (event.pointerType !== 'mouse') return
     const dragState = dragScrollStateRef.current
     if (dragState.pointerId !== event.pointerId) return
 
@@ -312,6 +315,7 @@ export default function HomePage() {
   }, [])
 
   const handleHorizontalDragEnd = useCallback((event) => {
+    if (event.pointerType !== 'mouse') return
     const dragState = dragScrollStateRef.current
     if (dragState.pointerId !== event.pointerId) return
     event.currentTarget.releasePointerCapture?.(event.pointerId)
@@ -948,7 +952,7 @@ export default function HomePage() {
                   className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 pr-4 cursor-grab select-none"
                   style={{
                     WebkitOverflowScrolling: 'touch',
-                    touchAction: 'pan-y',
+                    touchAction: 'manipulation',
                     overscrollBehaviorX: 'contain',
                   }}
                   onPointerDown={handleHorizontalDragStart}
@@ -985,7 +989,7 @@ export default function HomePage() {
                   className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 pr-4 cursor-grab select-none"
                   style={{
                     WebkitOverflowScrolling: 'touch',
-                    touchAction: 'pan-y',
+                    touchAction: 'manipulation',
                     overscrollBehaviorX: 'contain',
                   }}
                   onPointerDown={handleHorizontalDragStart}

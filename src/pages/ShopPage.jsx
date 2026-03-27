@@ -657,7 +657,9 @@ function HorizontalScrollRow({ children, className = '', style }) {
   })
 
   const onPointerDown = (event) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return
+    // Touch uses native momentum scrolling; custom drag is desktop-only.
+    if (event.pointerType !== 'mouse') return
+    if (event.button !== 0) return
     const el = rowRef.current
     if (!el) return
     dragRef.current = {
@@ -672,6 +674,7 @@ function HorizontalScrollRow({ children, className = '', style }) {
   }
 
   const onPointerMove = (event) => {
+    if (event.pointerType !== 'mouse') return
     const el = rowRef.current
     if (!el || dragRef.current.pointerId !== event.pointerId) return
 
@@ -691,6 +694,7 @@ function HorizontalScrollRow({ children, className = '', style }) {
   }
 
   const stopDragging = (event) => {
+    if (event && event.pointerType && event.pointerType !== 'mouse') return
     const el = rowRef.current
     if (dragRef.current.pointerId == null) return
     if (event && dragRef.current.pointerId !== event.pointerId) return
@@ -722,7 +726,7 @@ function HorizontalScrollRow({ children, className = '', style }) {
       className={`flex gap-3 overflow-x-auto scrollbar-hide pb-1 select-none cursor-grab active:cursor-grabbing ${className}`}
       style={{
         WebkitOverflowScrolling: 'touch',
-        touchAction: 'pan-y',
+        touchAction: 'manipulation',
         overscrollBehaviorX: 'contain',
         ...style,
       }}
