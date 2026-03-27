@@ -28,7 +28,7 @@ export default function ReferralPage() {
   const [copiedLink, setCopiedLink] = useState(false)
 
   // 模拟进度
-  const invitedCount = 4
+  const invitedCount = 7
   const targetCount = 10
   const progressPercent = (invitedCount / targetCount) * 100
 
@@ -100,9 +100,9 @@ export default function ReferralPage() {
         </div>
         <div className="mx-4 mt-4 bg-[#1A0E1E] border border-white/5 rounded-2xl px-5 py-4 grid grid-cols-3 divide-x divide-white/5">
           {[
-            { label: '已邀请好友',  value: '12',     color: 'text-white' },
-            { label: '获得奖励',    value: '$600',   color: 'text-[#66E699]' },
-            { label: '待领取',      value: '$150',   color: 'text-[#FFC266]' },
+            { label: '已邀请好友',  value: '7',      color: 'text-white' },
+            { label: '获得奖励',    value: '$350',   color: 'text-[#66E699]' },
+            { label: '待领取',      value: '$50',    color: 'text-[#FFC266]' },
           ].map(({ label, value, color }) => (
             <div key={label} className="flex flex-col items-center px-3">
               <span className={`text-xl font-black ${color}`}>{value}</span>
