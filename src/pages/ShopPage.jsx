@@ -645,11 +645,19 @@ const SCRIPT_TABS = [
 ]
 
 const SCRIPT_PERSONA_FILTERS = [
-  { id: 'all',      label: '全部玩物' },
-  { id: 'obedient', label: '温顺乖巧' },
-  { id: 'active',   label: '主动献身' },
-  { id: 'naughty',  label: '调皮撩骚' },
-  { id: 'mystery',  label: '神秘禁忌' },
+  { id: 'all',       label: '全部角色' },
+  { id: 'xuemei',    label: '学妹'     },
+  { id: 'classmate', label: '女同学'   },
+  { id: 'banhua',    label: '班花'     },
+  { id: 'boss',      label: '女上司'   },
+  { id: 'secretary', label: '秘书'     },
+  { id: 'nurse',     label: '护士'     },
+  { id: 'shaofu',    label: '少妇'     },
+  { id: 'neighbor',  label: '邻家妹妹' },
+  { id: 'ex',        label: '前女友'   },
+  { id: 'teacher',   label: '老师'     },
+  { id: 'goddess',   label: '女神'     },
+  { id: 'wildcat',   label: '小野猫'   },
 ]
 
 const SCRIPT_INTENSITY_FILTERS = [
@@ -668,51 +676,51 @@ const SCRIPT_DURATION_FILTERS = [
 
 const SCRIPTS = [
   { id: 's1',  emoji: '👩‍💼', bgFrom: '#2a0c18', bgTo: '#4a1230',
-    title: '深夜加班·女上司的惩罚', persona: 'naughty',   intensity: 'deep',  duration: 'm', tab: 'hot',
+    title: '深夜加班·女上司的惩罚', persona: 'boss',      intensity: 'deep',  duration: 'm', tab: 'hot',
     rating: 4.9, reviews: '6.3k', badge: '🔥 炸裂', badgeColor: 'bg-[#FF2A6D]/30 text-[#FF7DAF]',
     price: { type: 'diamonds', amount: 80, memberAmount: 64, label: '💎 80' } },
   { id: 's2',  emoji: '🌸', bgFrom: '#0f1a28', bgTo: '#182040',
-    title: '宿舍深夜·学妹的告白', persona: 'obedient',   intensity: 'light', duration: 's', tab: 'hot',
+    title: '宿舍深夜·学妹的告白', persona: 'xuemei',     intensity: 'light', duration: 's', tab: 'hot',
     rating: 4.8, reviews: '5.1k', badge: '💕 超甜', badgeColor: 'bg-[#A87CFF]/30 text-[#C9A0FF]',
     price: { type: 'free', label: '免费' } },
   { id: 's3',  emoji: '🔮', bgFrom: '#1a0a28', bgTo: '#2a1040',
-    title: '密室游戏·被绑缚的秘密', persona: 'mystery',   intensity: 'max',   duration: 'l', tab: 'hot',
+    title: '密室游戏·被绑缚的秘密', persona: 'wildcat',   intensity: 'max',   duration: 'l', tab: 'hot',
     rating: 4.9, reviews: '4.8k', badge: '🔒 限制级', badgeColor: 'bg-black/40 text-[#FF2A6D]',
     price: { type: 'diamonds', amount: 150, memberAmount: 120, label: '💎 150' } },
   { id: 's4',  emoji: '🦊', bgFrom: '#280a18', bgTo: '#3a1020',
-    title: '狐狸精·千年勾魂术', persona: 'mystery',   intensity: 'deep',  duration: 'm', tab: 'popular',
+    title: '狐狸精·千年勾魂术', persona: 'wildcat',   intensity: 'deep',  duration: 'm', tab: 'popular',
     rating: 4.7, reviews: '3.9k', badge: '🌶 高热', badgeColor: 'bg-orange-500/25 text-orange-300',
     price: { type: 'coins', amount: 680, memberAmount: 544, label: '💰 680' } },
   { id: 's5',  emoji: '👙', bgFrom: '#0a1a20', bgTo: '#102830',
-    title: '泳池派对·比基尼陷阱', persona: 'active',    intensity: 'deep',  duration: 'm', tab: 'popular',
+    title: '泳池派对·比基尼陷阱', persona: 'classmate', intensity: 'deep',  duration: 'm', tab: 'popular',
     rating: 4.6, reviews: '3.2k', badge: '💦 湿透', badgeColor: 'bg-sky-500/25 text-sky-300',
     price: { type: 'free', label: '免费' } },
   { id: 's6',  emoji: '🏨', bgFrom: '#201020', bgTo: '#301830',
-    title: '豪华酒店·总裁的专属', persona: 'obedient',   intensity: 'max',   duration: 'l', tab: 'popular',
+    title: '豪华酒店·总裁的专属', persona: 'shaofu',     intensity: 'max',   duration: 'l', tab: 'popular',
     rating: 4.8, reviews: '4.5k', badge: '👑 贵族', badgeColor: 'bg-yellow-400/20 text-yellow-300',
     price: { type: 'diamonds', amount: 200, memberAmount: 160, label: '💎 200' } },
   { id: 's7',  emoji: '🌙', bgFrom: '#10101e', bgTo: '#181830',
-    title: '午夜直播·主播的私下', persona: 'naughty',   intensity: 'deep',  duration: 's', tab: 'new',
+    title: '午夜直播·主播的私下', persona: 'goddess',   intensity: 'deep',  duration: 's', tab: 'new',
     rating: 4.5, reviews: '1.2k', badge: '🆕 刚上架', badgeColor: 'bg-[#66E699]/25 text-[#66E699]',
     price: { type: 'coins', amount: 480, memberAmount: 384, label: '💰 480' } },
   { id: 's8',  emoji: '⛓️', bgFrom: '#180808', bgTo: '#280a0a',
-    title: '地下俱乐部·服从契约', persona: 'mystery',   intensity: 'max',   duration: 'l', tab: 'new',
+    title: '地下俱乐部·服从契约', persona: 'wildcat',   intensity: 'max',   duration: 'l', tab: 'new',
     rating: 4.7, reviews: '980',  badge: '🔞 极限', badgeColor: 'bg-[#FF2A6D]/30 text-[#FF7DAF]',
     price: { type: 'diamonds', amount: 120, memberAmount: 96, label: '💎 120' } },
   { id: 's9',  emoji: '👑', bgFrom: '#1a0830', bgTo: '#2a1048',
-    title: '女王的御座·绝对臣服', persona: 'active',    intensity: 'max',   duration: 'l', tab: 'vip',
+    title: '女王的御座·绝对臣服', persona: 'goddess',   intensity: 'max',   duration: 'l', tab: 'vip',
     rating: 5.0, reviews: '2.8k', badge: '🔒 专属', badgeColor: 'bg-[#A87CFF]/30 text-[#C9A0FF]',
     price: { type: 'diamonds', amount: 300, memberAmount: 0, label: '👑 会员专享' } },
   { id: 's10', emoji: '🎭', bgFrom: '#200820', bgTo: '#300a30',
-    title: '面具舞会·双面陷阱', persona: 'mystery',   intensity: 'deep',  duration: 'm', tab: 'vip',
+    title: '面具舞会·双面陷阱', persona: 'teacher',   intensity: 'deep',  duration: 'm', tab: 'vip',
     rating: 4.9, reviews: '2.1k', badge: '🔒 专属', badgeColor: 'bg-[#A87CFF]/30 text-[#C9A0FF]',
     price: { type: 'diamonds', amount: 180, memberAmount: 0, label: '👑 会员专享' } },
   { id: 's11', emoji: '🌺', bgFrom: '#280a20', bgTo: '#380f30',
-    title: '花魁·深宫独宠夜', persona: 'obedient',   intensity: 'deep',  duration: 'm', tab: 'hot',
+    title: '花魁·深宫独宠夜', persona: 'shaofu',     intensity: 'deep',  duration: 'm', tab: 'hot',
     rating: 4.8, reviews: '3.5k', badge: '🌸 古风', badgeColor: 'bg-pink-500/25 text-pink-300',
     price: { type: 'coins', amount: 880, memberAmount: 704, label: '💰 880' } },
   { id: 's12', emoji: '⚡', bgFrom: '#181a08', bgTo: '#282810',
-    title: '电竞女神·赛后私下', persona: 'naughty',   intensity: 'light', duration: 's', tab: 'new',
+    title: '电竞女神·赛后私下', persona: 'banhua',    intensity: 'light', duration: 's', tab: 'new',
     rating: 4.6, reviews: '1.5k', badge: '🆕 刚上架', badgeColor: 'bg-[#66E699]/25 text-[#66E699]',
     price: { type: 'free', label: '免费' } },
 ]
@@ -725,9 +733,6 @@ function ScriptCard({ item, onBuy }) {
       style={{ background: `linear-gradient(145deg, ${item.bgFrom}, ${item.bgTo})`, aspectRatio: '3/4' }}
       onClick={() => onBuy(item)}
     >
-      <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-15 select-none pointer-events-none">
-        {item.emoji}
-      </div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
       {/* 角标 */}
@@ -780,6 +785,7 @@ function ScriptLibrarySection({ onBuy }) {
   const [intensityFilter, setIntensityFilter] = useState('all')
   const [durationFilter,  setDurationFilter]  = useState('all')
   const [searchVal,       setSearchVal]       = useState('')
+  const [filterOpen,      setFilterOpen]      = useState(true)
 
   const filtered = SCRIPTS.filter(s => {
     if (activeTab !== 'all' && s.tab !== activeTab) return false
@@ -812,8 +818,11 @@ function ScriptLibrarySection({ onBuy }) {
           placeholder="找找你想要的玩法… 💋"
           className="w-full bg-[#1A0E1E] border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm text-[#F9EDF5] placeholder-[#9B859D]/60 focus:outline-none focus:border-[#FF2A6D]/40"
         />
-        <button className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-[#A87CFF]/20 rounded-xl flex items-center justify-center border border-[#A87CFF]/30">
-          <svg className="w-4 h-4 text-[#A87CFF]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <button
+          onClick={() => setFilterOpen(v => !v)}
+          className={`absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl flex flex-col items-center justify-center gap-0.5 border transition-all ${filterOpen ? 'bg-[#A87CFF]/30 border-[#A87CFF]/50' : 'bg-[#A87CFF]/20 border-[#A87CFF]/30'}`}
+        >
+          <svg className="w-3.5 h-3.5 text-[#A87CFF]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/>
             <line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/>
             <line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/>
@@ -821,27 +830,34 @@ function ScriptLibrarySection({ onBuy }) {
             <circle cx="10" cy="12" r="2" fill="currentColor" stroke="none"/>
             <circle cx="14" cy="20" r="2" fill="currentColor" stroke="none"/>
           </svg>
+          <svg className={`w-2.5 h-2.5 text-[#A87CFF] transition-transform duration-200 ${filterOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
         </button>
       </div>
 
       {/* 顶部 Tabs */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-5 pb-1">
-        {SCRIPT_TABS.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex-shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition-all active:scale-95 ${
-              activeTab === tab.id
-                ? 'bg-[#A87CFF] text-white shadow-[0_0_12px_rgba(168,124,255,0.5)]'
-                : 'bg-[#1A0E1E] border border-white/10 text-[#9B859D]'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="relative mb-5">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+          {SCRIPT_TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition-all active:scale-95 ${
+                activeTab === tab.id
+                  ? 'bg-[#A87CFF] text-white shadow-[0_0_12px_rgba(168,124,255,0.5)]'
+                  : 'bg-[#1A0E1E] border border-white/10 text-[#9B859D]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="absolute right-0 top-0 bottom-1 w-10 bg-gradient-to-l from-[#0D0612] to-transparent pointer-events-none" />
       </div>
 
       {/* 筛选组 */}
+      {filterOpen && (
       <div className="space-y-3 mb-5">
         <div>
           <p className="text-[10px] text-[#9B859D] mb-2 tracking-widest">她的人设</p>
@@ -868,6 +884,7 @@ function ScriptLibrarySection({ onBuy }) {
           </div>
         </div>
       </div>
+      )}
 
       {/* 剧本卡片网格 */}
       {filtered.length > 0 ? (
@@ -1094,6 +1111,9 @@ export default function ShopPage() {
           充值
         </button>
       </section>
+
+      {/* ═══ 禁忌剧本库 ════════════════════════════════════ */}
+      <ScriptLibrarySection onBuy={handleBuy} isMember={isMember} isVIP={isVIP} />
 
       {/* ═══ 智能推荐 ════════════════════════════════════════ */}
       <section className="page-section page-delay-1">
@@ -1348,9 +1368,6 @@ export default function ShopPage() {
           · 独家定制支持实时语音 / 视频互动，体验全面升级 ·
         </p>
       </section>
-
-      {/* ═══ 禁忌剧本库 ════════════════════════════════════ */}
-      <ScriptLibrarySection onBuy={handleBuy} isMember={isMember} isVIP={isVIP} />
 
       {/* 底部留白 */}
       <div className="h-2" />
