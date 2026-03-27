@@ -427,7 +427,7 @@ const MOOD_STYLES = {
 }
 
 function AiLoverCard({ aiMemoryDeleted, onDeleteMemory, onResetMemory }) {
-  const { bump, clearMemory, fadeIn, fallback, loading, metaText, mood, provider, refreshMessage, text, timestamp } = useVirtualLover()
+  const { clearMemory, fadeIn, fallback, loading, metaText, mood, provider, refreshMessage, text, timestamp } = useVirtualLover()
 
   const moodStyle = MOOD_STYLES[mood] || MOOD_STYLES['温柔']
 
@@ -471,8 +471,8 @@ function AiLoverCard({ aiMemoryDeleted, onDeleteMemory, onResetMemory }) {
               background: moodStyle.bg,
               border: `1px solid ${moodStyle.border}`,
               opacity: fadeIn ? 1 : 0,
-              transform: bump ? 'scale(0.97)' : (fadeIn ? 'translateY(0)' : 'translateY(4px)'),
-              transition: bump ? 'transform 0.08s ease-out' : 'opacity 0.4s ease, transform 0.4s ease',
+              transform: fadeIn ? 'translateY(0)' : 'translateY(4px)',
+              transition: 'opacity 0.4s ease, transform 0.4s ease',
             }}
           >
             {loading && !text ? (

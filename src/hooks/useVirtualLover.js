@@ -45,7 +45,6 @@ function useVirtualLover() {
   const [timestamp, setTimestamp] = useState(() => storedState?.timestamp || '')
   const [loading, setLoading] = useState(() => !storedState?.text)
   const [fadeIn, setFadeIn] = useState(() => Boolean(storedState?.text))
-  const [bump, setBump] = useState(false)
   const textRef = useRef('')
   const requestIdRef = useRef(0)
   const inFlightRef = useRef(false)
@@ -71,7 +70,7 @@ function useVirtualLover() {
     requestIdRef.current = requestId
     inFlightRef.current = true
 
-    // 延迟 120ms 再淡出，快速响应（命中池）时直接跳过淡出
+    // 延迟 120ms 再淡出，快速响应（命中池）时直接替换文字无动画
     let fadeOutTimer = null
     let didFadeOut = false
     fadeOutTimer = setTimeout(() => {
@@ -95,12 +94,6 @@ function useVirtualLover() {
       setProvider(data.provider || 'fallback')
       setFallback(Boolean(data.fallback))
       setTimestamp(data.timestamp || '')
-
-      if (!didFadeOut) {
-        // 快速响应：轻微弹跳感，不闪烁
-        setBump(true)
-        setTimeout(() => setBump(false), 120)
-      }
     } catch (error) {
       clearTimeout(fadeOutTimer)
       if (requestId !== requestIdRef.current) return
@@ -116,8 +109,6 @@ function useVirtualLover() {
       setLoading(false)
       if (didFadeOut) {
         requestAnimationFrame(() => setFadeIn(true))
-      } else {
-        setFadeIn(true)
       }
     }
   }, [])
@@ -144,7 +135,6 @@ function useVirtualLover() {
   }, [])
 
   return {
-    bump,
     clearMemory,
     fadeIn,
     fallback,
