@@ -178,6 +178,8 @@ export default function HomePage() {
 
   // ── 自定义剧本 ───────────────────────────────────────────
   const [customPrompt,     setCustomPrompt]     = useState('')
+  const [showSuggestions,  setShowSuggestions]  = useState(false)
+  const [suggestionTab,    setSuggestionTab]    = useState('hot')
   // generatedScripts: AI 接口返回的角色数组
   const [generatedScripts, setGeneratedScripts] = useState([])
   const [isGenerating, setIsGenerating] = useState(false)
