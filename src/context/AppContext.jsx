@@ -12,7 +12,7 @@
  *
  * TODO: 替换为后端用户账户 API 同步（/api/user/wallet、/api/user/membership）
  */
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useRef, useState } from 'react'
 
 export const AppContext = createContext(null)
 
@@ -29,12 +29,27 @@ export function AppProvider({ children }) {
   const showToast  = (msg) => setToastMessage(msg)
   const clearToast = ()    => setToastMessage(null)
 
+  // ── AI 生成状态（全局，切页不丢）──────────────────────
+  const [isGenerating,    setIsGenerating]    = useState(false)
+  const [genProgress,     setGenProgress]     = useState(0)
+  const [genPhase,        setGenPhase]        = useState(null)
+  const [generatedScripts, setGeneratedScripts] = useState([])
+  const genTimerRef      = useRef(null)
+  const phase2bTimerRef  = useRef(null)
+  const ttsReadyRef      = useRef(false)
+
   return (
     <AppContext.Provider value={{
       coins, setCoins,
       diamonds, setDiamonds,
       userLevel, setUserLevel,
       toastMessage, showToast, clearToast,
+      // AI 生成
+      isGenerating, setIsGenerating,
+      genProgress, setGenProgress,
+      genPhase, setGenPhase,
+      generatedScripts, setGeneratedScripts,
+      genTimerRef, phase2bTimerRef, ttsReadyRef,
     }}>
       {children}
     </AppContext.Provider>

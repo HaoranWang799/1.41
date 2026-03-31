@@ -8,6 +8,7 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Sparkles, Pause, Play, Flame } from 'lucide-react'
+import { useApp } from '../context/AppContext'
 import {
   HeaderStatusBar,
   SceneTimeline,
@@ -204,6 +205,13 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
 }
 
 export default function HomePage() {
+  const {
+    isGenerating, setIsGenerating,
+    genProgress, setGenProgress,
+    genPhase, setGenPhase,
+    generatedScripts, setGeneratedScripts,
+    genTimerRef, phase2bTimerRef, ttsReadyRef,
+  } = useApp()
 
   // ── 视图状态（'select' | 'interact'）──────────────────────
   const [view, setView] = useState('select')
@@ -212,16 +220,8 @@ export default function HomePage() {
   const [customPrompt,     setCustomPrompt]     = useState('')
   const [showSuggestions,  setShowSuggestions]  = useState(false)
   const [suggestionTab,    setSuggestionTab]    = useState('hot')
-  // generatedScripts: AI 接口返回的角色数组
-  const [generatedScripts, setGeneratedScripts] = useState([])
-  const [isGenerating, setIsGenerating] = useState(false)
-  // 生成进度（0-100）和阶段（null | 'text' | 'audio' | 'done'）
-  const [genProgress, setGenProgress] = useState(0)
-  const [genPhase,    setGenPhase]    = useState(null)
-  // 计时器 ref，用于跨 await 清理
-  const genTimerRef = useRef(null)
-  const phase2bTimerRef = useRef(null)  // Phase 2b 单步延迟
-  const ttsReadyRef = useRef(false)     // TTS 已完成标记
+  // generatedScripts: 由全局 AppContext 提供
+  // isGenerating / genProgress / genPhase: 由全局 AppContext 提供
 
   // ── 定制剧本选择状态 ─────────────────────────────────────
   // TODO: 接入后端后，selectedCharId / selectedSceneId 可持久化到用户偏好
