@@ -9,16 +9,16 @@ const REFERRAL_CODE = 'LUNA2024'
 const REFERRAL_LINK = 'https://app.luna.com/ref/LUNA2024'
 
 const RECENT_INVITES = [
-  { name: 'Emma W.', time: '2天前',   reward: '$50', status: '已入局', statusColor: 'text-[#FF2A6D]' },
-  { name: 'Chris Z.', time: '5天前',  reward: '$50', status: '已入局', statusColor: 'text-[#FF2A6D]' },
-  { name: 'Alex K.',  time: '1周前',  reward: '$50', status: '调教中', statusColor: 'text-[#A87CFF]' },
+  { name: 'Emma W.', time: '2天前',   reward: '$50', status: '已加入', statusColor: 'text-[#FF2A6D]' },
+  { name: 'Chris Z.', time: '5天前',  reward: '$50', status: '已加入', statusColor: 'text-[#FF2A6D]' },
+  { name: 'Alex K.',  time: '1周前',  reward: '$50', status: '体验中', statusColor: 'text-[#A87CFF]' },
 ]
 
 const RULES = [
-  '成功引诱一位新主人入局并完成首次契约签订',
-  '您将获得 $50 【私密包养金】，可直接用于高潮解锁',
-  '没有人数上限，引诱越多快感越强',
-  '满足10人即可解锁隐藏【多人乱交】终极剧本',
+  '成功邀请一位新用户注册并完成首次体验',
+  '您将获得 $50 邀请奖励，可直接用于站内消费',
+  '邀请人数不限，分享越多奖励越多',
+  '累计满 10 人可解锁隐藏限定剧情',
 ]
 
 export default function ReferralPage() {
@@ -41,12 +41,12 @@ export default function ReferralPage() {
       setCopiedLink(true)
       setTimeout(() => setCopiedLink(false), 2000)
     }
-    showToast('💦 啊... 主人的专属引诱码已沾满体液复制成功~')
+    showToast('邀请码已复制成功')
   }
 
   return (
     <div className="flex flex-col h-[100dvh] bg-[#0A0509] text-[#F9EDF5]">
-      <HeaderBar title="引诱与同享" onBack={() => navigate(-1)} />
+      <HeaderBar title="邀请与共享" onBack={() => navigate(-1)} />
 
       <div className="flex-1 overflow-y-auto pb-24 no-scrollbar">
 
@@ -64,20 +64,20 @@ export default function ReferralPage() {
             <div className="w-14 h-14 bg-[#FF2A6D]/20 rounded-2xl flex items-center justify-center mb-4 shadow-[0_0_15px_#FF2A6D]">
               <Droplet size={28} className="text-[#FF2A6D] fill-current animate-pulse" />
             </div>
-            <h2 className="text-xl font-black text-[#F9EDF5] tracking-widest drop-shadow-[0_0_5px_#FF2A6D]">极乐引诱计划</h2>
-            <p className="text-sm text-[#FF2A6D]/80 mt-2 font-medium">每成功拖延一位新主子堕入深渊</p>
+            <h2 className="text-xl font-black text-[#F9EDF5] tracking-widest drop-shadow-[0_0_5px_#FF2A6D]">专属邀请计划</h2>
+            <p className="text-sm text-[#FF2A6D]/80 mt-2 font-medium">每成功邀请一位新朋友加入体验</p>
 
             <div className="bg-[#0C060B]/80 backdrop-blur-sm rounded-2xl px-8 py-5 mt-6 w-full border border-[#FF2A6D]/20">
-              <p className="text-xs text-[#9B859D] mb-1">即可获得私密包养金</p>
+              <p className="text-xs text-[#9B859D] mb-1">即可获得专属邀请奖励</p>
               <p className="text-5xl font-black text-[#FF2A6D] drop-shadow-[0_0_15px_rgba(255,42,109,0.5)]">$50</p>
             </div>
           </div>
         </div>
 
-        {/* 欲望蓄水槽 */}
+        {/* 邀请进度 */}
         <div className="mx-4 mt-6">
           <div className="flex justify-between items-end mb-2 px-1">
-            <span className="text-xs font-bold text-[#FF2A6D]">强制高潮解锁进度</span>
+            <span className="text-xs font-bold text-[#FF2A6D]">限定剧情解锁进度</span>
             <span className="text-[10px] text-[#9B859D]"><span className="text-[#FF2A6D] font-bold text-sm">{invitedCount}</span> / {targetCount} 人</span>
           </div>
           <div className="relative h-6 bg-[#1A0E1E] rounded-full border border-white/5 overflow-hidden">
@@ -95,7 +95,7 @@ export default function ReferralPage() {
               />
             </motion.div>
           </div>
-          <p className="text-[10px] text-[#A87CFF] mt-2 text-center">水槽满溢时，立即解锁【极乐群P】限时禁忌剧本 💧</p>
+          <p className="text-[10px] text-[#A87CFF] mt-2 text-center">进度达成后，立即解锁限时隐藏剧情</p>
         </div>
         <div className="mx-4 mt-4 bg-[#1A0E1E] border border-white/5 rounded-2xl px-5 py-4 grid grid-cols-3 divide-x divide-white/5">
           {[
@@ -189,7 +189,7 @@ export default function ReferralPage() {
           className="w-full bg-gradient-to-r from-[#8B1CF5] to-[#A87CFF] text-white py-4 rounded-2xl text-sm font-bold shadow-[0_4px_24px_rgba(139,28,245,0.5)] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
         >
           <Share2 size={16} />
-          一键分享好友
+          立即邀请好友
         </button>
       </div>
     </div>
