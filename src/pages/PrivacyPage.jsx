@@ -7,10 +7,10 @@ import { useApp } from '../context/AppContext'
 import { Lock, Unlock, AlertTriangle } from 'lucide-react'
 
 const PRIVACY_ITEMS = [
-  { key: 'profilePublic',    label: '对外展露身体数据',   desc: '允许其他人窥探我的各项快感指标',              default: false },
-  { key: 'analytics',       label: '上传高潮/湿润度记录',   desc: '以便AI伴侣更好地学习如何榨干我',        default: true  },
-  { key: 'personalization', label: '禁忌偏好深度解析',     desc: '记录一切变态偏好以定制专属凌辱剧本',            default: true  },
-  { key: 'emailNotif',      label: '主人召唤通知',       desc: '收到主人的私信时立即响应',            default: true  },
+  { key: 'profilePublic',    label: '对外展示互动数据',   desc: '允许在社区中展示部分匿名互动指标',              default: false },
+  { key: 'analytics',       label: '上传互动强度记录',   desc: '用于优化 AI 伴侣的节奏与反馈准确度',        default: true  },
+  { key: 'personalization', label: '个性偏好深度分析',     desc: '记录长期偏好以生成更贴合的专属内容',            default: true  },
+  { key: 'emailNotif',      label: '专属消息通知',       desc: '收到专属消息时第一时间提醒',            default: true  },
 ]
 
 export default function PrivacyPage() {
@@ -25,9 +25,9 @@ export default function PrivacyPage() {
   const toggle = (key) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }))
     if (key === 'profilePublic' && !settings[key]) {
-      showToast('⚠️ 警告：正在向外界暴露私密数据！')
+      showToast('⚠️ 提醒：你已开启对外数据展示')
     } else {
-      showToast('咔哒... 贞操锁已更新')
+      showToast('隐私设置已更新')
     }
   }
 
@@ -39,7 +39,7 @@ export default function PrivacyPage() {
       transition: { duration: 3, ease: "linear" }
     }).then(() => {
       if (isPressing) { // 3秒后依然在按着
-        showToast('🛑 安全词已触发！所有记录已销毁，连接切断！')
+        showToast('🛑 紧急保护已触发，连接已断开')
         setIsPressing(false)
         controls.set({ width: 0 })
         setTimeout(() => navigate('/home'), 1000)
@@ -66,14 +66,14 @@ export default function PrivacyPage() {
         />
       )}
 
-      <HeaderBar title="绝对私有 & 贞操锁" onBack={() => navigate(-1)} />
+      <HeaderBar title="隐私与安全锁" onBack={() => navigate(-1)} />
       <div className="flex-1 overflow-y-auto px-4 pb-10 no-scrollbar space-y-5">
 
         {/* 隐私控制 */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Lock size={14} className="text-[#FF2A6D]" />
-            <span className="text-xs font-bold text-[#FF2A6D] tracking-widest">主人的专属标记</span>
+            <span className="text-xs font-bold text-[#FF2A6D] tracking-widest">专属安全标记</span>
           </div>
           <div className="bg-[#1E0914] border border-[#FF2A6D]/20 rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(255,42,109,0.1)]">
             {PRIVACY_ITEMS.map((item, i) => (
@@ -88,7 +88,7 @@ export default function PrivacyPage() {
                   <p className="text-[11px] text-[#FF2A6D]/60 mt-1.5">{item.desc}</p>
                 </div>
                 
-                {/* 定制贞操锁开关视觉 */}
+                {/* 定制安全锁开关视觉 */}
                 <div onClick={() => toggle(item.key)} className="relative inline-flex h-7 w-12 cursor-pointer items-center rounded-full border border-white/10 transition-colors" style={{ backgroundColor: settings[item.key] ? 'rgba(255,42,109,0.2)' : 'rgba(255,255,255,0.1)' }}>
                   <motion.div
                     layout
@@ -106,11 +106,11 @@ export default function PrivacyPage() {
         </div>
 
         <p className="text-[10px] text-[#A87CFF]/60 text-center leading-relaxed px-4 pt-4">
-          每一次修改均会实时打入云端契约。<br/>
-          “我是主人一个人的玩物，禁止任何人偷窥。”
+          每一次修改都会实时同步到云端安全配置。<br/>
+          “你的数据由你掌控，默认最小化共享。”
         </p>
 
-        {/* Safe Word 模块 */}
+        {/* 紧急保护模块 */}
         <div className="pt-10">
           <div className="border border-red-900/50 bg-red-950/20 rounded-2xl p-5 relative overflow-hidden flex flex-col items-center">
             {/* 倒计时进度条 */}
@@ -121,8 +121,8 @@ export default function PrivacyPage() {
             />
             
             <AlertTriangle size={24} className="text-red-500 mb-2 drop-shadow-[0_0_8px_red] animate-pulse" />
-            <h3 className="text-red-500 font-black tracking-widest mb-1">SAFE WORD (安全词)</h3>
-            <p className="text-center text-[10px] text-red-500/70 mb-4 px-2">长按压住下方按钮 3 秒触发安全词。系统将立刻强行切断所有感官连接，并销毁本场湿润痕迹与所有调教记录。</p>
+            <h3 className="text-red-500 font-black tracking-widest mb-1">EMERGENCY STOP (紧急断开)</h3>
+            <p className="text-center text-[10px] text-red-500/70 mb-4 px-2">长按下方按钮 3 秒触发紧急保护。系统将立即断开当前连接，并清除本次会话缓存记录。</p>
 
             <button
               onPointerDown={handlePointerDown}
@@ -130,7 +130,7 @@ export default function PrivacyPage() {
               onPointerLeave={handlePointerUp}
               className="w-full py-4 rounded-xl bg-red-950 border border-red-800 text-red-500 font-bold active:scale-95 transition-transform"
             >
-              {isPressing ? '正在撕毁契约...' : '长按触发安全词'}
+              {isPressing ? '正在执行紧急断开...' : '长按触发紧急断开'}
             </button>
           </div>
         </div>

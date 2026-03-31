@@ -44,7 +44,7 @@ export default function ProfilePage() {
     {
       title: '探索',
       items: [
-        { icon: ShoppingBag, label: '升级智能伴侣', value: '全新发售', onClick: () => navigate('/hardware-store') },
+        { icon: ShoppingBag, label: '购买AI智能飞机杯', value: '全新发售', onClick: () => navigate('/hardware-store') },
         { icon: Sparkles,    label: '沉浸使用指南',                          onClick: () => navigate('/help')          },
       ],
     },
@@ -173,17 +173,18 @@ export default function ProfilePage() {
 
       {/* 升级 Banner */}
       <div className="px-4 mt-8 mb-8">
-        <div className="bg-[#2D0514]/60 border border-[#FF2A6D]/40 rounded-2xl p-6 text-center relative overflow-hidden shadow-[0_10px_30px_rgba(255,42,109,0.25)]">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-[#FF2A6D]/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none animate-pulse" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#A87CFF]/20 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
-          <Flame size={28} className="text-[#FF2A6D] mx-auto mb-3 relative z-10 drop-shadow-[0_0_10px_rgba(255,42,109,0.8)]" />
-          <h3 className="text-[#F9EDF5] text-lg font-bold mb-1 relative z-10">今晚，陪我更近一点</h3>
-          <p className="text-xs text-[#FF2A6D]/80 mb-5 relative z-10">解锁更细腻的互动反馈与专属氛围体验</p>
+        <div className="bg-[#141A27]/90 border border-[#6B7AA6]/30 rounded-2xl p-6 text-center relative overflow-hidden shadow-[0_10px_30px_rgba(25,35,58,0.35)]">
+          <div className="absolute top-0 right-0 w-44 h-44 bg-[#7B8EC8]/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-36 h-36 bg-[#E37BA8]/15 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
+          <Crown size={28} className="text-[#C7D3F0] mx-auto mb-3 relative z-10" />
+          <h3 className="text-[#F3F6FF] text-lg font-bold mb-1 relative z-10">会员尊享服务</h3>
+          <p className="text-xs text-[#B8C3E0] mb-2 relative z-10">解锁更细腻的互动反馈、专属剧情与优先响应</p>
+          <p className="text-[11px] text-[#E2A4C4] mb-5 relative z-10">今晚，也可以和她更近一点</p>
           <button
             onClick={() => navigate('/subscription')}
-            className="w-full bg-gradient-to-r from-[#FF2A6D] to-[#A87CFF] text-white text-sm font-bold py-3.5 rounded-full active:scale-95 transition-transform shadow-[0_4px_20px_rgba(255,42,109,0.6)] relative z-10"
+            className="w-full bg-gradient-to-r from-[#4C5F91] to-[#8A6FAE] text-white text-sm font-bold py-3.5 rounded-full active:scale-95 transition-transform shadow-[0_4px_20px_rgba(85,105,160,0.45)] relative z-10"
           >
-            开启专属互动
+            去开通会员
           </button>
         </div>
       </div>
