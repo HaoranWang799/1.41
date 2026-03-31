@@ -831,7 +831,7 @@ function DragScrollRow({ className = '', children }) {
     <div
       ref={ref}
       className={`flex gap-2 overflow-x-auto scrollbar-hide pb-1 select-none cursor-grab active:cursor-grabbing ${className}`}
-      style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', overscrollBehaviorX: 'contain' }}
+      style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x', overscrollBehaviorX: 'contain' }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
