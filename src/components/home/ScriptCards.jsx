@@ -140,7 +140,7 @@ export function GeneratedScriptCard({ script, onClick }) {
             fontSize: script.isFree ? '9px' : '9px',
           }}
         >
-          {script.isFree ? '✨ 体验定制（30秒）' : '✨ AI定制（10分钟）'}
+          {script.isFree ? '✨ 体验定制（30秒）' : '✨ 专属体验定制（10分钟）'}
         </span>
       </div>
     </button>

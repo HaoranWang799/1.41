@@ -148,7 +148,7 @@ export default function ProfilePage() {
       <div className="absolute top-4 right-4 z-20">
         <button
           onClick={() => setLang(l => l === 'zh' ? 'en' : 'zh')}
-          className="w-9 h-9 rounded-full bg-[#1E1324]/80 border border-[#A87CFF]/30 flex items-center justify-center text-[11px] font-bold text-[#A87CFF] backdrop-blur-md active:scale-90 transition-transform shadow-[0_0_12px_rgba(168,124,255,0.2)]"
+          className="w-7 h-7 rounded-full bg-[#1E1324]/80 border border-[#A87CFF]/30 flex items-center justify-center text-[10px] font-bold text-[#A87CFF] backdrop-blur-md active:scale-90 transition-transform shadow-[0_0_12px_rgba(168,124,255,0.2)]"
         >
           {lang === 'zh' ? 'EN' : '中'}
         </button>

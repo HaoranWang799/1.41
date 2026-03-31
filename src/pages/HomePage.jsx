@@ -1007,7 +1007,7 @@ export default function HomePage() {
                     className="text-[9px] rounded-full px-2 py-0.5 ml-auto text-white font-medium"
                     style={{ background: 'linear-gradient(135deg, #FF9ACB, #B380FF)' }}
                   >
-                    专属生成
+                    AI定制
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
