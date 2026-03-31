@@ -74,7 +74,7 @@ const TEASER_LINES = [
 const CIRCLE_RADIUS = 38
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS // ≈ 238.76
 
-function GeneratingProgress({ progress, phase, onEnter }) {
+function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota = 3 }) {
   const [idx, setIdx] = useState(0)
   const [visible, setVisible] = useState(true)
 
@@ -100,10 +100,22 @@ function GeneratingProgress({ progress, phase, onEnter }) {
         <h2 className="text-sm font-semibold text-[rgba(245,240,242,0.85)] tracking-wide">为你定制</h2>
       </div>
       <div
-        className="rounded-2xl flex flex-col items-center justify-center py-10 gap-5"
+        className="rounded-2xl flex flex-col items-center justify-center py-8 px-6 gap-4"
         style={{ background: 'linear-gradient(135deg, rgba(179,128,255,0.10), rgba(255,154,203,0.08))' }}
       >
-        {/* 圆形进度环 */}
+        {/* ── 主标题 + 副文案 ── */}
+        {!isDone && (
+          <div className="text-center space-y-1.5">
+            <p className="text-sm font-semibold text-[rgba(245,240,242,0.92)] tracking-wide">
+              ✨ AI正在为你定制体验
+            </p>
+            <p className="text-[11px] text-[rgba(245,240,242,0.42)] leading-relaxed">
+              正在生成个性化内容并同步体验节奏...
+            </p>
+          </div>
+        )}
+
+        {/* ── 圆形进度环 ── */}
         <div className="relative" style={{ width: 96, height: 96 }}>
           <svg width="96" height="96" style={{ transform: 'rotate(-90deg)' }}>
             {/* 轨道 */}
@@ -140,7 +152,28 @@ function GeneratingProgress({ progress, phase, onEnter }) {
           </div>
         </div>
 
-        {/* 文案 / 进入按钮 */}
+        {/* ── 免费额度 + VIP 提示 ── */}
+        {!isDone && (
+          <div className="text-center space-y-1.5">
+            <p className="text-[11px] text-[rgba(245,240,242,0.50)]">
+              本月免费额度：<span className="text-white font-semibold">{remainingQuota}</span>
+              <span className="text-[rgba(245,240,242,0.35)]"> / {totalQuota}</span>
+            </p>
+            <p
+              className="text-[10px]"
+              style={{
+                background: 'linear-gradient(135deg, #B380FF, #FF9ACB)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                opacity: 0.65,
+              }}
+            >
+              升级VIP可解锁无限生成
+            </p>
+          </div>
+        )}
+
+        {/* ── 轮播文案 / 完成进入按钮 ── */}
         {isDone ? (
           <button
             onClick={onEnter}
@@ -155,7 +188,7 @@ function GeneratingProgress({ progress, phase, onEnter }) {
           </button>
         ) : (
           <p
-            className="text-[14px] font-medium tracking-wide text-center px-6 transition-opacity duration-400"
+            className="text-[13px] font-medium tracking-wide text-center px-6 transition-opacity duration-400"
             style={{
               opacity: visible ? 1 : 0,
               background: 'linear-gradient(135deg, #FF9ACB, #B380FF)',
@@ -935,11 +968,13 @@ export default function HomePage() {
               </div>
             </section>
 
-            {/* ── ② 生成等待区：圆形进度 + 暧昧文案 ── */}
+            {/* ── ② 生成等待区：圆形进度 + 产品化加载面板 ── */}
             {isGenerating && (
-              <GeneratingProgress
+              <LoadingPanel
                 progress={genProgress}
                 phase={genPhase}
+                remainingQuota={2}
+                totalQuota={3}
                 onEnter={() => {
                   setIsGenerating(false)
                   setGenPhase(null)
