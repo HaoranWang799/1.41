@@ -17,7 +17,7 @@ export default function ProfilePage() {
     {
       title: '会员服务',
       items: [
-        { icon: Crown,    label: '专属订阅管理', value: '高级版',  onClick: () => navigate('/subscription') },
+        { icon: Crown,    label: '专属订阅管理', value: '高级版',  onClick: () => navigate('/recharge') },
         { icon: Settings, label: '个人偏好设置',                   onClick: () => navigate('/settings')     },
         { icon: Shield,   label: '隐私与安全锁',                   onClick: () => navigate('/privacy')      },
       ],
@@ -181,7 +181,7 @@ export default function ProfilePage() {
           <p className="text-xs text-[#B8C3E0] mb-2 relative z-10">解锁更细腻的互动反馈、专属剧情与优先响应</p>
           <p className="text-[11px] text-[#E2A4C4] mb-5 relative z-10">今晚，也可以和她更近一点</p>
           <button
-            onClick={() => navigate('/subscription')}
+            onClick={() => navigate('/recharge')}
             className="w-full bg-gradient-to-r from-[#4C5F91] to-[#8A6FAE] text-white text-sm font-bold py-3.5 rounded-full active:scale-95 transition-transform shadow-[0_4px_20px_rgba(85,105,160,0.45)] relative z-10"
           >
             去开通会员
