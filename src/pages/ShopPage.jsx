@@ -786,42 +786,28 @@ function FilterPill({ label, active, onClick }) {
 
 function DragScrollRow({ className = '', children }) {
   const ref = useRef(null)
-  const drag = useRef({ id: null, startX: 0, startLeft: 0, moved: false, axis: null })
+  const drag = useRef({ active: false, startX: 0, startLeft: 0, dragged: false })
 
-  const onPointerDown = e => {
-    if (e.pointerType !== 'mouse' || e.button !== 0) {
-      drag.current.moved = false
-      return
-    }
+  const onMouseDown = e => {
+    if (e.button !== 0) return
     const el = ref.current; if (!el) return
-    drag.current = { id: e.pointerId, startX: e.clientX, startY: e.clientY, startLeft: el.scrollLeft, moved: false, axis: null }
-    el.setPointerCapture(e.pointerId)
+    drag.current = { active: true, startX: e.clientX, startLeft: el.scrollLeft, dragged: false }
   }
-  const onPointerMove = e => {
-    if (e.pointerType !== 'mouse') return
-    const el = ref.current; if (!el || drag.current.id !== e.pointerId) return
+  const onMouseMove = e => {
+    if (!drag.current.active) return
+    const el = ref.current; if (!el) return
     const dx = e.clientX - drag.current.startX
-    const dy = e.clientY - drag.current.startY
-    if (!drag.current.axis) {
-      if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return
-      drag.current.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'
-    }
-    if (drag.current.axis !== 'x') return
-    if (Math.abs(dx) > 4) drag.current.moved = true
+    if (Math.abs(dx) > 4) drag.current.dragged = true
     el.scrollLeft = drag.current.startLeft - dx
-    e.preventDefault()
   }
-  const onPointerUp = e => {
-    if (e.pointerType !== 'mouse') return
-    const el = ref.current
-    el?.releasePointerCapture(drag.current.id)
-    drag.current.moved = false
-    drag.current.id = null; drag.current.axis = null
+  const onMouseUp = () => {
+    drag.current.active = false
   }
   const onClickCapture = e => {
-    if (drag.current.id !== null && drag.current.moved && e.pointerType !== 'touch') {
-      e.preventDefault();
-      e.stopPropagation();
+    if (drag.current.dragged) {
+      e.preventDefault()
+      e.stopPropagation()
+      drag.current.dragged = false
     }
   }
   const onWheel = e => {
@@ -833,12 +819,12 @@ function DragScrollRow({ className = '', children }) {
   return (
     <div
       ref={ref}
-      className={`flex gap-2 overflow-x-auto scrollbar-hide pb-1 select-none cursor-grab active:cursor-grabbing ${className}`}
+      className={`flex gap-2 overflow-x-auto scrollbar-hide pb-1 select-none ${className}`}
       style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x', overscrollBehaviorX: 'contain' }}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseUp}
       onClickCapture={onClickCapture}
       onWheel={onWheel}
     >
