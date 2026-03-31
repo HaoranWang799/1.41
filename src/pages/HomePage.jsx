@@ -715,6 +715,7 @@ export default function HomePage() {
         id:             `ai-${ts}-a`,
         charId:         'witch',
         isAIGenerated:  true,
+        isFree:         true,
         sceneId:        'balcony',
         cover:          witchChar.emoji,
         coverEmoji:     witchChar.emoji,

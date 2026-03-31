@@ -112,10 +112,13 @@ export function GeneratedScriptCard({ script, onClick }) {
 
       <div className="relative z-10 p-3.5 flex flex-col justify-end h-full">
         <span
-          className="absolute top-2.5 right-2.5 text-[9px] font-bold rounded-full px-1.5 py-0.5 text-white whitespace-nowrap"
-          style={{ background: 'linear-gradient(135deg, #FF9ACB, #B380FF)' }}
+          className="absolute top-2.5 right-2.5 text-[9px] font-bold rounded-full px-1.5 py-0.5 text-white whitespace-nowrap shadow-[0_2px_8px_rgba(0,0,0,0.35)]"
+          style={script.isFree
+            ? { background: 'linear-gradient(135deg, #22c55e, #16a34a)' }
+            : { background: 'linear-gradient(135deg, #FF9ACB, #B380FF)' }
+          }
         >
-          VIP专属
+          {script.isFree ? '免费版' : 'VIP专属'}
         </span>
 
         <p className="text-[11px] font-semibold text-white mb-1 leading-snug pr-14">
@@ -131,10 +134,13 @@ export function GeneratedScriptCard({ script, onClick }) {
         </p>
 
         <span
-          className="w-full text-center rounded-xl py-1.5 text-white text-[10px] font-bold"
-          style={{ background: 'linear-gradient(135deg, #FF9ACB, #B380FF)' }}
+          className="w-full text-center rounded-xl py-1.5 text-white font-bold whitespace-nowrap"
+          style={{
+            background: 'linear-gradient(135deg, #FF9ACB, #B380FF)',
+            fontSize: script.isFree ? '9px' : '9px',
+          }}
         >
-          ✨ 体验定制
+          {script.isFree ? '✨ 体验定制（30秒）' : '✨ 专属体验定制（10分钟）'}
         </span>
       </div>
     </button>
