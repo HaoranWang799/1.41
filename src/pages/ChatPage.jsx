@@ -106,7 +106,7 @@ export default function ChatPage() {
       })
 
       const reply = String(result?.text || '').trim() || '我在这，继续和我说说吧。'
-        const reply = String(result?.text || '').trim() || '我在这，继续和我说说吧。'
+      await streamAiReply(reply)
 
       if (result?.fallback) {
         showToast('当前网络不稳定，已使用降级回复')

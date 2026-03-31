@@ -491,7 +491,7 @@ function LoverActionButtons({
         disabled={isChatDisabled || isRandomLoading}
         className="rounded-full py-2 text-[11px] font-semibold text-white bg-gradient-to-r from-[#FF7DAF] to-[#A87CFF] shadow-[0_0_12px_rgba(179,128,255,0.35)] disabled:opacity-45 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
       >
-        去聊聊
+        关心一下你的AI恋人
       </button>
       <button
         onClick={onRandomExperience}
