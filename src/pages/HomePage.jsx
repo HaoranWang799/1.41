@@ -111,9 +111,6 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
             <p className="text-sm font-semibold text-[rgba(245,240,242,0.92)] tracking-wide">
               ✨ AI正在为你定制体验
             </p>
-            <p className="text-[11px] text-[rgba(245,240,242,0.42)] leading-relaxed">
-              正在生成个性化内容并同步体验节奏...
-            </p>
           </div>
         )}
 
