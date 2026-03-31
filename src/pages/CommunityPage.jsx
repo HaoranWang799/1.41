@@ -19,9 +19,11 @@
  * TODO: 实现真实点赞 / 评论 / 收藏后端持久化
  */
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Heart, MessageCircle, Bookmark, Plus, Trash2 } from 'lucide-react'
 import { useVirtualLover } from '../hooks/useVirtualLover'
 import useCommunity from '../hooks/useCommunity'
+import { useApp } from '../context/AppContext'
 
 // 遗留本地数据，当前页面已改为 useCommunity 实时数据流。
 const LEGACY_POSTS_V2 = {
@@ -426,7 +428,92 @@ const MOOD_STYLES = {
   '调皮': { bg: 'rgba(255,200,100,0.12)', border: 'rgba(255,200,100,0.18)' },
 }
 
-function AiLoverCard({ aiMemoryDeleted, onDeleteMemory, onResetMemory }) {
+const RANDOM_LOADING_LINES = [
+  '正在随机匹配体验内容…',
+  '正在生成语音剧本…',
+  '正在同步控制参数…',
+]
+
+const RANDOM_SCRIPT_POOL = [
+  {
+    id: 'rand-01',
+    title: '随机体验：夜色耳语',
+    openingLine: '今晚的风很轻，我只想把声音贴近你。',
+    mood: '温柔',
+    intensity: '中度体验',
+  },
+  {
+    id: 'rand-02',
+    title: '随机体验：心跳加速',
+    openingLine: '别急，先闭上眼，跟着我的节奏呼吸。',
+    mood: '暧昧',
+    intensity: '高强体验',
+  },
+  {
+    id: 'rand-03',
+    title: '随机体验：温柔试探',
+    openingLine: '我会慢一点靠近，直到你也愿意靠近我。',
+    mood: '温柔',
+    intensity: '轻度体验',
+  },
+]
+
+function randomGenerateScript() {
+  return new Promise((resolve, reject) => {
+    const delay = 1200 + Math.floor(Math.random() * 800)
+    window.setTimeout(() => {
+      // 小概率失败，验证异常分支
+      if (Math.random() < 0.08) {
+        reject(new Error('random generate failed'))
+        return
+      }
+      const picked = RANDOM_SCRIPT_POOL[Math.floor(Math.random() * RANDOM_SCRIPT_POOL.length)]
+      resolve({
+        ...picked,
+        generatedAt: Date.now(),
+        source: 'community-random',
+      })
+    }, delay)
+  })
+}
+
+function LoverActionButtons({
+  onChatWithLover,
+  onRandomExperience,
+  isRandomLoading,
+  randomLoadingText,
+  isChatDisabled,
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2.5">
+      <button
+        onClick={onChatWithLover}
+        disabled={isChatDisabled || isRandomLoading}
+        className="rounded-full py-2 text-[11px] font-semibold text-white bg-gradient-to-r from-[#FF7DAF] to-[#A87CFF] shadow-[0_0_12px_rgba(179,128,255,0.35)] disabled:opacity-45 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
+      >
+        去聊聊
+      </button>
+      <button
+        onClick={onRandomExperience}
+        disabled={isRandomLoading}
+        className="rounded-full py-2 text-[11px] font-semibold text-[#E8DDF1] border border-[#B380FF]/35 bg-[rgba(179,128,255,0.12)] disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
+      >
+        {isRandomLoading ? randomLoadingText : '随机体验'}
+      </button>
+    </div>
+  )
+}
+
+function AiLoverCard({
+  aiMemoryDeleted,
+  onDeleteMemory,
+  onResetMemory,
+  onChatWithLover,
+  onRandomExperience,
+  isRandomLoading,
+  randomLoadingText,
+  isChatDisabled,
+}) {
   const { clearMemory, fadeIn, fallback, loading, metaText, mood, provider, refreshMessage, text, timestamp } = useVirtualLover()
 
   const moodStyle = MOOD_STYLES[mood] || MOOD_STYLES['温柔']
@@ -479,6 +566,21 @@ function AiLoverCard({ aiMemoryDeleted, onDeleteMemory, onResetMemory }) {
               <span className="inline-block text-[rgba(245,240,242,0.4)] animate-pulse">思念加载中…</span>
             ) : text}
           </div>
+
+          <LoverActionButtons
+            onChatWithLover={(e) => {
+              e.stopPropagation()
+              onChatWithLover()
+            }}
+            onRandomExperience={(e) => {
+              e.stopPropagation()
+              onRandomExperience()
+            }}
+            isRandomLoading={isRandomLoading}
+            randomLoadingText={randomLoadingText}
+            isChatDisabled={isChatDisabled}
+          />
+
           {/* 底部操作 */}
           <div className="flex items-center justify-between">
             <button
@@ -510,6 +612,8 @@ function AiLoverCard({ aiMemoryDeleted, onDeleteMemory, onResetMemory }) {
 
 export default function CommunityPage() {
   const TABS = ['体验分享', '攻略教程', '创作展示']
+  const navigate = useNavigate()
+  const { showToast } = useApp()
 
   // ── 社区数据 Hook ────────────────────────────────────────
   const { posts, currentTab, loading, hasMore, error, switchTab, refresh } = useCommunity()
@@ -526,6 +630,55 @@ export default function CommunityPage() {
 
   // ── AI 记忆状态 ──────────────────────────────────────────
   const [aiMemoryDeleted, setAiMemoryDeleted] = useState(false)
+  const [isRandomLoading, setIsRandomLoading] = useState(false)
+  const [loadingLineIdx, setLoadingLineIdx] = useState(0)
+
+  const currentLover = {
+    id: 'default-lover-luna',
+    name: 'Luna',
+    avatar: 'L',
+  }
+
+  const handleChatWithLover = () => {
+    if (!currentLover?.id || aiMemoryDeleted) {
+      showToast('当前恋人暂不可对话')
+      return
+    }
+    navigate('/ai-lover/chat', {
+      state: {
+        lover: currentLover,
+        from: 'community-ai-lover-card',
+      },
+    })
+  }
+
+  const handleRandomExperience = async () => {
+    if (isRandomLoading) return
+    setIsRandomLoading(true)
+    setLoadingLineIdx(0)
+
+    const ticker = window.setInterval(() => {
+      setLoadingLineIdx((idx) => (idx + 1) % RANDOM_LOADING_LINES.length)
+    }, 900)
+
+    try {
+      const generated = await randomGenerateScript()
+      window.clearInterval(ticker)
+      navigate('/player', {
+        state: {
+          autoStart: true,
+          randomGenerated: true,
+          script: generated,
+        },
+      })
+    } catch {
+      window.clearInterval(ticker)
+      showToast('生成失败，请稍后重试')
+    } finally {
+      setIsRandomLoading(false)
+      setLoadingLineIdx(0)
+    }
+  }
 
   // ── 点赞切换 ─────────────────────────────────────────────
   const toggleLike = (postId) => {
@@ -573,12 +726,21 @@ export default function CommunityPage() {
 
       {/* ═══ AI 主动关怀卡片（接入 Grok AI）═══════════════════ */}
       <div className="page-section page-delay-2">
-        <AiLoverCard aiMemoryDeleted={aiMemoryDeleted} onResetMemory={() => setAiMemoryDeleted(false)} onDeleteMemory={() => {
+        <AiLoverCard
+          aiMemoryDeleted={aiMemoryDeleted}
+          onResetMemory={() => setAiMemoryDeleted(false)}
+          onDeleteMemory={() => {
           if (window.confirm('确定删除今晚的记忆吗？此操作不可撤销。')) {
             setAiMemoryDeleted(true)
             alert('🗑️ 记忆已删除')
           }
-        }} />
+          }}
+          onChatWithLover={handleChatWithLover}
+          onRandomExperience={handleRandomExperience}
+          isRandomLoading={isRandomLoading}
+          randomLoadingText={RANDOM_LOADING_LINES[loadingLineIdx]}
+          isChatDisabled={aiMemoryDeleted || !currentLover?.id}
+        />
       </div>
 
       {/* ═══ 加载状态 ════════════════════════════════════════ */}

@@ -76,6 +76,7 @@ export default function App() {
         <Route path="/ai-voice"       element={<PageShell><AIVoicePage /></PageShell>} />
         <Route path="/player"         element={<PageShell><PlayerPage /></PageShell>} />
         <Route path="/chat"           element={<PageShell><ChatPage /></PageShell>} />
+        <Route path="ai-lover/chat"  element={<PageShell><ChatPage /></PageShell>} />
         <Route path="/help"           element={<PageShell><HelpCenterPage /></PageShell>} />
         <Route path="/referral"       element={<PageShell><ReferralPage /></PageShell>} />
 

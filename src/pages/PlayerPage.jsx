@@ -1,11 +1,16 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Activity, Pause, Play, ChevronDown } from 'lucide-react'
 
 // 全屏播放器，无底部导航
 export default function PlayerPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [isPlaying, setIsPlaying] = useState(true)
+
+  const routeScript = location.state?.script
+  const title = routeScript?.title || '午夜调教：主人的失控'
+  const modeLabel = routeScript?.intensity || '默认模式'
 
   return (
     <div
@@ -16,9 +21,10 @@ export default function PlayerPage() {
       <div className="p-6 flex justify-between items-start z-20 bg-gradient-to-b from-black/80 to-transparent">
         <div>
           <div className="text-[10px] text-[#FF7DAF] font-mono tracking-widest animate-pulse">
-            LINK_ACTIVE
+            {location.state?.randomGenerated ? 'RANDOM_READY' : 'LINK_ACTIVE'}
           </div>
-          <h2 className="text-sm font-bold text-[#F9EDF5] mt-1">午夜调教：主人的失控</h2>
+          <h2 className="text-sm font-bold text-[#F9EDF5] mt-1">{title}</h2>
+          <p className="text-[11px] text-[#9B859D] mt-1">{modeLabel}</p>
         </div>
         <button
           onClick={() => navigate(-1)}
