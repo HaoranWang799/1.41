@@ -791,7 +791,7 @@ function DragScrollRow({ className = '', children }) {
   const onPointerDown = e => {
     if (e.pointerType !== 'mouse' || e.button !== 0) return
     const el = ref.current; if (!el) return
-    drag.current = { id: e.pointerId, startX: e.clientX, startLeft: el.scrollLeft, moved: false, axis: null }
+    drag.current = { id: e.pointerId, startX: e.clientX, startY: e.clientY, startLeft: el.scrollLeft, moved: false, axis: null }
     el.setPointerCapture(e.pointerId)
   }
   const onPointerMove = e => {

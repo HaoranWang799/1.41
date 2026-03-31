@@ -11,7 +11,7 @@
  * TODO: 接入真实会员订阅 API（/api/membership/subscribe）
  * TODO: 接入真实钻石充值后端（/api/wallet/topup）
  */
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft, Diamond, Crown, Check } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 
@@ -22,22 +22,22 @@ const PHONE_W = 'max-w-[430px]'
 const DIAMOND_TIERS = [
   {
     id: 'd1', price: 6,   diamonds: 60,
-    label: '60 💎', priceLabel: '¥6',
+    label: '60 💎', priceLabel: '$0.99',
     badge: null,
   },
   {
     id: 'd2', price: 30,  diamonds: 300,
-    label: '300 💎', priceLabel: '¥30',
+    label: '300 💎', priceLabel: '$4.99',
     badge: '热门',
   },
   {
     id: 'd3', price: 68,  diamonds: 680,
-    label: '680 💎', priceLabel: '¥68',
+    label: '680 💎', priceLabel: '$9.99',
     badge: '超值',
   },
   {
     id: 'd4', price: 198, diamonds: 2000,
-    label: '2000 💎', priceLabel: '¥198',
+    label: '2000 💎', priceLabel: '$27.99',
     badge: '最划算',
   },
 ]
@@ -68,7 +68,7 @@ const MEMBER_TIERS = [
     isFree: false,
     priceMonthly: 30,
     priceYearly: 198,
-    priceLabel: '¥30/月 · ¥198/年',
+    priceLabel: '$4.99/月 · $27.99/年',
     gradient: 'from-[#2a1020] to-[#4a1535]',
     accentColor: '#FF9ACB',
     perks: [
@@ -86,7 +86,7 @@ const MEMBER_TIERS = [
     isFree: false,
     priceMonthly: 68,
     priceYearly: 488,
-    priceLabel: '¥68/月 · ¥488/年',
+    priceLabel: '$9.99/月 · $59.99/年',
     gradient: 'from-[#251840] to-[#3a2060]',
     accentColor: '#FFD700',
     perks: [
@@ -223,6 +223,8 @@ function MemberCard({ tier, currentLevel, onActivate }) {
 
 export default function RechargePage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const fromProfile = location.state?.from === 'profile'
 
   // ── 从全局 AppContext 读取（本页在 Layout 路由外）────────
   // TODO: 接入真实用户账户 API 后，此处改为 API 请求状态
@@ -252,11 +254,11 @@ export default function RechargePage() {
           style={{ background: 'rgba(12,10,12,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,154,203,0.08)' }}
         >
           <button
-            onClick={() => navigate('/shop')}
+            onClick={() => navigate(-1)}
             className="flex items-center gap-1.5 text-[rgba(245,240,242,0.6)] hover:text-[#FF9ACB] transition-colors"
           >
             <ArrowLeft size={18} />
-            <span className="text-[13px]">返回商城</span>
+            <span className="text-[13px]">返回</span>
           </button>
           {/* 居中标题 */}
           <h1
@@ -290,8 +292,8 @@ export default function RechargePage() {
             </div>
           </div>
 
-          {/* ═══ 钻石充值 ════════════════════════════════════ */}
-          <section>
+          {/* ═══ 钻石充值（仅商城入口显示）════════════════════ */}
+          {!fromProfile && <section>
             <div className="flex items-center gap-2 mb-3">
               <span className="text-base">💎</span>
               <h2 className="text-sm font-semibold text-[rgba(245,240,242,0.85)]">钻石充值</h2>
@@ -306,7 +308,7 @@ export default function RechargePage() {
             <p className="text-center text-[10px] text-[rgba(245,240,242,0.25)] mt-3">
               · 钻石为虚拟货币，充值后不支持退款 · 仅供平台内消费使用 ·
             </p>
-          </section>
+          </section>}
 
           {/* ═══ 会员等级 ════════════════════════════════════ */}
           <section>
