@@ -650,14 +650,14 @@ const SCRIPT_PERSONA_FILTERS = [
   { id: 'classmate', label: '校园氛围' },
   { id: 'banhua',    label: '人气焦点' },
   { id: 'boss',      label: '知性上司' },
-  { id: 'secretary', label: '秘书'     },
+  { id: 'secretary', label: '知性助理' },
   { id: 'nurse',     label: '护士'     },
   { id: 'shaofu',    label: '成熟知性' },
   { id: 'neighbor',  label: '邻家妹妹' },
   { id: 'ex',        label: '熟悉旧识' },
-  { id: 'teacher',   label: '老师'     },
+  { id: 'teacher',   label: '气质导师' },
   { id: 'goddess',   label: '高冷魅力' },
-  { id: 'wildcat',   label: '小野猫'   },
+  { id: 'wildcat',   label: '俏皮灵动' },
 ]
 
 const SCRIPT_INTENSITY_FILTERS = [
