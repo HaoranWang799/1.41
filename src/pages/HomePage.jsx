@@ -898,10 +898,7 @@ export default function HomePage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[12px] font-semibold text-[#F9EDF5] leading-snug">
-                  设备已连接：<span className="text-[#A87CFF]">X1 Pro</span>
-                </p>
-                <p className="text-[10px] text-[#9B859D] mt-0.5">
-                  电量：<span className="text-[#FF7DAF]">87%</span>　当前模式：<span className="text-[#A87CFF]">沉浸同步</span>
+                  设备已连接：<span className="text-[#A87CFF]">X1 Pro</span>　电量：<span className="text-[#FF7DAF]">87%</span>　模式：<span className="text-[#A87CFF]">沉浸同步</span>
                 </p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
