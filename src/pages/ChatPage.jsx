@@ -1,13 +1,18 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { ArrowLeft, Send } from 'lucide-react'
+import { fetchVirtualLoverMessage } from '../api/virtualLover'
 
 export default function ChatPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { showToast } = useApp()
   const [inputVal, setInputVal] = useState('')
+  const [isSending, setIsSending] = useState(false)
+  const [streamingReply, setStreamingReply] = useState('')
+  const listRef = useRef(null)
+  const typingTimerRef = useRef(null)
 
   const lover = useMemo(() => {
     const fromState = location.state?.lover || {}
@@ -37,18 +42,85 @@ export default function ChatPage() {
     window.localStorage.setItem(storageKey, JSON.stringify(messages))
   }, [messages, storageKey])
 
-  const handleSend = () => {
+  useEffect(() => {
+    if (!listRef.current) return
+    listRef.current.scrollTop = listRef.current.scrollHeight
+  }, [messages, streamingReply])
+
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) {
+        window.clearInterval(typingTimerRef.current)
+        typingTimerRef.current = null
+      }
+    }
+  }, [])
+
+  const streamAiReply = (fullText) => new Promise((resolve) => {
+    const finalText = String(fullText || '').trim()
+    if (!finalText) {
+      resolve('')
+      return
+    }
+
+    if (typingTimerRef.current) {
+      window.clearInterval(typingTimerRef.current)
+      typingTimerRef.current = null
+    }
+
+    let cursor = 0
+    setStreamingReply('')
+
+    typingTimerRef.current = window.setInterval(() => {
+      cursor += Math.random() < 0.72 ? 1 : 2
+      const nextText = finalText.slice(0, Math.min(cursor, finalText.length))
+      setStreamingReply(nextText)
+
+      if (cursor >= finalText.length) {
+        window.clearInterval(typingTimerRef.current)
+        typingTimerRef.current = null
+        setMessages((prev) => [...prev, { role: 'ai', text: finalText }])
+        setStreamingReply('')
+        resolve(finalText)
+      }
+    }, 42)
+  })
+
+  const handleSend = async () => {
     const content = inputVal.trim()
-    if (!content) return
+    if (!content || isSending) return
 
-    const next = [...messages, { role: 'user', text: content }]
-    setMessages(next)
+    setMessages((prev) => [...prev, { role: 'user', text: content }])
     setInputVal('')
+    setIsSending(true)
 
-    window.setTimeout(() => {
-      const reply = `我在听，${content.length > 12 ? '慢慢说给我听。' : '继续说，我很想知道。'}`
-      setMessages((prev) => [...prev, { role: 'ai', text: reply }])
-    }, 450)
+    try {
+      const result = await fetchVirtualLoverMessage({
+        forceRefresh: true,
+        text: content,
+        context: {
+          userName: '主人',
+          loverId: lover.id,
+          loverName: lover.name,
+        },
+      })
+
+      const reply = String(result?.text || '').trim() || '我在这，继续和我说说吧。'
+        const reply = String(result?.text || '').trim() || '我在这，继续和我说说吧。'
+
+      if (result?.fallback) {
+        showToast('当前网络不稳定，已使用降级回复')
+      }
+    } catch (error) {
+      setStreamingReply('')
+      setMessages((prev) => [
+        ...prev,
+        { role: 'ai', text: '我刚刚有点走神了，再和我说一次好吗？' },
+      ])
+      showToast(error?.message || '发送失败，请稍后重试')
+    } finally {
+      setIsSending(false)
+    }
   }
 
   return (
@@ -63,7 +135,7 @@ export default function ChatPage() {
       </div>
 
       {/* 消息区 */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+      <div ref={listRef} className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex items-end space-x-2 ${msg.role === 'user' ? 'justify-end' : ''}`}>
             {msg.role === 'ai' && (
@@ -76,6 +148,26 @@ export default function ChatPage() {
             </div>
           </div>
         ))}
+        {isSending && !streamingReply && (
+          <div className="flex items-end space-x-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF7DAF] to-[#A87CFF] flex items-center justify-center text-xs text-white shrink-0">
+              {lover.avatar}
+            </div>
+            <div className="bg-[#1E1324] text-sm p-3 rounded-2xl text-[#CDB9D4] max-w-[80%] leading-relaxed">
+              正在想你这句话...
+            </div>
+          </div>
+        )}
+        {streamingReply && (
+          <div className="flex items-end space-x-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF7DAF] to-[#A87CFF] flex items-center justify-center text-xs text-white shrink-0">
+              {lover.avatar}
+            </div>
+            <div className="bg-[#1E1324] text-sm p-3 rounded-2xl text-[#F9EDF5] max-w-[80%] leading-relaxed">
+              {streamingReply}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 输入栏 */}
@@ -87,16 +179,20 @@ export default function ChatPage() {
             value={inputVal}
             onChange={(e) => setInputVal(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSend()
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSend()
+              }
             }}
+            disabled={isSending}
             className="flex-1 bg-transparent outline-none text-sm text-[#F9EDF5] placeholder:text-[#9B859D]"
           />
           <button
             onClick={() => {
               handleSend()
-              showToast('消息已发送')
             }}
-            className="bg-[#FF7DAF] p-2 rounded-full text-white active:scale-90 transition-transform"
+            disabled={isSending || !inputVal.trim()}
+            className="bg-[#FF7DAF] p-2 rounded-full text-white active:scale-90 transition-transform disabled:opacity-45 disabled:active:scale-100"
           >
             <Send size={16} />
           </button>

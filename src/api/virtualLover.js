@@ -55,11 +55,19 @@ function normalizeServerLoverPayload(serverData = {}) {
  *   { text, mood, provider, fallback, timestamp }
  */
 export async function fetchVirtualLoverMessage(options = {}) {
-  const { forceRefresh = false } = options
+  const {
+    forceRefresh = false,
+    text = '',
+    message = '',
+    context = {},
+  } = options
+
+  const content = String(text || message || '继续陪我聊聊').trim() || '继续陪我聊聊'
   const requestPayload = {
     forceRefresh,
-    text: '继续陪我聊聊',
-    message: '继续陪我聊聊',
+    text: content,
+    message: content,
+    context,
   }
 
   try {
