@@ -80,6 +80,7 @@ const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS // ≈ 238.76
 function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota = 3 }) {
   const [idx, setIdx] = useState(0)
   const [visible, setVisible] = useState(true)
+  const [showVipModal, setShowVipModal] = useState(false)
 
   useEffect(() => {
     if (phase === 'done') return
@@ -160,16 +161,20 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
               <span className="text-[rgba(245,240,242,0.35)]"> / {totalQuota}</span>
             </p>
             <p
-              className="text-[10px]"
+              className="text-[10px] text-[rgba(245,240,242,0.35)] mt-0.5"
+            >
+              升级VIP解锁无限次数
+            </p>
+            <button
+              onClick={() => setShowVipModal(true)}
+              className="mt-2 px-5 py-1.5 rounded-full text-[11px] font-semibold text-white shadow-lg active:scale-95 transition-all"
               style={{
-                background: 'linear-gradient(135deg, #B380FF, #FF9ACB)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                opacity: 0.65,
+                background: 'linear-gradient(135deg, #FF9ACB, #B380FF)',
+                boxShadow: '0 0 14px rgba(179,128,255,0.45)',
               }}
             >
-              升级VIP可解锁无限生成
-            </p>
+              ✨ 立即升级VIP
+            </button>
           </div>
         )}
 
@@ -200,6 +205,58 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
           </p>
         )}
       </div>
+
+      {/* ── VIP 会员升级弹框 ── */}
+      {showVipModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowVipModal(false)}>
+          <div
+            className="w-[85vw] max-w-sm rounded-3xl p-6 space-y-5"
+            style={{ background: 'linear-gradient(160deg, #1A0E2E 0%, #0D0612 100%)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* 标题 */}
+            <div className="text-center space-y-1">
+              <p className="text-lg font-bold text-white">✨ 升级VIP会员</p>
+              <p className="text-[11px] text-[rgba(245,240,242,0.45)]">解锁全部专属权益，畅享无限体验</p>
+            </div>
+
+            {/* 权益列表 */}
+            <div className="space-y-3">
+              {[
+                { icon: '♾️', title: '无限AI生成', desc: '不限次数定制专属体验' },
+                { icon: '🎭', title: '全角色解锁', desc: '畅享所有角色与剧本' },
+                { icon: '🎧', title: '高保真语音', desc: 'AI语音卡优先生成' },
+                { icon: '⚡', title: '极速生成', desc: '专属加速通道，秒级响应' },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-2.5" style={{ background: 'rgba(179,128,255,0.08)' }}>
+                  <span className="text-lg">{item.icon}</span>
+                  <div>
+                    <p className="text-xs font-semibold text-white">{item.title}</p>
+                    <p className="text-[10px] text-[rgba(245,240,242,0.40)]">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* 开通按钮 */}
+            <button
+              onClick={() => setShowVipModal(false)}
+              className="w-full py-3 rounded-full text-sm font-bold text-white active:scale-[0.97] transition-transform"
+              style={{
+                background: 'linear-gradient(135deg, #FF9ACB, #B380FF)',
+                boxShadow: '0 0 20px rgba(179,128,255,0.5)',
+              }}
+            >
+              立即开通 VIP · ¥29.9/月
+            </button>
+
+            {/* 关闭 */}
+            <p className="text-center text-[10px] text-[rgba(245,240,242,0.30)] cursor-pointer" onClick={() => setShowVipModal(false)}>
+              稍后再说
+            </p>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
