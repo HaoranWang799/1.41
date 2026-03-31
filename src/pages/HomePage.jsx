@@ -247,7 +247,7 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
                 boxShadow: '0 0 20px rgba(179,128,255,0.5)',
               }}
             >
-              立即开通 VIP · ¥29.9/月
+              立即开通 VIP · $9.99/月 · $59.99/年
             </button>
 
             {/* 关闭 */}
