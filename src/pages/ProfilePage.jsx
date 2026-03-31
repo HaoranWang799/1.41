@@ -15,18 +15,18 @@ export default function ProfilePage() {
 
   const menuSections = [
     {
-      title: '尊贵特权',
+      title: '会员服务',
       items: [
-        { icon: Crown,    label: '私享订阅管理', value: '极乐版',  onClick: () => navigate('/subscription') },
+        { icon: Crown,    label: '专属订阅管理', value: '高级版',  onClick: () => navigate('/subscription') },
         { icon: Settings, label: '个人偏好设置',                   onClick: () => navigate('/settings')     },
-        { icon: Shield,   label: '私密与安全锁',                   onClick: () => navigate('/privacy')      },
+        { icon: Shield,   label: '隐私与安全锁',                   onClick: () => navigate('/privacy')      },
       ],
     },
     {
-      title: '专属私宠',
+      title: '专属内容',
       items: [
-        { icon: Flame,      label: '禁忌沉浸剧本', value: '3部',   onClick: () => navigate('/scripts')   },
-        { icon: Headphones, label: '专属声优调教', value: '已激活', onClick: () => navigate('/ai-voice') },
+        { icon: Flame,      label: '沉浸式剧情',   value: '3部',   onClick: () => navigate('/scripts')   },
+        { icon: Headphones, label: '专属声线互动', value: '已激活', onClick: () => navigate('/ai-voice') },
       ],
     },
     {
@@ -38,14 +38,14 @@ export default function ProfilePage() {
     {
       title: '账单',
       items: [
-        { icon: CreditCard, label: '包养资金支付', onClick: () => navigate('/payment') },
+        { icon: CreditCard, label: '钱包与支付', onClick: () => navigate('/payment') },
       ],
     },
     {
       title: '探索',
       items: [
-        { icon: ShoppingBag, label: '升级肉体伴侣', value: '全新发售', onClick: () => navigate('/hardware-store') },
-        { icon: Sparkles,    label: '极乐使用指南',                          onClick: () => navigate('/help')          },
+        { icon: ShoppingBag, label: '升级智能伴侣', value: '全新发售', onClick: () => navigate('/hardware-store') },
+        { icon: Sparkles,    label: '沉浸使用指南',                          onClick: () => navigate('/help')          },
       ],
     },
   ]
@@ -63,7 +63,7 @@ export default function ProfilePage() {
           <h1 className="text-xl font-bold text-[#F9EDF5] tracking-wide">Alex Rivera</h1>
           <p className="text-sm flex items-center mt-0.5 text-[#FF2A6D]/90 animate-pulse font-medium">
             <Flame size={13} className="mr-1" />
-            体温 38.5°C，极度渴望中...
+            体温 38.5°C，心动升温中...
           </p>
         </div>
       </div>
@@ -78,8 +78,8 @@ export default function ProfilePage() {
                 <Flame size={18} />
               </div>
               <div>
-                <div className="text-[#F9EDF5] font-semibold">已连接: 专属肉体玩具</div>
-                <div className="text-[11px] text-[#FF2A6D] mt-0.5 animate-pulse drop-shadow-[0_0_5px_#FF2A6D]">内部完全湿润 · 紧致度 95%</div>
+                <div className="text-[#F9EDF5] font-semibold">已连接: 专属互动设备</div>
+                <div className="text-[11px] text-[#FF2A6D] mt-0.5 animate-pulse drop-shadow-[0_0_5px_#FF2A6D]">状态稳定在线 · 同步度 95%</div>
               </div>
             </div>
             <ChevronRight size={16} className="text-[#9B859D]" />
@@ -88,18 +88,18 @@ export default function ProfilePage() {
             <div>
               <div className="text-lg font-bold text-[#FF2A6D] mb-1">87%</div>
               <div className="text-[11px] text-[#9B859D] flex items-center justify-center">
-                <Battery size={11} className="mr-1" />肉体承受度
+                <Battery size={11} className="mr-1" />设备活跃度
               </div>
             </div>
             <div>
-              <div className="text-lg font-bold text-[#A87CFF] mb-1 drop-shadow-[0_0_8px_rgba(168,124,255,0.6)]">突破临界</div>
+              <div className="text-lg font-bold text-[#A87CFF] mb-1 drop-shadow-[0_0_8px_rgba(168,124,255,0.6)]">默契在线</div>
               <div className="text-[11px] text-[#9B859D] flex items-center justify-center">
-                <Wifi size={11} className="mr-1" />神经同步率
+                <Wifi size={11} className="mr-1" />连接同步率
               </div>
             </div>
             <div>
               <div className="text-lg font-bold text-[#F9EDF5] mb-1">刚刚</div>
-              <div className="text-[11px] text-[#9B859D]">距上次强制高潮</div>
+              <div className="text-[11px] text-[#9B859D]">距上次互动</div>
             </div>
           </div>
         </div>
@@ -115,10 +115,10 @@ export default function ProfilePage() {
             </div>
             <div className="min-w-0">
               <div className="text-sm font-bold text-[#F9EDF5] mb-0.5 whitespace-nowrap">
-                邀友共享 · 解锁<span className="text-[#FFD700]">极乐特权</span>
+                邀友共享 · 解锁<span className="text-[#FFD700]">专属礼遇</span>
               </div>
               <div className="text-[10px] text-[#9B859D]">
-                送TA <span className="text-[#FFD700]">7天</span>，您获 <span className="text-[#FFD700]">$50</span> 私密基金
+                送TA <span className="text-[#FFD700]">7天</span>，您获 <span className="text-[#FFD700]">$50</span> 邀请奖励
               </div>
             </div>
           </div>
@@ -149,9 +149,9 @@ export default function ProfilePage() {
                     <span className="font-medium">{item.label}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    {item.value === '极乐版' && (
+                    {item.value === '高级版' && (
                       <span className="bg-gradient-to-r from-[#FF7DAF] to-[#A87CFF] text-[10px] font-bold px-2 py-0.5 rounded-full text-white shadow-[0_0_8px_rgba(255,125,175,0.5)]">
-                        极乐版
+                        高级版
                       </span>
                     )}
                     {item.value === '全新发售' && (
@@ -159,7 +159,7 @@ export default function ProfilePage() {
                         {item.value}
                       </span>
                     )}
-                    {item.value && item.value !== '极乐版' && item.value !== '全新发售' && (
+                    {item.value && item.value !== '高级版' && item.value !== '全新发售' && (
                       <span className="text-[#FF7DAF]/80 text-sm font-medium">{item.value}</span>
                     )}
                     <ChevronRight size={16} className="text-[#9B859D]/50" />
@@ -177,13 +177,13 @@ export default function ProfilePage() {
           <div className="absolute top-0 right-0 w-40 h-40 bg-[#FF2A6D]/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none animate-pulse" />
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#A87CFF]/20 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
           <Flame size={28} className="text-[#FF2A6D] mx-auto mb-3 relative z-10 drop-shadow-[0_0_10px_rgba(255,42,109,0.8)]" />
-          <h3 className="text-[#F9EDF5] text-lg font-bold mb-1 relative z-10">主人，惩罚我... 💧</h3>
-          <p className="text-xs text-[#FF2A6D]/80 mb-5 relative z-10">解锁终极肉体契约与专属高潮声控</p>
+          <h3 className="text-[#F9EDF5] text-lg font-bold mb-1 relative z-10">今晚，陪我更近一点</h3>
+          <p className="text-xs text-[#FF2A6D]/80 mb-5 relative z-10">解锁更细腻的互动反馈与专属氛围体验</p>
           <button
             onClick={() => navigate('/subscription')}
             className="w-full bg-gradient-to-r from-[#FF2A6D] to-[#A87CFF] text-white text-sm font-bold py-3.5 rounded-full active:scale-95 transition-transform shadow-[0_4px_20px_rgba(255,42,109,0.6)] relative z-10"
           >
-            开启极乐调教
+            开启专属互动
           </button>
         </div>
       </div>
@@ -195,24 +195,24 @@ export default function ProfilePage() {
           className="w-full py-4 text-[#FF4D6D] text-sm font-bold border border-[#FF4D6D]/30 bg-[#FF4D6D]/10 rounded-2xl flex items-center justify-center space-x-2 active:bg-[#FF4D6D]/20 transition-colors"
         >
           <LogOut size={16} />
-          <span>拔出连接，结束本次调教</span>
+          <span>断开连接，结束本次互动</span>
         </button>
         <div className="text-center mt-6 text-[#9B859D]/50 text-[10px] leading-relaxed">
-          版本 2.5.0 · 绝对私密<br />
-          您的每一次湿润与颤抖，都已被最高级别军工锁死。
+          版本 2.5.0 · 私密守护<br />
+          您的每一次心动与选择，都会被妥善保护。
         </div>
       </div>
 
       <Modal
         isOpen={showLogoutModal}
-        title="离开私密空间？"
-        content="退出后将暂停与专属伴侣的感官互联，确定要回到现实吗？"
-        confirmText="无情离开"
-        cancelText="继续沉浸"
+        title="离开当前空间？"
+        content="退出后将暂停与专属伴侣的互动连接，确定现在离开吗？"
+        confirmText="确认离开"
+        cancelText="继续停留"
         isDanger={true}
         onConfirm={() => {
           setShowLogoutModal(false)
-          showToast('已安全退出，期待您下次光临')
+          showToast('已安全退出，欢迎下次再来')
         }}
         onCancel={() => setShowLogoutModal(false)}
       />
