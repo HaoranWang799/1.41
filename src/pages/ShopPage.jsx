@@ -651,7 +651,7 @@ const SCRIPT_PERSONA_FILTERS = [
   { id: 'banhua',    label: '人气焦点' },
   { id: 'boss',      label: '知性上司' },
   { id: 'secretary', label: '知性助理' },
-  { id: 'nurse',     label: '护士'     },
+  { id: 'nurse',     label: '暖心陪伴' },
   { id: 'shaofu',    label: '成熟知性' },
   { id: 'neighbor',  label: '邻家妹妹' },
   { id: 'ex',        label: '熟悉旧识' },
