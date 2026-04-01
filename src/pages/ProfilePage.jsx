@@ -10,9 +10,8 @@ import {
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const { showToast } = useApp()
+  const { showToast, lang, setLang } = useApp()
   const [showLogoutModal, setShowLogoutModal] = useState(false)
-  const [lang, setLang] = useState('zh') // 'zh' | 'en'
 
   const T = lang === 'zh' ? {
     temp: '体温 38.5°C，心动升温中...',

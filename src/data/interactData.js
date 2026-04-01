@@ -6,16 +6,16 @@
 // 震动模式
 // TODO: 替换为真实蓝牙设备震动频率控制 (setVibMode)
 export const VIB_MODES = [
-  { id: 'slow',   label: '轻柔触碰', emoji: '🌊', duration: 1.1  },
-  { id: 'medium', label: '快速撞击', emoji: '⚡', duration: 0.45 },
-  { id: 'fast',   label: '直接高潮', emoji: '🔥', duration: 0.2  },
+  { id: 'slow',   label: '轻柔触碰', labelEn: 'Gentle Touch', emoji: '🌊', duration: 1.1  },
+  { id: 'medium', label: '快速撞击', labelEn: 'Rapid Thrust',  emoji: '⚡', duration: 0.45 },
+  { id: 'fast',   label: '直接高潮', labelEn: 'Direct Climax', emoji: '🔥', duration: 0.2  },
 ]
 
 // 预设模式（点击后同时设置频率/强度/紧度）
 export const PRESETS = [
-  { id: 'gentle',   label: '轻柔', emoji: '🌊', freq: 3, intens: 2, tight: 4 },
-  { id: 'standard', label: '标准', emoji: '⚡', freq: 5, intens: 5, tight: 5 },
-  { id: 'climax',   label: '高潮', emoji: '🔥', freq: 9, intens: 8, tight: 9 },
+  { id: 'gentle',   label: '轻柔', labelEn: 'Gentle',   emoji: '🌊', freq: 3, intens: 2, tight: 4 },
+  { id: 'standard', label: '标准', labelEn: 'Standard', emoji: '⚡', freq: 5, intens: 5, tight: 5 },
+  { id: 'climax',   label: '高潮', labelEn: 'Climax',   emoji: '🔥', freq: 9, intens: 8, tight: 9 },
 ]
 
 // 10 根音波条的延迟偏移（秒）

@@ -25,59 +25,113 @@ import { SCENES } from '../data/scenes'
 import { SCRIPTS, SCRIPT_DESCRIPTIONS, BG_VIDEO_IDS } from '../data/scripts'
 import { PRESETS, TOTAL_SECONDS, pick, formatTime, generateHearts } from '../data/interactData'
 import { generateScriptText as generateScriptTextApi, generateScriptAudio as generateScriptAudioApi } from '../api/scripts'
+import { useL } from '../i18n/useL'
 
 // ── 输入提示词数据 ─────────────────────────────────
-const PROMPT_TABS = [
-  { id: 'hot',     label: '🔥 热门' },
-  { id: 'office',  label: '🏢 职场' },
-  { id: 'campus',  label: '🎓 校园' },
-  { id: 'fantasy', label: '🔒 禁忌' },
-]
+const PROMPT_TABS = {
+  zh: [
+    { id: 'hot',     label: '🔥 热门' },
+    { id: 'office',  label: '🏢 职场' },
+    { id: 'campus',  label: '🎓 校园' },
+    { id: 'fantasy', label: '🔒 禁忌' },
+  ],
+  en: [
+    { id: 'hot',     label: '🔥 Hot' },
+    { id: 'office',  label: '🏢 Office' },
+    { id: 'campus',  label: '🎓 Campus' },
+    { id: 'fantasy', label: '🔒 Taboo' },
+  ],
+}
 const PROMPT_SUGGESTIONS = {
-  hot: [
-    { text: '办公室冷感女上司加班时突然变得温柔', role: '女上司' },
-    { text: '宿舍深夜学妹对我说「学长…室友今晚不回了」', role: '学妹' },
-    { text: '跨城跨年前女友雨夜突然敲门', role: '前女友' },
-    { text: '深夜超市邻居少妇一直靠着我结账', role: '少妇' },
-  ],
-  office: [
-    { text: '女上司隔着玻璃给我传小纸条，却一直盯着我笑', role: '女上司' },
-    { text: '秘书整理文件时身体不小心靠了过来', role: '秘书' },
-    { text: '加班到最后一个，总裁关门前说「送你回去吧」', role: '女上司' },
-    { text: '实习生发错文件，被女上司说「进我办公室」', role: '女上司' },
-  ],
-  campus: [
-    { text: '图书馆学妹挪到我旁边轻声说「这题教我好不好」', role: '学妹' },
-    { text: '宿舍小万说「就咱俩还没吃呢，一起吧」', role: '邓邓' },
-    { text: '班花说忘带内衣，顺手把小外套在我面前脱了', role: '班花' },
-    { text: '学妹说「学长，我就想问你一件事」目光从未离开', role: '学妹' },
-  ],
-  fantasy: [
-    { text: '深夜迟归遇见邻居少妇，她说「别报警，我就住隔壁」', role: '少妇' },
-    { text: '女神说只要赢了两局就可以直接带我回家', role: '女神' },
-    { text: '老师和我走进恰好就我们两个人的资料室', role: '女老师' },
-    { text: '前女友连夜发来十九条消息，最后一条就三个字', role: '前女友' },
-  ],
+  zh: {
+    hot: [
+      { text: '办公室冷感女上司加班时突然变得温柔', role: '女上司' },
+      { text: '宿舍深夜学妹对我说「学长…室友今晚不回了」', role: '学妹' },
+      { text: '跨城跨年前女友雨夜突然敲门', role: '前女友' },
+      { text: '深夜超市邻居少妇一直靠着我结账', role: '少妇' },
+    ],
+    office: [
+      { text: '女上司隔着玻璃给我传小纸条，却一直盯着我笑', role: '女上司' },
+      { text: '秘书整理文件时身体不小心靠了过来', role: '秘书' },
+      { text: '加班到最后一个，总裁关门前说「送你回去吧」', role: '女上司' },
+      { text: '实习生发错文件，被女上司说「进我办公室」', role: '女上司' },
+    ],
+    campus: [
+      { text: '图书馆学妹挪到我旁边轻声说「这题教我好不好」', role: '学妹' },
+      { text: '宿舍小万说「就咱俩还没吃呢，一起吧」', role: '邓邓' },
+      { text: '班花说忘带内衣，顺手把小外套在我面前脱了', role: '班花' },
+      { text: '学妹说「学长，我就想问你一件事」目光从未离开', role: '学妹' },
+    ],
+    fantasy: [
+      { text: '深夜迟归遇见邻居少妇，她说「别报警，我就住隔壁」', role: '少妇' },
+      { text: '女神说只要赢了两局就可以直接带我回家', role: '女神' },
+      { text: '老师和我走进恰好就我们两个人的资料室', role: '女老师' },
+      { text: '前女友连夜发来十九条消息，最后一条就三个字', role: '前女友' },
+    ],
+  },
+  en: {
+    hot: [
+      { text: 'My cold boss suddenly gets tender during overtime at the office', role: 'Boss' },
+      { text: 'Late night, my junior whispers "Senpai… my roommate isn\'t coming back tonight"', role: 'Junior' },
+      { text: 'Ex-girlfriend shows up at my door on a rainy New Year\'s Eve', role: 'Ex-GF' },
+      { text: 'The neighbor lady leans on me the whole time at the late-night store', role: 'Neighbor' },
+    ],
+    office: [
+      { text: 'My boss passes me a note through the glass, smiling the whole time', role: 'Boss' },
+      { text: 'The secretary accidentally leans in while sorting files', role: 'Secretary' },
+      { text: 'Last one working late—the CEO says "Let me take you home"', role: 'Boss' },
+      { text: 'Intern sends the wrong file, boss says "Step into my office"', role: 'Boss' },
+    ],
+    campus: [
+      { text: 'A girl moves next to me in the library and whispers "Can you help me with this?"', role: 'Junior' },
+      { text: 'My dormmate says "It\'s just us who haven\'t eaten yet, let\'s go together"', role: 'Dormmate' },
+      { text: 'The class beauty forgot something and casually takes off her jacket in front of me', role: 'Beauty' },
+      { text: 'She says "I just wanted to ask you one thing" with her eyes fixed on mine', role: 'Junior' },
+    ],
+    fantasy: [
+      { text: 'Coming home late, I run into my neighbor who says "Don\'t worry, I live right next door"', role: 'Neighbor' },
+      { text: 'The goddess says if I win two rounds, she\'ll take me straight home', role: 'Goddess' },
+      { text: 'Teacher and I walk into the archive room—just the two of us', role: 'Teacher' },
+      { text: 'My ex sends 19 messages overnight—the last one is just three words', role: 'Ex-GF' },
+    ],
+  },
 }
 
 // ── 生成等待区：圆形进度 + 轮播暧昧文案 ─────────────────────
-const TEASER_LINES = [
-  '正在生成个性化互动内容…',
-  '正在匹配语音卡风格与节奏…',
-  '正在同步AI智能设备响应模式…',
-  '正在构建沉浸式体验场景…',
-  '正在优化本次互动流程…',
-  '正在加载专属体验参数…',
-  '正在校准设备反馈节奏…',
-  '正在生成智能联动方案…',
-  '正在完善本次体验细节…',
-  '正在完成专属互动系统…',
-]
+const TEASER_LINES = {
+  zh: [
+    '正在生成个性化互动内容…',
+    '正在匹配语音卡风格与节奏…',
+    '正在同步AI智能设备响应模式…',
+    '正在构建沉浸式体验场景…',
+    '正在优化本次互动流程…',
+    '正在加载专属体验参数…',
+    '正在校准设备反馈节奏…',
+    '正在生成智能联动方案…',
+    '正在完善本次体验细节…',
+    '正在完成专属互动系统…',
+  ],
+  en: [
+    'Generating personalized content…',
+    'Matching voice card style & rhythm…',
+    'Syncing AI smart device response…',
+    'Building immersive experience scene…',
+    'Optimizing interaction flow…',
+    'Loading custom experience parameters…',
+    'Calibrating device feedback rhythm…',
+    'Generating smart sync plan…',
+    'Refining experience details…',
+    'Finalizing custom interaction system…',
+  ],
+}
 
 const CIRCLE_RADIUS = 38
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS // ≈ 238.76
 
 function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota = 3 }) {
+  const { lang } = useApp()
+  const L = useL()
+  const teaserLines = TEASER_LINES[lang] || TEASER_LINES.zh
   const [idx, setIdx] = useState(0)
   const [visible, setVisible] = useState(true)
   const [showVipModal, setShowVipModal] = useState(false)
@@ -87,7 +141,7 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
     const cycle = setInterval(() => {
       setVisible(false)
       setTimeout(() => {
-        setIdx(i => (i + 1) % TEASER_LINES.length)
+        setIdx(i => (i + 1) % teaserLines.length)
         setVisible(true)
       }, 400)
     }, 2000)
@@ -101,7 +155,7 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
     <section className="animate-fadeUp">
       <div className="flex items-center gap-2 mb-3">
         <span className="text-sm">✨</span>
-        <h2 className="text-sm font-semibold text-[rgba(245,240,242,0.85)] tracking-wide">为你定制</h2>
+        <h2 className="text-sm font-semibold text-[rgba(245,240,242,0.85)] tracking-wide">{L('为你定制', 'Crafted for You')}</h2>
       </div>
       <div
         className="rounded-2xl flex flex-col items-center justify-center py-8 px-6 gap-4"
@@ -111,7 +165,7 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
         {!isDone && (
           <div className="text-center space-y-1.5">
             <p className="text-sm font-semibold text-[rgba(245,240,242,0.92)] tracking-wide">
-              ✨ AI正在为你定制体验
+              ✨ {L('AI正在为你定制体验', 'AI is crafting your experience')}
             </p>
           </div>
         )}
@@ -157,13 +211,13 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
         {!isDone && (
           <div className="text-center space-y-1.5">
             <p className="text-[11px] text-[rgba(245,240,242,0.50)]">
-              本月免费额度：<span className="text-white font-semibold">{remainingQuota}</span>
+              {L('本月免费额度：', 'Monthly free quota: ')}<span className="text-white font-semibold">{remainingQuota}</span>
               <span className="text-[rgba(245,240,242,0.35)]"> / {totalQuota}</span>
             </p>
             <p
               className="text-[10px] text-[rgba(245,240,242,0.35)] mt-0.5"
             >
-              升级VIP解锁无限次数
+              {L('升级VIP解锁无限次数', 'Upgrade to VIP for unlimited access')}
             </p>
             <button
               onClick={() => setShowVipModal(true)}
@@ -173,7 +227,7 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
                 boxShadow: '0 0 14px rgba(179,128,255,0.45)',
               }}
             >
-              ✨ 立即升级VIP
+              ✨ {L('立即升级VIP', 'Upgrade to VIP')}
             </button>
           </div>
         )}
@@ -189,7 +243,7 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
               animation: 'pulse 1.6s ease-in-out infinite',
             }}
           >
-            现在进入 →
+                        {L('现在进入 →', 'Enter Now →')}
           </button>
         ) : (
           <p
@@ -201,7 +255,7 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
               WebkitTextFillColor: 'transparent',
             }}
           >
-            {TEASER_LINES[idx]}
+            {teaserLines[idx]}
           </p>
         )}
       </div>
@@ -216,17 +270,17 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
           >
             {/* 标题 */}
             <div className="text-center space-y-1">
-              <p className="text-lg font-bold text-white">✨ 升级VIP会员</p>
-              <p className="text-[11px] text-[rgba(245,240,242,0.45)]">解锁全部专属权益，畅享无限体验</p>
+              <p className="text-lg font-bold text-white">✨ {L('升级VIP会员', 'Upgrade to VIP')}</p>
+              <p className="text-[11px] text-[rgba(245,240,242,0.45)]">{L('解锁全部专属权益，畅享无限体验', 'Unlock all benefits, enjoy unlimited access')}</p>
             </div>
 
             {/* 权益列表 */}
             <div className="space-y-3">
               {[
-                { icon: '♾️', title: '无限AI生成', desc: '不限次数定制专属体验' },
-                { icon: '🎭', title: '全角色解锁', desc: '畅享所有角色与剧本' },
-                { icon: '🎧', title: '高保真语音', desc: 'AI语音卡优先生成' },
-                { icon: '⚡', title: '极速生成', desc: '专属加速通道，秒级响应' },
+                { icon: '♾️', title: L('无限AI生成', 'Unlimited AI'), desc: L('不限次数定制专属体验', 'Unlimited custom experiences') },
+                { icon: '🎭', title: L('全角色解锁', 'All Characters'), desc: L('畅享所有角色与剧本', 'Access all characters & scripts') },
+                { icon: '🎧', title: L('高保真语音', 'HD Voice'), desc: L('AI语音卡优先生成', 'Priority AI voice generation') },
+                { icon: '⚡', title: L('极速生成', 'Turbo Speed'), desc: L('专属加速通道，秒级响应', 'Dedicated fast lane, instant response') },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-2.5" style={{ background: 'rgba(179,128,255,0.08)' }}>
                   <span className="text-lg">{item.icon}</span>
@@ -247,12 +301,12 @@ function LoadingPanel({ progress, phase, onEnter, remainingQuota = 2, totalQuota
                 boxShadow: '0 0 20px rgba(179,128,255,0.5)',
               }}
             >
-              立即开通 VIP · $9.99/月 · $59.99/年
+              {L('立即开通 VIP · $9.99/月 · $59.99/年', 'Subscribe VIP · $9.99/mo · $59.99/yr')}
             </button>
 
             {/* 关闭 */}
             <p className="text-center text-[10px] text-[rgba(245,240,242,0.30)] cursor-pointer" onClick={() => setShowVipModal(false)}>
-              稍后再说
+              {L('稍后再说', 'Maybe Later')}
             </p>
           </div>
         </div>
@@ -268,7 +322,12 @@ export default function HomePage() {
     genPhase, setGenPhase,
     generatedScripts, setGeneratedScripts,
     genTimerRef, phase2bTimerRef, ttsReadyRef,
+    lang,
   } = useApp()
+  const L = useL()
+  const d = (item, field) => (lang === 'en' && item?.[field + 'En']) || item?.[field]
+  const promptTabs = PROMPT_TABS[lang] || PROMPT_TABS.zh
+  const promptSugs = PROMPT_SUGGESTIONS[lang] || PROMPT_SUGGESTIONS.zh
 
   // ── 视图状态（'select' | 'interact'）──────────────────────
   const [view, setView] = useState('select')
@@ -376,8 +435,8 @@ export default function HomePage() {
 
   // 交互模式显示：自定义剧本用 customDisplayName / customTag，默认用角色字段
   const displayEmoji = activeScript?.isCustom ? activeScript.cover              : activeChar?.emoji
-  const displayName  = activeScript?.isCustom ? activeScript.customDisplayName  : activeChar?.name
-  const displayTag   = activeScript?.isCustom ? activeScript.customTag          : activeChar?.tag
+  const displayName  = activeScript?.isCustom ? activeScript.customDisplayName  : d(activeChar, 'name')
+  const displayTag   = activeScript?.isCustom ? activeScript.customTag          : d(activeChar, 'tag')
 
   // 场景氛围叠加色（随温度变深）
   const overlayStyle = activeScene
@@ -385,14 +444,15 @@ export default function HomePage() {
     : {}
 
   // 场景氛围文字（三阶段）
-  const ambianceText = activeScene
-    ? (temperature >= 60 ? activeScene.ambiance.hot  :
-       temperature >= 20 ? activeScene.ambiance.warm :
-                           activeScene.ambiance.idle)
+  const ambianceObj = activeScene ? ((lang === 'en' && activeScene.ambianceEn) || activeScene.ambiance) : null
+  const ambianceText = ambianceObj
+    ? (temperature >= 60 ? ambianceObj.hot  :
+       temperature >= 20 ? ambianceObj.warm :
+                           ambianceObj.idle)
     : ''
 
   // 主按钮文字
-  const buttonLabel = temperature === 0 ? '轻触开始' : isIntimate ? '继续靠近' : '继续触碰'
+  const buttonLabel = temperature === 0 ? L('轻触开始', 'Tap to Start') : isIntimate ? L('继续靠近', 'Get Closer') : L('继续触碰', 'Keep Touching')
 
   // 定制剧本"开始互动"按钮是否可用
   const canStartCustom = !!selectedCharId && !!selectedSceneId
@@ -525,9 +585,10 @@ export default function HomePage() {
   // TODO: 替换为真实 LLM 接口 (getAIResponse)
   const pickResponse = useCallback((isIntimateMode) => {
     if (!activeChar) return ''
-    const pool = isIntimateMode ? activeChar.responses.intimate : activeChar.responses.normal
+    const responses = (lang === 'en' && activeChar.responsesEn) || activeChar.responses
+    const pool = isIntimateMode ? responses.intimate : responses.normal
     return pick(pool)
-  }, [activeChar])
+  }, [activeChar, lang])
 
   // ── 自动文案更新（每 3 秒换一句）────────────────────────
   useEffect(() => {
@@ -672,7 +733,7 @@ export default function HomePage() {
   const handleVoiceClick = useCallback(() => {
     if (isVoiceActive) return
     setIsVoiceActive(true)
-    setDisplayedText('AI 情绪识别中…')
+    setDisplayedText(L('AI 情绪识别中…', 'AI Emotion Analyzing…'))
     setIsTyping(false)
     setTimeout(() => {
       setIsVoiceActive(false)
@@ -686,7 +747,7 @@ export default function HomePage() {
   // ── 自定义剧本生成（B方案：Grok + Fish Audio 两段式进度）────
   const handleGenerate = useCallback(async () => {
     if (!customPrompt.trim()) {
-      alert('✨ 请先描述你的幻想场景和角色，让 AI 为你创造专属剧本。')
+      alert(L('✨ 请先描述你的幻想场景和角色，让 AI 为你创造专属剧本。', '✨ Please describe your fantasy scene and characters first.'))
       return
     }
 
@@ -718,7 +779,7 @@ export default function HomePage() {
       if (phase2bTimerRef.current) clearTimeout(phase2bTimerRef.current)
       setIsGenerating(false)
       setGenPhase(null)
-      alert(`✨ 生成失败：${err.message}`)
+      alert(L(`✨ 生成失败：${err.message}`, `✨ Generation failed: ${err.message}`))
       return
     }
 
@@ -776,11 +837,11 @@ export default function HomePage() {
         sceneId:        'balcony',
         cover:          witchChar.emoji,
         coverEmoji:     witchChar.emoji,
-        tag:            'AI 生成',
-        downloads:      'AI 生成',
+        tag:            lang === 'en' ? 'AI Generated' : 'AI 生成',
+        downloads:      lang === 'en' ? 'AI Generated' : 'AI 生成',
         rating:         null,
-        name:           witchChar.name,
-        personalityTag: witchChar.tag,
+        name:           d(witchChar, 'name'),
+        personalityTag: d(witchChar, 'tag'),
         openingLine:    character.openingLine,
         gradient:       'from-[#1a0a30] to-[#3a1060]',
         audioBase64:    audioBase64 || null,
@@ -792,11 +853,11 @@ export default function HomePage() {
         sceneId:        'balcony',
         cover:          knightChar.emoji,
         coverEmoji:     knightChar.emoji,
-        tag:            'AI 生成',
-        downloads:      'AI 生成',
+        tag:            lang === 'en' ? 'AI Generated' : 'AI 生成',
+        downloads:      lang === 'en' ? 'AI Generated' : 'AI 生成',
         rating:         null,
-        name:           knightChar.name,
-        personalityTag: knightChar.tag,
+        name:           d(knightChar, 'name'),
+        personalityTag: d(knightChar, 'tag'),
         openingLine:    character.openingLine,
         gradient:       'from-[#0d1a3a] to-[#1a3860]',
         audioBase64:    audioBase64 || null,
@@ -825,10 +886,10 @@ export default function HomePage() {
       charId:         selectedCharId,
       sceneId:        selectedSceneId,
       cover:          char.emoji,
-      name:           `${scene.name}·${char.name}`,
-      tag:            '定制',
-      personalityTag: char.tag,
-      openingLine:    char.intro,
+      name:           `${d(scene, 'name')}·${d(char, 'name')}`,
+      tag:            lang === 'en' ? 'Custom' : '定制',
+      personalityTag: d(char, 'tag'),
+      openingLine:    d(char, 'intro'),
       downloads:      null,
       rating:         null,
       gradient:       'from-[#1a1028] to-[#251840]',
@@ -939,10 +1000,10 @@ export default function HomePage() {
               <span className="flex-shrink-0 text-xl leading-none">🔥</span>
               <div>
                 <p className="text-[13px] font-bold text-white leading-snug">
-                  你昨天的记录是亚洲第 888 名，实在是 🍌 猛男！
+                  {L('你昨天的记录是亚洲第 888 名，实在是 🍌 猛男！', 'Your record yesterday ranked #888 in Asia, absolute 🍌 beast!')}
                 </p>
                 <p className="text-[11px] font-medium text-white/75 mt-0.5">
-                  今天继续冲刺，冲进 Top 500～
+                  {L('今天继续冲刺，冲进 Top 500～', 'Keep pushing today, aim for Top 500!')}
                 </p>
               </div>
             </div>
@@ -951,12 +1012,12 @@ export default function HomePage() {
             <div className="rounded-2xl px-4 py-3 flex items-center gap-3 bg-[#1E1324]/80 border border-[#A87CFF]/20">
               <div className="flex-1 min-w-0">
                 <p className="text-[12px] font-semibold text-[#F9EDF5] leading-snug">
-                  设备已连接：<span className="text-[#A87CFF]">X1 Pro</span>　电量：<span className="text-[#FF7DAF]">87%</span>　模式：<span className="text-[#A87CFF]">沉浸同步</span>
+                  {L('设备已连接：', 'Device Connected: ')}<span className="text-[#A87CFF]">X1 Pro</span>　{L('电量：', 'Battery: ')}<span className="text-[#FF7DAF]">87%</span>　{L('模式：', 'Mode: ')}<span className="text-[#A87CFF]">{L('沉浸同步', 'Immersive Sync')}</span>
                 </p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#A87CFF] animate-pulse" />
-                <span className="text-[9px] text-[#A87CFF]/70">在线</span>
+                <span className="text-[9px] text-[#A87CFF]/70">{L('在线', 'Online')}</span>
               </div>
             </div>
 
@@ -965,7 +1026,7 @@ export default function HomePage() {
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles size={14} className="text-[#FF9ACB]" />
                 <h2 className="text-sm font-semibold text-[rgba(245,240,242,0.85)] tracking-wide">
-                  生成你的专属
+                  {L('生成你的专属', 'Generate Your Custom')}
                 </h2>
                 <span className="text-[9px] text-[rgba(245,240,242,0.35)] ml-auto">AI Beta</span>
               </div>
@@ -980,7 +1041,7 @@ export default function HomePage() {
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                   onKeyDown={(e) => e.key === 'Enter' && !isGenerating && handleGenerate()}
                   disabled={isGenerating}
-                  placeholder="描述你心中的幻想场景和角色…"
+                  placeholder={L('描述你心中的幻想场景和角色…', 'Describe your fantasy scene and characters…')}
                   className="
                     w-full rounded-xl px-3 py-2.5 text-xs
                     bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)]
@@ -995,7 +1056,7 @@ export default function HomePage() {
                   <div className="absolute left-0 right-0 top-full mt-2 z-30 rounded-2xl overflow-hidden border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)]" style={{ background: 'linear-gradient(160deg,#1a0a22,#120818)' }}>
                     {/* Tab 行 */}
                     <div className="flex gap-1 p-2 pb-0">
-                      {PROMPT_TABS.map(t => (
+                      {promptTabs.map(t => (
                         <button
                           key={t.id}
                           onMouseDown={e => { e.preventDefault(); setSuggestionTab(t.id) }}
@@ -1011,7 +1072,7 @@ export default function HomePage() {
                     </div>
                     {/* 建议列表 */}
                     <div className="p-2 space-y-1">
-                      {PROMPT_SUGGESTIONS[suggestionTab].map((s, i) => (
+                      {promptSugs[suggestionTab].map((s, i) => (
                         <button
                           key={i}
                           onMouseDown={e => { e.preventDefault(); setCustomPrompt(s.text); setShowSuggestions(false) }}
@@ -1031,8 +1092,8 @@ export default function HomePage() {
                   className="flex-shrink-0 flex items-center gap-1.5 btn-main rounded-xl px-3 py-2.5 text-white text-xs font-medium whitespace-nowrap disabled:opacity-60"
                 >
                   {isGenerating
-                    ? <span className="flex items-center gap-1">⏳ 生成中…</span>
-                    : <><Sparkles size={13} />AI智能生成</>
+                    ? <span className="flex items-center gap-1">⏳ {L('生成中…', 'Generating…')}</span>
+                    : <><Sparkles size={13} />{L('AI智能生成', 'AI Generate')}</>
                   }
                 </button>
               </div>
@@ -1058,13 +1119,13 @@ export default function HomePage() {
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-sm">✨</span>
                   <h2 className="text-sm font-semibold text-[rgba(245,240,242,0.85)] tracking-wide">
-                    为你定制
+                    {L('为你定制', 'Crafted for You')}
                   </h2>
                   <span
                     className="text-[9px] rounded-full px-2 py-0.5 ml-auto text-white font-medium"
                     style={{ background: 'linear-gradient(135deg, #FF9ACB, #B380FF)' }}
                   >
-                    AI定制
+                    {L('AI定制', 'AI Custom')}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -1084,9 +1145,9 @@ export default function HomePage() {
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-sm">🌙</span>
                 <h2 className="text-sm font-semibold text-[rgba(245,240,242,0.85)] tracking-wide">
-                  今夜为你推荐
+                  {L('今夜为你推荐', "Tonight's Picks")}
                 </h2>
-                <span className="text-[9px] text-[rgba(245,240,242,0.35)] ml-auto">点击进入</span>
+                <span className="text-[9px] text-[rgba(245,240,242,0.35)] ml-auto">{L('点击进入', 'Tap to Enter')}</span>
               </div>
 
               {/* grid-cols-2：双列等宽网格 */}
@@ -1107,7 +1168,7 @@ export default function HomePage() {
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-base">🎨</span>
                 <h2 className="text-[15px] font-semibold text-[rgba(245,240,242,0.9)] tracking-wide">
-                  定制你的剧本
+                  {L('定制你的剧本', 'Customize Your Script')}
                 </h2>
                 <span
                   className="text-[9px] rounded-full px-2 py-0.5 ml-auto"
@@ -1116,17 +1177,17 @@ export default function HomePage() {
                     color: '#B380FF',
                   }}
                 >
-                  自由组合
+                  {L('自由组合', 'Mix & Match')}
                 </span>
               </div>
 
               {/* 角色选择行（横向滚动，单选） */}
               <div className="mb-2">
                 <p className="text-[10px] text-[rgba(245,240,242,0.4)] tracking-wider mb-2">
-                  选择角色
+                  {L('选择角色', 'Select Character')}
                   {selectedCharId && (
                     <span className="text-[#FF9ACB] ml-1.5">
-                      · {CHARACTERS.find(c => c.id === selectedCharId)?.name}
+                      · {d(CHARACTERS.find(c => c.id === selectedCharId), 'name')}
                     </span>
                   )}
                 </p>
@@ -1160,10 +1221,10 @@ export default function HomePage() {
               {/* 场景选择行（横向滚动，单选） */}
               <div className="mb-5 mt-4">
                 <p className="text-[10px] text-[rgba(245,240,242,0.4)] tracking-wider mb-2">
-                  选择场景
+                  {L('选择场景', 'Select Scene')}
                   {selectedSceneId && (
                     <span className="text-[#B380FF] ml-1.5">
-                      · {SCENES.find(s => s.id === selectedSceneId)?.name}
+                      · {d(SCENES.find(s => s.id === selectedSceneId), 'name')}
                     </span>
                   )}
                 </p>
@@ -1208,7 +1269,7 @@ export default function HomePage() {
                 `}
               >
                 <Sparkles size={15} className={canStartCustom ? 'opacity-100' : 'opacity-30'} />
-                {canStartCustom ? '✨ 开始互动' : '请先选择角色和场景'}
+                {canStartCustom ? L('✨ 开始互动', '✨ Start') : L('请先选择角色和场景', 'Select a character and scene first')}
               </button>
             </section>
 
@@ -1271,13 +1332,13 @@ export default function HomePage() {
                 onClick={exitInteract}
                 className="flex items-center gap-1.5 text-[11px] font-medium text-[rgba(245,240,242,0.75)] bg-[rgba(255,255,255,0.1)] rounded-full px-3 py-1.5 active:scale-95 transition-all"
               >
-                ← 全部剧本
+                ← {L('全部剧本', 'All Scripts')}
               </button>
               <button
                 onClick={() => setShowScriptDetail(true)}
                 className="flex items-center gap-1.5 text-[11px] font-medium text-[rgba(245,240,242,0.75)] bg-[rgba(255,255,255,0.1)] rounded-full px-3 py-1.5 active:scale-95 transition-all"
               >
-                ℹ️ 剧本详情
+                ℹ️ {L('剧本详情', 'Script Details')}
               </button>
             </div>
 
@@ -1299,7 +1360,7 @@ export default function HomePage() {
                     {displayedText}
                   </p>
                 ) : (
-                  <p className="text-xs text-[rgba(245,240,242,0.2)] italic">等待回应…</p>
+                  <p className="text-xs text-[rgba(245,240,242,0.2)] italic">{L('等待回应…', 'Waiting…')}</p>
                 )}
               </div>
 
@@ -1325,8 +1386,8 @@ export default function HomePage() {
                           border: '1px solid rgba(255,255,255,0.16)',
                         }
                   }
-                  aria-label={isPaused ? '继续播放' : '暂停播放'}
-                  title={isPaused ? '继续播放' : '暂停播放'}
+                  aria-label={isPaused ? L('继续播放', 'Resume') : L('暂停播放', 'Pause')}
+                  title={isPaused ? L('继续播放', 'Resume') : L('暂停播放', 'Pause')}
                 >
                   {isPaused
                     ? <Play size={13} className="text-[#f5f0f2] ml-0.5" />
@@ -1386,8 +1447,8 @@ export default function HomePage() {
               }
             >
               <span className="text-base select-none">✦</span>
-              AI 智能
-              {controlMode === 'ai' && <span className="text-[10px] font-normal opacity-80">· 开启中</span>}
+              {L('AI 智能', 'AI Smart')}
+              {controlMode === 'ai' && <span className="text-[10px] font-normal opacity-80">{L('· 开启中', '· Active')}</span>}
             </button>
 
             {/* 节奏模式（始终显示） */}
@@ -1408,9 +1469,9 @@ export default function HomePage() {
               </>
 
               {/* 手动调节滑杆（始终可见） */}
-              <SliderControl icon="📶" label="频率" value={freq}   onChange={(v) => { setFreq(v);   setControlMode('manual'); }} />
-              <SliderControl icon="💪" label="强度" value={intens} onChange={(v) => { setIntens(v); setControlMode('manual'); }} />
-              <SliderControl icon="🔒" label="紧度" value={tight}  onChange={(v) => { setTight(v);  setControlMode('manual'); }} />
+              <SliderControl icon="📶" label={L('频率', 'Frequency')} value={freq}   onChange={(v) => { setFreq(v);   setControlMode('manual'); }} />
+              <SliderControl icon="💪" label={L('强度', 'Intensity')} value={intens} onChange={(v) => { setIntens(v); setControlMode('manual'); }} />
+              <SliderControl icon="🔒" label={L('紧度', 'Tightness')} value={tight}  onChange={(v) => { setTight(v);  setControlMode('manual'); }} />
             </div>
 
             {/* 快捷预设（点击自动退出 AI 模式） */}
@@ -1466,7 +1527,7 @@ export default function HomePage() {
             {/* 剧本简介长文案 */}
             {activeChar && SCRIPT_DESCRIPTIONS[activeChar.id] && (
               <div className="rounded-2xl p-4 mb-3 bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.07)]">
-                <p className="text-[9px] text-[rgba(245,240,242,0.35)] tracking-widest mb-2">剧本简介</p>
+                <p className="text-[9px] text-[rgba(245,240,242,0.35)] tracking-widest mb-2">{L('剧本简介', 'Synopsis')}</p>
                 <p className="text-[11px] text-[rgba(245,240,242,0.72)] leading-relaxed">
                   {SCRIPT_DESCRIPTIONS[activeChar.id]}
                 </p>
@@ -1476,16 +1537,16 @@ export default function HomePage() {
             {/* 角色信息 */}
             {activeChar && (
               <div className="rounded-2xl p-4 mb-3 bg-[rgba(255,154,203,0.06)] border border-[rgba(255,154,203,0.1)]">
-                <p className="text-[9px] text-[rgba(245,240,242,0.35)] tracking-widest mb-2">角色</p>
+                <p className="text-[9px] text-[rgba(245,240,242,0.35)] tracking-widest mb-2">{L('角色', 'Character')}</p>
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-2xl select-none">{activeChar.emoji}</span>
                   <div>
-                    <p className="text-[13px] font-semibold text-[rgba(245,240,242,0.9)]">{activeChar.name}</p>
-                    <p className="text-[10px] text-[rgba(179,128,255,0.8)]">{activeChar.tag}</p>
+                    <p className="text-[13px] font-semibold text-[rgba(245,240,242,0.9)]">{d(activeChar, 'name')}</p>
+                    <p className="text-[10px] text-[rgba(179,128,255,0.8)]">{d(activeChar, 'tag')}</p>
                   </div>
                 </div>
                 <p className="text-[11px] text-[rgba(245,240,242,0.55)] italic leading-relaxed">
-                  "{activeChar.intro}"
+                  "{d(activeChar, 'intro')}"
                 </p>
               </div>
             )}
@@ -1493,13 +1554,13 @@ export default function HomePage() {
             {/* 场景信息 */}
             {activeScene && (
               <div className="rounded-2xl p-4 mb-5 bg-[rgba(179,128,255,0.06)] border border-[rgba(179,128,255,0.1)]">
-                <p className="text-[9px] text-[rgba(245,240,242,0.35)] tracking-widest mb-2">场景</p>
+                <p className="text-[9px] text-[rgba(245,240,242,0.35)] tracking-widest mb-2">{L('场景', 'Scene')}</p>
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-2xl select-none">{activeScene.emoji}</span>
-                  <p className="text-[13px] font-semibold text-[rgba(245,240,242,0.9)]">{activeScene.name}</p>
+                  <p className="text-[13px] font-semibold text-[rgba(245,240,242,0.9)]">{d(activeScene, 'name')}</p>
                 </div>
                 <p className="text-[11px] text-[rgba(245,240,242,0.55)] italic leading-relaxed">
-                  {activeScene.ambiance.idle}
+                  {(lang === 'en' && activeScene.ambianceEn?.idle) || activeScene.ambiance.idle}
                 </p>
               </div>
             )}
@@ -1509,7 +1570,7 @@ export default function HomePage() {
               onClick={() => setShowScriptDetail(false)}
               className="w-full py-3 rounded-2xl text-[13px] font-medium text-[rgba(245,240,242,0.6)] bg-[rgba(255,255,255,0.07)] active:scale-[0.98] transition-all"
             >
-              关闭
+              {L('关闭', 'Close')}
             </button>
           </div>
         </div>

@@ -3,11 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { ArrowLeft, Send } from 'lucide-react'
 import { fetchVirtualLoverMessage } from '../api/virtualLover'
+import { useL } from '../i18n/useL'
 
 export default function ChatPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { showToast } = useApp()
+  const L = useL()
   const [inputVal, setInputVal] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [streamingReply, setStreamingReply] = useState('')
@@ -35,7 +37,7 @@ export default function ChatPage() {
         // ignore invalid cache
       }
     }
-    return [{ role: 'ai', text: `主人，${lover.name} 在这，今晚想和我聊点什么？` }]
+    return [{ role: 'ai', text: L(`主人，${lover.name} 在这，今晚想和我聊点什么？`, `Hey, ${lover.name} is here. What shall we talk about tonight?`) }]
   })
 
   useEffect(() => {
@@ -99,25 +101,25 @@ export default function ChatPage() {
         forceRefresh: true,
         text: content,
         context: {
-          userName: '主人',
+          userName: L('主人', 'Master'),
           loverId: lover.id,
           loverName: lover.name,
         },
       })
 
-      const reply = String(result?.text || '').trim() || '我在这，继续和我说说吧。'
+      const reply = String(result?.text || '').trim() || L('我在这，继续和我说说吧。', "I'm here, keep talking to me.")
       await streamAiReply(reply)
 
       if (result?.fallback) {
-        showToast('当前网络不稳定，已使用降级回复')
+        showToast(L('当前网络不稳定，已使用降级回复', 'Network unstable, using fallback reply'))
       }
     } catch (error) {
       setStreamingReply('')
       setMessages((prev) => [
         ...prev,
-        { role: 'ai', text: '我刚刚有点走神了，再和我说一次好吗？' },
+        { role: 'ai', text: L('我刚刚有点走神了，再和我说一次好吗？', 'Sorry, I got distracted. Could you say that again?') },
       ])
-      showToast(error?.message || '发送失败，请稍后重试')
+      showToast(error?.message || L('发送失败，请稍后重试', 'Failed to send, please try again later'))
     } finally {
       setIsSending(false)
     }
@@ -130,7 +132,7 @@ export default function ChatPage() {
         <button onClick={() => navigate(-1)} className="p-2 text-[#9B859D]">
           <ArrowLeft size={24} />
         </button>
-        <h1 className="text-base font-bold text-[#F9EDF5]">{lover.name} 专属对话</h1>
+        <h1 className="text-base font-bold text-[#F9EDF5]">{L(`${lover.name} 专属对话`, `${lover.name} Private Chat`)}</h1>
         <div className="w-10" />
       </div>
 
@@ -154,7 +156,7 @@ export default function ChatPage() {
               {lover.avatar}
             </div>
             <div className="bg-[#1E1324] text-sm p-3 rounded-2xl text-[#CDB9D4] max-w-[80%] leading-relaxed">
-              正在想你这句话...
+              {L('正在想你这句话...', 'Thinking about what you said...')}
             </div>
           </div>
         )}
@@ -175,7 +177,7 @@ export default function ChatPage() {
         <div className="flex bg-[#1E1324] rounded-full p-2 pl-4 items-center">
           <input
             type="text"
-            placeholder="发送指令..."
+            placeholder={L('发送指令...', 'Send a message...')}
             value={inputVal}
             onChange={(e) => setInputVal(e.target.value)}
             onKeyDown={(e) => {

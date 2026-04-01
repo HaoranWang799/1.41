@@ -2,15 +2,17 @@ import { useNavigate } from 'react-router-dom'
 import HeaderBar from '../components/ui/HeaderBar'
 import LunaCupIcon from '../components/ui/LunaCupIcon'
 import { useApp } from '../context/AppContext'
+import { useL } from '../i18n/useL'
 import { Activity, Flame, ShieldCheck } from 'lucide-react'
 
 export default function HardwareStorePage() {
   const navigate = useNavigate()
   const { showToast } = useApp()
+  const L = useL()
 
   return (
     <div className="flex flex-col h-[100dvh] bg-[#0C060B] text-[#F9EDF5]">
-      <HeaderBar title="Luna 旗舰硬件" onBack={() => navigate(-1)} />
+      <HeaderBar title={L("Luna 旗舰硬件", "Luna Flagship Hardware")} onBack={() => navigate(-1)} />
 
       <div className="flex-1 overflow-y-auto pb-28 no-scrollbar">
         {/* Hero */}
@@ -28,7 +30,7 @@ export default function HardwareStorePage() {
             Luna Pro Max
           </h2>
           <p className="text-[#9B859D] text-sm tracking-widest z-10 font-light">
-            打破虚拟与现实的物理界限
+            {L("打破虚拟与现实的物理界限", "Bridging Virtual & Reality")}
           </p>
         </div>
 
@@ -38,21 +40,21 @@ export default function HardwareStorePage() {
             <div className="w-12 h-12 bg-[#A87CFF]/10 rounded-2xl flex items-center justify-center mb-4 border border-[#A87CFF]/20">
               <Activity size={24} className="text-[#A87CFF]" />
             </div>
-            <h3 className="text-lg font-bold text-[#F9EDF5] mb-2">全息感官 · 毫秒级随动</h3>
+            <h3 className="text-lg font-bold text-[#F9EDF5] mb-2">{L("全息感官 · 毫秒级随动", "Holographic Sensory · Millisecond Response")}</h3>
             <p className="text-xs text-[#9B859D] leading-relaxed">
-              革命性的音频解析引擎。她的每一次娇喘、剧本中的每一次撞击音效，都会转化为毫秒级延迟的震动与收缩指令。
+              {L("革命性的音频解析引擎。她的每一次娇喘、剧本中的每一次撞击音效，都会转化为毫秒级延迟的震动与收缩指令。", "Revolutionary audio parsing engine. Every moan, every impact sound in the script is converted into vibration and contraction commands with millisecond latency.")}
             </p>
           </div>
           <div className="flex space-x-4">
             <div className="flex-1 bg-[#1E1324] border border-white/5 rounded-3xl p-5">
               <Flame size={22} className="text-[#FF4D6D] mb-3" />
-              <h3 className="text-sm font-bold text-[#F9EDF5] mb-1">38.5℃ 肌肤恒温</h3>
-              <p className="text-[10px] text-[#9B859D]">石墨烯瞬热技术，完美复刻真实肉体包裹感。</p>
+              <h3 className="text-sm font-bold text-[#F9EDF5] mb-1">{L("38.5℃ 肌肤恒温", "38.5℃ Body-Temp Warmth")}</h3>
+              <p className="text-[10px] text-[#9B859D]">{L("石墨烯瞬热技术，完美复刻真实肉体包裹感。", "Graphene instant-heat technology for a lifelike warmth.")}</p>
             </div>
             <div className="flex-1 bg-[#1E1324] border border-white/5 rounded-3xl p-5">
               <ShieldCheck size={22} className="text-[#80DFFF] mb-3" />
-              <h3 className="text-sm font-bold text-[#F9EDF5] mb-1">静音马达</h3>
-              <p className="text-[10px] text-[#9B859D]">动力与静音的完美平衡，守护绝对隐私。</p>
+              <h3 className="text-sm font-bold text-[#F9EDF5] mb-1">{L("静音马达", "Silent Motor")}</h3>
+              <p className="text-[10px] text-[#9B859D]">{L("动力与静音的完美平衡，守护绝对隐私。", "Perfect balance of power and silence for total privacy.")}</p>
             </div>
           </div>
         </div>
@@ -69,10 +71,10 @@ export default function HardwareStorePage() {
             </div>
           </div>
           <button
-            onClick={() => showToast('已加入私密购物车')}
+            onClick={() => showToast(L('已加入私密购物车', 'Added to private cart'))}
             className="w-2/3 bg-gradient-to-r from-[#FF7DAF] to-[#A87CFF] text-white py-3.5 rounded-2xl font-bold active:scale-95 transition-transform"
           >
-            立即拥有
+            {L("立即拥有", "Buy Now")}
           </button>
         </div>
       </div>

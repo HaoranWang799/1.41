@@ -4,18 +4,21 @@ import { motion, useAnimation } from 'framer-motion'
 import HeaderBar from '../components/ui/HeaderBar'
 import Switch from '../components/ui/Switch'
 import { useApp } from '../context/AppContext'
+import { useL } from '../i18n/useL'
 import { Lock, Unlock, AlertTriangle } from 'lucide-react'
 
-const PRIVACY_ITEMS = [
-  { key: 'profilePublic',    label: '对外展示互动数据',   desc: '允许在社区中展示部分匿名互动指标',              default: false },
-  { key: 'analytics',       label: '上传互动强度记录',   desc: '用于优化 AI 伴侣的节奏与反馈准确度',        default: true  },
-  { key: 'personalization', label: '个性偏好深度分析',     desc: '记录长期偏好以生成更贴合的专属内容',            default: true  },
-  { key: 'emailNotif',      label: '专属消息通知',       desc: '收到专属消息时第一时间提醒',            default: true  },
+const getPRIVACY_ITEMS = (L) => [
+  { key: 'profilePublic',    label: L('对外展示互动数据', 'Public Interaction Data'),   desc: L('允许在社区中展示部分匿名互动指标', 'Allow displaying anonymous interaction metrics in the community'),              default: false },
+  { key: 'analytics',       label: L('上传互动强度记录', 'Upload Interaction Records'),   desc: L('用于优化 AI 伴侣的节奏与反馈准确度', 'Used to optimize AI companion rhythm and feedback accuracy'),        default: true  },
+  { key: 'personalization', label: L('个性偏好深度分析', 'Deep Preference Analysis'),     desc: L('记录长期偏好以生成更贴合的专属内容', 'Record long-term preferences for more personalized content'),            default: true  },
+  { key: 'emailNotif',      label: L('专属消息通知', 'Message Notifications'),       desc: L('收到专属消息时第一时间提醒', 'Get notified immediately for exclusive messages'),            default: true  },
 ]
 
 export default function PrivacyPage() {
   const navigate = useNavigate()
   const { showToast } = useApp()
+  const L = useL()
+  const PRIVACY_ITEMS = getPRIVACY_ITEMS(L)
   const [settings, setSettings] = useState(
     () => Object.fromEntries(PRIVACY_ITEMS.map(i => [i.key, i.default]))
   )
@@ -25,9 +28,9 @@ export default function PrivacyPage() {
   const toggle = (key) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }))
     if (key === 'profilePublic' && !settings[key]) {
-      showToast('⚠️ 提醒：你已开启对外数据展示')
+      showToast(L('⚠️ 提醒：你已开启对外数据展示', '⚠️ Warning: Public data display enabled'))
     } else {
-      showToast('隐私设置已更新')
+      showToast(L('隐私设置已更新', 'Privacy settings updated'))
     }
   }
 
@@ -39,7 +42,7 @@ export default function PrivacyPage() {
       transition: { duration: 3, ease: "linear" }
     }).then(() => {
       if (isPressing) { // 3秒后依然在按着
-        showToast('🛑 紧急保护已触发，连接已断开')
+        showToast(L('🛑 紧急保护已触发，连接已断开', '🛑 Emergency protection activated, disconnected'))
         setIsPressing(false)
         controls.set({ width: 0 })
         setTimeout(() => navigate('/home'), 1000)
@@ -66,14 +69,14 @@ export default function PrivacyPage() {
         />
       )}
 
-      <HeaderBar title="隐私与安全锁" onBack={() => navigate(-1)} />
+      <HeaderBar title={L("隐私与安全锁", "Privacy & Security")} onBack={() => navigate(-1)} />
       <div className="flex-1 overflow-y-auto px-4 pb-10 no-scrollbar space-y-5">
 
         {/* 隐私控制 */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Lock size={14} className="text-[#FF2A6D]" />
-            <span className="text-xs font-bold text-[#FF2A6D] tracking-widest">专属安全标记</span>
+            <span className="text-xs font-bold text-[#FF2A6D] tracking-widest">{L('专属安全标记', 'Security Tags')}</span>
           </div>
           <div className="bg-[#1E0914] border border-[#FF2A6D]/20 rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(255,42,109,0.1)]">
             {PRIVACY_ITEMS.map((item, i) => (
@@ -106,8 +109,8 @@ export default function PrivacyPage() {
         </div>
 
         <p className="text-[10px] text-[#A87CFF]/60 text-center leading-relaxed px-4 pt-4">
-          每一次修改都会实时同步到云端安全配置。<br/>
-          “你的数据由你掌控，默认最小化共享。”
+          {L('每一次修改都会实时同步到云端安全配置。', 'Every change syncs to cloud security settings in real time.')}<br/>
+          {L('"你的数据由你掌控，默认最小化共享。"', '"Your data, your control — minimal sharing by default."')}
         </p>
 
         {/* 紧急保护模块 */}
@@ -121,8 +124,8 @@ export default function PrivacyPage() {
             />
             
             <AlertTriangle size={24} className="text-red-500 mb-2 drop-shadow-[0_0_8px_red] animate-pulse" />
-            <h3 className="text-red-500 font-black tracking-widest mb-1">EMERGENCY STOP (紧急断开)</h3>
-            <p className="text-center text-[10px] text-red-500/70 mb-4 px-2">长按下方按钮 3 秒触发紧急保护。系统将立即断开当前连接，并清除本次会话缓存记录。</p>
+            <h3 className="text-red-500 font-black tracking-widest mb-1">{L('EMERGENCY STOP (紧急断开)', 'EMERGENCY STOP')}</h3>
+            <p className="text-center text-[10px] text-red-500/70 mb-4 px-2">{L('长按下方按钮 3 秒触发紧急保护。系统将立即断开当前连接，并清除本次会话缓存记录。', 'Hold the button for 3 seconds to trigger emergency protection. The system will immediately disconnect and clear session cache.')}</p>
 
             <button
               onPointerDown={handlePointerDown}
@@ -130,7 +133,7 @@ export default function PrivacyPage() {
               onPointerLeave={handlePointerUp}
               className="w-full py-4 rounded-xl bg-red-950 border border-red-800 text-red-500 font-bold active:scale-95 transition-transform"
             >
-              {isPressing ? '正在执行紧急断开...' : '长按触发紧急断开'}
+              {isPressing ? L('正在执行紧急断开...', 'Emergency disconnect in progress...') : L('长按触发紧急断开', 'Hold to Emergency Disconnect')}
             </button>
           </div>
         </div>

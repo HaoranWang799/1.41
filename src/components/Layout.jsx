@@ -17,13 +17,22 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom'
 import { Home, ShoppingBag, MessageCircle, BarChart2, User } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 
-const NAV_ITEMS = [
-  { to: '/community', Icon: MessageCircle, label: '社区'    },
-  { to: '/shop',      Icon: ShoppingBag,   label: '商城'    },
-  { to: '/home',      Icon: Home,          label: '首页'    },
-  { to: '/health',    Icon: BarChart2,     label: '健康数据' },
-  { to: '/profile',   Icon: User,          label: '我的'    },
-]
+const NAV_ITEMS = {
+  zh: [
+    { to: '/community', Icon: MessageCircle, label: '社区'    },
+    { to: '/shop',      Icon: ShoppingBag,   label: '商城'    },
+    { to: '/home',      Icon: Home,          label: '首页'    },
+    { to: '/health',    Icon: BarChart2,     label: '健康数据' },
+    { to: '/profile',   Icon: User,          label: '我的'    },
+  ],
+  en: [
+    { to: '/community', Icon: MessageCircle, label: 'Community' },
+    { to: '/shop',      Icon: ShoppingBag,   label: 'Shop'      },
+    { to: '/home',      Icon: Home,          label: 'Home'      },
+    { to: '/health',    Icon: BarChart2,     label: 'Health'    },
+    { to: '/profile',   Icon: User,          label: 'Me'        },
+  ],
+}
 
 const PHONE_W = 'max-w-[430px]'
 const ROUTE_SCROLL_STORAGE_KEY = 'app_route_scroll_positions'
@@ -54,7 +63,7 @@ function writeStoredScrollPositions(positions) {
 export default function Layout() {
   // ── 从全局 AppContext 读取货币与会员状态 ─────────────────
   // TODO: AppContext 内部已标注真实 API 接入位置
-  const { coins, setCoins, diamonds, setDiamonds, userLevel, setUserLevel } = useApp()
+  const { coins, setCoins, diamonds, setDiamonds, userLevel, setUserLevel, lang } = useApp()
   const location = useLocation()
   const mainRef = useRef(null)
   const scrollPositionsRef = useRef(readStoredScrollPositions())
@@ -110,7 +119,7 @@ export default function Layout() {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            你的她
+            {lang === 'en' ? 'YourHer' : '你的她'}
           </span>
         </header>
 
@@ -134,7 +143,7 @@ export default function Layout() {
           `}
         >
           <ul className="flex items-center justify-around h-16 px-2">
-            {NAV_ITEMS.map(({ to, Icon, label }) => (
+            {(NAV_ITEMS[lang] || NAV_ITEMS.zh).map(({ to, Icon, label }) => (
               <li key={to} className="flex-1">
                 <NavLink
                   to={to}

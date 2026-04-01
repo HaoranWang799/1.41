@@ -12,11 +12,19 @@
  *
  * TODO: 替换为后端用户账户 API 同步（/api/user/wallet、/api/user/membership）
  */
-import { createContext, useContext, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 
 export const AppContext = createContext(null)
 
 export function AppProvider({ children }) {
+  // ── 语言状态（'zh' | 'en'）──────────────────────────────
+  const [lang, setLang] = useState(() => {
+    try { return localStorage.getItem('app-lang') || 'zh' } catch { return 'zh' }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('app-lang', lang) } catch {}
+  }, [lang])
+
   // TODO: 接入 /api/user/wallet 获取真实余额
   const [coins,    setCoins]    = useState(1288)
   const [diamonds, setDiamonds] = useState(320)
@@ -40,6 +48,7 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
+      lang, setLang,
       coins, setCoins,
       diamonds, setDiamonds,
       userLevel, setUserLevel,

@@ -3,12 +3,17 @@
  */
 import { useState } from 'react'
 import { Sparkles } from 'lucide-react'
+import { useApp } from '../../context/AppContext'
+import { useL } from '../../i18n/useL'
 import { CARD_VIDEO_IDS } from '../../data/scripts'
 
 /**
  * 推荐剧本卡片（双列网格，竖向布局）
  */
 export function ScriptCard({ script, onClick }) {
+  const { lang } = useApp()
+  const L = useL()
+  const d = (item, field) => (lang === 'en' && item?.[field + 'En']) || item?.[field]
   const isVideo = CARD_VIDEO_IDS.includes(script.id)
   const [imgSrc, setImgSrc] = useState(`/images/covers/${script.id}.jpg`)
 
@@ -48,30 +53,30 @@ export function ScriptCard({ script, onClick }) {
 
       <div className="relative z-10 p-3.5 flex flex-col justify-end h-full">
         <span className="absolute top-2.5 right-2.5 text-[9px] font-bold bg-[rgba(255,154,203,0.2)] text-[#FF9ACB] rounded-full px-1.5 py-0.5">
-          {script.tag}
+          {d(script, 'tag')}
         </span>
 
         <p className="text-[11px] font-semibold text-white mb-1 leading-snug pr-6">
-          {script.name}
+          {d(script, 'name')}
         </p>
 
         <p className="text-[9px] text-[rgba(179,128,255,0.85)] mb-1">
-          {script.personalityTag}
+          {d(script, 'personalityTag')}
         </p>
 
         <p className="text-[10px] text-[rgba(245,240,242,0.65)] italic leading-relaxed mb-2 line-clamp-1">
-          &ldquo;{script.openingLine}&rdquo;
+          &ldquo;{d(script, 'openingLine')}&rdquo;
         </p>
 
         <div className="flex items-center gap-2 mb-2 pt-1.5 border-t border-[rgba(255,255,255,0.12)]">
-          <span className="text-[9px] text-[rgba(245,240,242,0.5)]">↓ {script.downloads}</span>
+          <span className="text-[9px] text-[rgba(245,240,242,0.5)]">↓ {d(script, 'downloads')}</span>
           {script.rating && (
             <span className="text-[9px] text-[rgba(245,240,242,0.5)]">{script.rating} ★</span>
           )}
         </div>
 
         <span className="w-full text-center btn-main rounded-xl py-1.5 text-white text-[10px] font-medium">
-          开始互动
+          {L('开始互动', 'Start')}
         </span>
       </div>
     </button>
@@ -82,6 +87,9 @@ export function ScriptCard({ script, onClick }) {
  * AI 定制剧本卡片
  */
 export function GeneratedScriptCard({ script, onClick }) {
+  const { lang } = useApp()
+  const L = useL()
+  const d = (item, field) => (lang === 'en' && item?.[field + 'En']) || item?.[field]
   const coverKey = script.charId || script.id
   const [imgSrc, setImgSrc] = useState(`/images/covers/${coverKey}.jpg`)
 
@@ -118,19 +126,19 @@ export function GeneratedScriptCard({ script, onClick }) {
             : { background: 'linear-gradient(135deg, #FF9ACB, #B380FF)' }
           }
         >
-          {script.isFree ? '免费版' : 'VIP专属'}
+          {script.isFree ? L('免费版', 'Free') : L('VIP专属', 'VIP Only')}
         </span>
 
         <p className="text-[11px] font-semibold text-white mb-1 leading-snug pr-14">
-          {script.name}
+          {d(script, 'name')}
         </p>
 
         <p className="text-[9px] text-[rgba(179,128,255,0.85)] mb-1">
-          {script.personalityTag}
+          {d(script, 'personalityTag')}
         </p>
 
         <p className="text-[10px] text-[rgba(245,240,242,0.65)] italic leading-relaxed mb-2 line-clamp-1">
-          &ldquo;{script.openingLine}&rdquo;
+          &ldquo;{d(script, 'openingLine')}&rdquo;
         </p>
 
         <span
@@ -140,7 +148,7 @@ export function GeneratedScriptCard({ script, onClick }) {
             fontSize: script.isFree ? '9px' : '9px',
           }}
         >
-          {script.isFree ? '✨ 体验定制（30秒）' : '✨ 专属体验定制（10分钟）'}
+          {script.isFree ? L('✨ 体验定制（30秒）', '✨ Try Custom (30s)') : L('✨ 专属体验定制（10分钟）', '✨ VIP Custom (10min)')}
         </span>
       </div>
     </button>
@@ -151,6 +159,7 @@ export function GeneratedScriptCard({ script, onClick }) {
  * "你的幻想"预览卡片（全宽）
  */
 export function PreviewScriptCard({ script, onClick }) {
+  const L = useL()
   const [imgSrc, setImgSrc] = useState(`/images/covers/${script.id}.jpg`)
 
   return (
@@ -180,7 +189,7 @@ export function PreviewScriptCard({ script, onClick }) {
 
       <div className="relative z-10 p-4 flex flex-col justify-end h-full gap-2">
         <span className="absolute top-3 right-3 text-[9px] bg-[rgba(179,128,255,0.25)] text-[#B380FF] rounded-full px-1.5 py-0.5">
-          AI 生成
+          {L('AI 生成', 'AI Generated')}
         </span>
 
         <div>
@@ -196,7 +205,7 @@ export function PreviewScriptCard({ script, onClick }) {
 
         <span className="w-full flex items-center justify-center gap-1.5 btn-main rounded-xl py-2 text-white text-[11px] font-medium">
           <Sparkles size={11} />
-          开始互动
+          {L('开始互动', 'Start')}
         </span>
       </div>
     </button>

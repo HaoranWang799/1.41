@@ -11,7 +11,8 @@ import { Zap, Utensils, Dumbbell, ChevronRight } from 'lucide-react'
 import { usePlanPool } from '../hooks/usePlanPool'
 import {
   TODAY_STATS, BAR_DATA,
-  HEALTH_TIPS, THINKING_STEPS,
+  HEALTH_TIPS, HEALTH_TIPS_EN,
+  THINKING_STEPS, THINKING_STEPS_EN,
   buildHealthPlanPayload,
 } from '../data/healthData'
 import { MetricModal } from '../components/health/MetricModals'
@@ -19,8 +20,13 @@ import {
   ScoreRing, MetricCell,
   PlanRow, ThinkingState,
 } from '../components/health/HealthWidgets'
+import { useApp } from '../context/AppContext'
+import { useL } from '../i18n/useL'
 
 export default function HealthPage() {
+  const { lang } = useApp()
+  const L = useL()
+  const d = (item, field) => (lang === 'en' && item?.[field + 'En']) || item?.[field]
   // ── 方案池（真实 API 请求 + mock fallback）──────────
   const {
     currentPlan,
@@ -38,15 +44,15 @@ export default function HealthPage() {
     if (!isSwitching) { setThinkingStep(0); return }
     // 1700ms 动画内均匀切换所有步骤
     const ticker = setInterval(() => {
-      setThinkingStep((s) => (s + 1) % THINKING_STEPS.length)
-    }, Math.floor(1700 / THINKING_STEPS.length))
+      setThinkingStep((s) => (s + 1) % (lang === 'en' ? THINKING_STEPS_EN : THINKING_STEPS).length)
+    }, Math.floor(1700 / (lang === 'en' ? THINKING_STEPS_EN : THINKING_STEPS).length))
     return () => clearInterval(ticker)
   }, [isSwitching])
 
   // ── 健康小贴士轮播 ──────────────────────────────────────
   const [tipIdx, setTipIdx] = useState(0)
   const activeTips = Array.from(
-    new Set([...(currentPlan?.recoveryTips || []), ...HEALTH_TIPS])
+    new Set([...(currentPlan?.recoveryTips || []), ...(lang === 'en' ? HEALTH_TIPS_EN : HEALTH_TIPS)])
   ).slice(0, 6)
   const tipCount = 6
 
@@ -81,7 +87,7 @@ export default function HealthPage() {
         className="rounded-2xl p-4 card-glow page-section page-delay-1"
         style={{ background: 'linear-gradient(145deg, #1e1028, #251840)' }}
       >
-        <p className="text-[10px] text-[rgba(245,240,242,0.4)] tracking-wider mb-3">本次使用状态</p>
+        <p className="text-[10px] text-[rgba(245,240,242,0.4)] tracking-wider mb-3">{L('本次使用状态', 'Session Status')}</p>
 
         {/* 环形评分 + 右侧可点击指标格 */}
         <div className="flex items-center gap-4 mb-4">
@@ -89,15 +95,15 @@ export default function HealthPage() {
           <div className="flex-1 grid grid-cols-2 gap-2">
             {/* 使用时长 — 点击打开弹窗 */}
             <MetricCell
-              label="使用时长"
+              label={L('使用时长', 'Duration')}
               value={TODAY_STATS.duration}
               color="text-[rgba(245,240,242,0.9)]"
               onClick={() => setActiveMetric('duration')}
             />
             {/* 个人状态 — 点击打开弹窗 */}
             <MetricCell
-              label="个人状态"
-              value={TODAY_STATS.status}
+              label={L('个人状态', 'Personal Status')}
+              value={d(TODAY_STATS, 'status')}
               color={
                 TODAY_STATS.status === '兴奋' ? 'text-[#FF9ACB]' :
                 TODAY_STATS.status === '良好' ? 'text-[#7fcb9a]' :
@@ -107,14 +113,14 @@ export default function HealthPage() {
             />
             {/* 内容激烈度 — 点击打开弹窗 */}
             <MetricCell
-              label="内容激烈度"
-              value={TODAY_STATS.intensity}
+              label={L('内容激烈度', 'Intensity')}
+              value={d(TODAY_STATS, 'intensity')}
               color="text-[#B380FF]"
               onClick={() => setActiveMetric('intensity')}
             />
             {/* 硬度评分 — 点击打开弹窗 */}
             <MetricCell
-              label="硬度评分"
+              label={L('硬度评分', 'Hardness Score')}
               value={TODAY_STATS.hardScore}
               color="text-[#FF9ACB]"
               onClick={() => setActiveMetric('hardScore')}
@@ -130,19 +136,19 @@ export default function HealthPage() {
           <Zap size={14} className="text-[#FF9ACB] flex-shrink-0" />
           <div className="flex-1 flex items-center gap-4 text-[10px]">
             <div>
-              <p className="text-[rgba(245,240,242,0.4)]">疲软期</p>
+              <p className="text-[rgba(245,240,242,0.4)]">{L('疲软期', 'Recovery Period')}</p>
               <p className="font-semibold text-[rgba(245,240,242,0.8)]">{TODAY_STATS.softSecs}s</p>
             </div>
             <div className="w-px h-6 bg-[rgba(255,255,255,0.1)]" />
             <div>
-              <p className="text-[rgba(245,240,242,0.4)]">强硬度时间</p>
+              <p className="text-[rgba(245,240,242,0.4)]">{L('强硬度时间', 'Endurance Time')}</p>
               <p className="font-semibold text-[rgba(245,240,242,0.8)]">
                 {TODAY_STATS.hardMin}m {TODAY_STATS.hardSec}s
               </p>
             </div>
             <div className="w-px h-6 bg-[rgba(255,255,255,0.1)]" />
             <div>
-              <p className="text-[rgba(245,240,242,0.4)]">综合评级</p>
+              <p className="text-[rgba(245,240,242,0.4)]">{L('综合评级', 'Overall Rating')}</p>
               <p className="font-bold text-[#FF9ACB]">{TODAY_STATS.hardScore}</p>
             </div>
           </div>
@@ -157,7 +163,7 @@ export default function HealthPage() {
           <div className="flex items-center gap-4 mb-4">
             <span className="text-5xl">💪</span>
             <div>
-              <div className="text-2xl font-bold text-[rgba(245,240,242,0.95)]">亚洲猛男榜</div>
+              <div className="text-2xl font-bold text-[rgba(245,240,242,0.95)]">{L('亚洲猛男榜', 'Asia Power Ranking')}</div>
               <div
                 className="text-3xl font-bold tabular-nums"
                 style={{
@@ -168,20 +174,20 @@ export default function HealthPage() {
               >
                 第 12,345 位
               </div>
-              <div className="text-sm text-[rgba(245,240,242,0.5)] mt-0.5">击败全国 98% 的猛男</div>
+              <div className="text-sm text-[rgba(245,240,242,0.5)] mt-0.5">{L('击败全国 98% 的猛男', 'Beat 98% of all men nationwide')}</div>
             </div>
           </div>
           {/* 城市 + 好友排名 */}
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-xl p-3 bg-[rgba(255,154,203,0.06)] border border-[rgba(255,154,203,0.1)] text-center">
-              <p className="text-[9px] text-[rgba(245,240,242,0.4)] mb-1 tracking-wider">本城排名</p>
-              <p className="text-sm font-bold" style={{ background: 'linear-gradient(135deg, #FF9ACB, #B380FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>北京 第 888 名</p>
-              <p className="text-[10px] text-[rgba(245,240,242,0.4)] mt-0.5">城市前 2%</p>
+              <p className="text-[9px] text-[rgba(245,240,242,0.4)] mb-1 tracking-wider">{L('本城排名', 'City Ranking')}</p>
+              <p className="text-sm font-bold" style={{ background: 'linear-gradient(135deg, #FF9ACB, #B380FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{L('北京 第 888 名', 'Beijing #888')}</p>
+              <p className="text-[10px] text-[rgba(245,240,242,0.4)] mt-0.5">{L('城市前 2%', 'Top 2% in city')}</p>
             </div>
             <div className="rounded-xl p-3 bg-[rgba(179,128,255,0.06)] border border-[rgba(179,128,255,0.1)] text-center">
-              <p className="text-[9px] text-[rgba(245,240,242,0.4)] mb-1 tracking-wider">好友排名</p>
-              <p className="text-sm font-bold" style={{ background: 'linear-gradient(135deg, #B380FF, #FF9ACB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>超越 92%</p>
-              <p className="text-[10px] text-[rgba(245,240,242,0.4)] mt-0.5">的好友</p>
+              <p className="text-[9px] text-[rgba(245,240,242,0.4)] mb-1 tracking-wider">{L('好友排名', 'Friends Ranking')}</p>
+              <p className="text-sm font-bold" style={{ background: 'linear-gradient(135deg, #B380FF, #FF9ACB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{L('超越 92%', 'Beat 92%')}</p>
+              <p className="text-[10px] text-[rgba(245,240,242,0.4)] mt-0.5">{L('的好友', 'of friends')}</p>
             </div>
           </div>
         </div>
@@ -189,9 +195,9 @@ export default function HealthPage() {
         {/* 激励文案 */}
         <div className="mt-3 rounded-xl p-3" style={{ background: 'linear-gradient(135deg, rgba(255,154,203,0.06), rgba(179,128,255,0.06))', border: '1px solid rgba(255,154,203,0.1)' }}>
           <p className="text-[11px] text-center font-medium leading-relaxed" style={{ background: 'linear-gradient(135deg, #FF9ACB, #B380FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            🔥 实力已证明——你不只是参与者，你是今晚的王者
+                        {L('🔥 实力已证明——你不只是参与者，你是今晚的王者', '🔥 Your strength is proven — you\'re not just a player, you\'re tonight\'s king')}
           </p>
-          <p className="text-[10px] text-center text-[rgba(245,240,242,0.35)] mt-1">继续保持，王座只属于你</p>
+          <p className="text-[10px] text-center text-[rgba(245,240,242,0.35)] mt-1">{L('继续保持，王座只属于你', 'Keep it up, the throne is yours')}</p>
         </div>
 
         {/* 生成分享卡片按钮 */}
@@ -200,14 +206,14 @@ export default function HealthPage() {
           className="mt-3 px-6 py-3 rounded-full font-medium w-full text-sm active:scale-[0.98] transition-transform"
           style={{ background: 'linear-gradient(90deg, #FF9ACB, #B380FF)', color: '#1a0a12' }}
         >
-          📸 生成猛男战绩分享卡
+          {L('📸 生成猛男战绩分享卡', '📸 Generate Battle Report Card')}
         </button>
       </section>
 
       {/* ═══ 近 7 天趋势柱状图 ═══════════════════════════════ */}
       {/* TODO: 替换为 Recharts 或 Chart.js 真实图表组件 */}
       <section className="rounded-2xl p-4 card-glow bg-[rgba(30,20,25,0.6)] page-section page-delay-2">
-        <p className="text-sm font-semibold text-[rgba(245,240,242,0.8)] mb-4">近 7 天趋势</p>
+        <p className="text-sm font-semibold text-[rgba(245,240,242,0.8)] mb-4">{L('近 7 天趋势', '7-Day Trend')}</p>
         <div className="flex items-end justify-between h-24 gap-1.5">
           {BAR_DATA.map((bar) => (
             <div key={bar.day} className="flex-1 flex flex-col items-center gap-1.5">
@@ -227,7 +233,7 @@ export default function HealthPage() {
               />
               {/* 星期标签 */}
               <span className={`text-[8px] ${bar.isToday ? 'text-[#FF9ACB] font-bold' : 'text-[rgba(245,240,242,0.35)]'}`}>
-                {bar.day}
+                {d(bar, 'day')}
               </span>
             </div>
           ))}
@@ -237,7 +243,7 @@ export default function HealthPage() {
       {/* ═══ 针对性训练计划 ══════════════════════════════════ */}
       <section className="rounded-2xl p-4 card-glow bg-[rgba(30,20,25,0.6)] page-section page-delay-3">
         {/* 标题（已移除"重新生成"按钮，统一由 AI 按钮触发） */}
-        <p className="text-sm font-semibold text-[rgba(245,240,242,0.8)] mb-3">针对性训练计划</p>
+        <p className="text-sm font-semibold text-[rgba(245,240,242,0.8)] mb-3">{L('针对性训练计划', 'Training Plan')}</p>
 
         {/* ── AI 分析按钮（唯一触发入口）────────────────────── */}
         {/* TODO: 替换为真实 AI 分析 API（/api/ai/health-plan） */}
@@ -259,10 +265,10 @@ export default function HealthPage() {
                 className="w-4 h-4 rounded-full border-2 border-[rgba(179,128,255,0.3)] border-t-[#B380FF]"
                 style={{ animation: 'spin 0.8s linear infinite' }}
               />
-              AI 思考中…
+              {L('AI 思考中…', 'AI Thinking...')}
             </>
           ) : (
-            <>🤖 AI分析&amp;智能生成训练计划</>
+            <>🤖 {L('AI分析&智能生成训练计划', 'AI Analysis & Generate Training Plan')}</>
           )}
         </button>
 
@@ -275,7 +281,7 @@ export default function HealthPage() {
           <div className="flex flex-col items-center justify-center py-10 gap-3 text-center animate-fadeUp">
             <span className="text-4xl select-none">✨</span>
             <p className="text-[12px] text-[rgba(245,240,242,0.45)] leading-relaxed">
-              {isFallbackMode ? '网络异常，已切换本地模板' : '点击上方按钮'}<br />AI 将根据你的健康数据生成专属训练计划
+              {isFallbackMode ? L('网络异常，已切换本地模板', 'Network error, switched to local template') : L('点击上方按钮', 'Tap the button above')}<br />{L('AI 将根据你的健康数据生成专属训练计划', 'AI will generate a personalized training plan based on your health data')}
             </p>
           </div>
         ) : (
@@ -283,18 +289,18 @@ export default function HealthPage() {
             {/* AI 总结 */}
             <div className="mb-3 rounded-[22px] p-5 bg-[rgba(179,128,255,0.08)] border border-[rgba(179,128,255,0.14)]">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-[15px] font-semibold text-[rgba(245,240,242,0.92)] tracking-[0.01em]">AI 分析结论</p>
+                <p className="text-[15px] font-semibold text-[rgba(245,240,242,0.92)] tracking-[0.01em]">{L('AI 分析结论', 'AI Analysis')}</p>
                 {isCurrentPlanUpgrading ? (
-                  <span className="text-[11px] px-4 py-1.5 rounded-full bg-[rgba(100,255,150,0.12)] text-[rgba(120,255,165,0.88)]">AI 优化中…</span>
+                  <span className="text-[11px] px-4 py-1.5 rounded-full bg-[rgba(100,255,150,0.12)] text-[rgba(120,255,165,0.88)]">{L('AI 优化中…', 'AI Optimizing...')}</span>
                 ) : currentPlan?.fallback ? (
-                  <span className="text-[11px] px-4 py-1.5 rounded-full bg-[rgba(255,180,120,0.12)] text-[rgba(255,198,145,0.88)]">已切换</span>
+                  <span className="text-[11px] px-4 py-1.5 rounded-full bg-[rgba(255,180,120,0.12)] text-[rgba(255,198,145,0.88)]">{L('已切换', 'Switched')}</span>
                 ) : (
-                  <span className="text-[11px] px-4 py-1.5 rounded-full bg-[rgba(100,255,150,0.12)] text-[rgba(120,255,165,0.9)]">√ AI分析</span>
+                  <span className="text-[11px] px-4 py-1.5 rounded-full bg-[rgba(100,255,150,0.12)] text-[rgba(120,255,165,0.9)]">{L('√ AI分析', '√ AI Analysis')}</span>
                 )}
               </div>
               {currentPlan?.fallback ? (
                 <p className="mt-2 text-[10px] text-[rgba(255,180,120,0.68)]">
-                  当前结果已自动切换{currentPlan?.error ? `：${currentPlan.error}` : ''}
+                  {L('当前结果已自动切换', 'Results auto-switched')}{currentPlan?.error ? `：${currentPlan.error}` : ''}
                 </p>
               ) : null}
               <p className="mt-3 text-[14px] leading-[1.75] text-[rgba(245,240,242,0.72)]">
@@ -306,7 +312,7 @@ export default function HealthPage() {
             <div className="mb-3">
               <div className="flex items-center gap-1.5 mb-2">
                 <Utensils size={12} className="text-[rgba(245,240,242,0.4)]" />
-                <p className="text-[10px] text-[rgba(245,240,242,0.45)] tracking-wider">饮食建议 — {currentPlan?.dietFocus || '恢复优先'}</p>
+                <p className="text-[10px] text-[rgba(245,240,242,0.45)] tracking-wider">{L('饮食建议', 'Diet Suggestions')} — {currentPlan?.dietFocus || L('恢复优先', 'Recovery First')}</p>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {diet.map((item) => (
@@ -328,7 +334,7 @@ export default function HealthPage() {
             <div className="mb-3">
               <div className="flex items-center gap-1.5 mb-1">
                 <Dumbbell size={12} className="text-[rgba(245,240,242,0.4)]" />
-                <p className="text-[10px] text-[rgba(245,240,242,0.45)] tracking-wider">运动建议</p>
+                <p className="text-[10px] text-[rgba(245,240,242,0.45)] tracking-wider">{L('运动建议', 'Exercise')}</p>
               </div>
               <div className="space-y-0">
                 {exercise.map((item) => (
@@ -337,7 +343,7 @@ export default function HealthPage() {
                     icon={Dumbbell}
                     title={item.name}
                     sub={item.plan}
-                    onDetail={() => alert(`📋 ${item.name}\n${item.plan}\n\n推荐原因：${item.reason || '根据你的近期数据匹配该训练。'}`)}
+                    onDetail={() => alert(`📋 ${item.name}\n${item.plan}\n\n${L('推荐原因：', 'Reason: ')}${item.reason || L('根据你的近期数据匹配该训练。', 'Matched based on your recent data.')}`)}
                   />
                 ))}
               </div>
@@ -351,7 +357,7 @@ export default function HealthPage() {
             <div>
               <div className="flex items-center gap-1.5 mb-2">
                 <Zap size={12} className="text-[rgba(245,240,242,0.4)]" />
-                <p className="text-[10px] text-[rgba(245,240,242,0.45)] tracking-wider">下次震动频率建议</p>
+                <p className="text-[10px] text-[rgba(245,240,242,0.45)] tracking-wider">{L('下次震动频率建议', 'Next Vibration Suggestion')}</p>
               </div>
               {vib && (
                 <div
@@ -363,10 +369,10 @@ export default function HealthPage() {
                     <p className="text-[10px] text-[rgba(245,240,242,0.5)] leading-relaxed">{vib.desc}</p>
                   </div>
                   <button
-                    onClick={() => alert(`🎛️ 震动模式：${vib.mode}\n${vib.desc}\n\n推荐原因：${vib.reason || '已结合你的近期状态和训练目标调整。'}`)}
+                    onClick={() => alert(`🎛️ ${L('震动模式：', 'Vibration mode: ')}${vib.mode}\n${vib.desc}\n\n${L('推荐原因：', 'Reason: ')}${vib.reason || L('已结合你的近期状态和训练目标调整。', 'Adjusted based on your recent status and training goals.')}`)}
                     className="flex-shrink-0 flex items-center gap-1 text-[10px] text-[rgba(179,128,255,0.6)] hover:text-[#B380FF] transition-colors"
                   >
-                    详情 <ChevronRight size={11} />
+                    {L('详情', 'Details')} <ChevronRight size={11} />
                   </button>
                 </div>
               )}
@@ -387,7 +393,7 @@ export default function HealthPage() {
       >
         <span className="text-lg flex-shrink-0 mt-0.5">💡</span>
         <div className="flex-1">
-          <p className="text-[10px] text-[rgba(245,240,242,0.35)] mb-1 tracking-wider">健康小贴士</p>
+          <p className="text-[10px] text-[rgba(245,240,242,0.35)] mb-1 tracking-wider">{L('健康小贴士', 'Health Tips')}</p>
           <p
             key={tipIdx}           /* key 变化时触发 animate-fadeUp 重播 */
             className="text-[12px] text-[rgba(245,240,242,0.75)] leading-relaxed animate-fadeUp"
@@ -437,10 +443,10 @@ export default function HealthPage() {
             >
               {/* 标语 */}
               <div className="mb-2 text-base font-bold tracking-wide" style={{ background: 'linear-gradient(135deg, #FF9ACB, #B380FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                今晚，我是王者 👑
+                {L('今晚，我是王者 👑', 'Tonight, I Am the King 👑')}
               </div>
               <div className="text-4xl mb-2">💪</div>
-              <div className="text-[10px] text-[rgba(245,240,242,0.4)] tracking-widest mb-1">亚洲猛男榜</div>
+              <div className="text-[10px] text-[rgba(245,240,242,0.4)] tracking-widest mb-1">{L('亚洲猛男榜', 'Asia Power Ranking')}</div>
               <div
                 className="text-4xl font-bold tabular-nums mb-1"
                 style={{
@@ -451,19 +457,19 @@ export default function HealthPage() {
               >
                 第 12,345 位
               </div>
-              <div className="text-sm text-[rgba(245,240,242,0.6)] mb-3">击败全国 98% 的猛男</div>
+              <div className="text-sm text-[rgba(245,240,242,0.6)] mb-3">{L('击败全国 98% 的猛男', 'Beat 98% of all men nationwide')}</div>
 
               {/* 城市 + 好友排名 */}
               <div className="grid grid-cols-2 gap-2 mb-3">
                 <div className="rounded-lg p-2 bg-[rgba(255,154,203,0.08)] border border-[rgba(255,154,203,0.12)]">
-                  <div className="text-[9px] text-[rgba(245,240,242,0.4)] mb-0.5">本城排名</div>
-                  <div className="text-xs font-bold" style={{ background: 'linear-gradient(135deg, #FF9ACB, #B380FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>北京 第 888 名</div>
-                  <div className="text-[9px] text-[rgba(245,240,242,0.35)]">城市前 2%</div>
+                  <div className="text-[9px] text-[rgba(245,240,242,0.4)] mb-0.5">{L('本城排名', 'City Ranking')}</div>
+                  <div className="text-xs font-bold" style={{ background: 'linear-gradient(135deg, #FF9ACB, #B380FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{L('北京 第 888 名', 'Beijing #888')}</div>
+                  <div className="text-[9px] text-[rgba(245,240,242,0.35)]">{L('城市前 2%', 'Top 2% in city')}</div>
                 </div>
                 <div className="rounded-lg p-2 bg-[rgba(179,128,255,0.08)] border border-[rgba(179,128,255,0.12)]">
-                  <div className="text-[9px] text-[rgba(245,240,242,0.4)] mb-0.5">好友排名</div>
-                  <div className="text-xs font-bold" style={{ background: 'linear-gradient(135deg, #B380FF, #FF9ACB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>超越 92%</div>
-                  <div className="text-[9px] text-[rgba(245,240,242,0.35)]">的好友</div>
+                  <div className="text-[9px] text-[rgba(245,240,242,0.4)] mb-0.5">{L('好友排名', 'Friends Ranking')}</div>
+                  <div className="text-xs font-bold" style={{ background: 'linear-gradient(135deg, #B380FF, #FF9ACB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{L('超越 92%', 'Beat 92%')}</div>
+                  <div className="text-[9px] text-[rgba(245,240,242,0.35)]">{L('的好友', 'of friends')}</div>
                 </div>
               </div>
 
@@ -471,36 +477,36 @@ export default function HealthPage() {
               <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[rgba(255,255,255,0.06)]">
                 <div className="text-center">
                   <div className="text-base font-bold text-[#FF9ACB]">{TODAY_STATS.hardScore}</div>
-                  <div className="text-[9px] text-[rgba(245,240,242,0.4)]">硬度评级</div>
+                  <div className="text-[9px] text-[rgba(245,240,242,0.4)]">{L('硬度评级', 'Hardness Rating')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-base font-bold text-[#B380FF]">{TODAY_STATS.score}</div>
-                  <div className="text-[9px] text-[rgba(245,240,242,0.4)]">综合评分</div>
+                  <div className="text-[9px] text-[rgba(245,240,242,0.4)]">{L('综合评分', 'Overall Score')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-base font-bold text-[rgba(245,240,242,0.85)]">{TODAY_STATS.duration}</div>
-                  <div className="text-[9px] text-[rgba(245,240,242,0.4)]">本次时长</div>
+                  <div className="text-[9px] text-[rgba(245,240,242,0.4)]">{L('本次时长', 'Duration')}</div>
                 </div>
               </div>
 
               <div className="mt-3 text-[8px] text-[rgba(245,240,242,0.2)] tracking-wider">
-                你的她 · {new Date().toLocaleDateString('zh-CN')}
+                {L('你的她', 'YourHer')} · {new Date().toLocaleDateString(L('zh-CN', 'en-US'))}
               </div>
             </div>
 
             {/* 操作按钮 */}
             <button
-              onClick={() => { alert('📸 已保存到相册！（演示模式）'); setShowShareModal(false) }}
+              onClick={() => { alert(L('📸 已保存到相册！（演示模式）', '📸 Saved to album! (Demo mode)')); setShowShareModal(false) }}
               className="w-full py-3 rounded-2xl text-sm font-semibold mb-2 active:scale-[0.98] transition-transform"
               style={{ background: 'linear-gradient(90deg, #FF9ACB, #B380FF)', color: '#1a0a12' }}
             >
-              💾 保存到相册
+              {L('💾 保存到相册', '💾 Save to Album')}
             </button>
             <button
               onClick={() => setShowShareModal(false)}
               className="w-full py-2.5 rounded-2xl text-[12px] text-[rgba(245,240,242,0.4)] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] active:scale-[0.98] transition-transform"
             >
-              关闭
+              {L('关闭', 'Close')}
             </button>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { useApp } from '../context/AppContext'
 import {
   ChevronRight, ChevronDown, MessageCircleHeart, Search, Sparkles,
 } from 'lucide-react'
+import { useL } from '../i18n/useL'
 import {
   HELP_CATEGORIES as CATEGORIES,
   HELP_ARTICLES as ARTICLES_DATA,
@@ -13,6 +14,9 @@ import {
 
 export default function HelpCenterPage() {
   const navigate = useNavigate()
+  const { lang } = useApp()
+  const L = useL()
+  const d = (item, field) => (lang === 'en' && item?.[field + 'En']) || item?.[field]
   const [search, setSearch] = useState('')
   const [openFaq, setOpenFaq] = useState(null)
   const [activeCategory, setActiveCategory] = useState(null)
@@ -21,7 +25,7 @@ export default function HelpCenterPage() {
   return (
     <div className="flex flex-col h-[100dvh] bg-[#0C060B] text-[#F9EDF5]">
       <HeaderBar
-        title={activeCategory ? '极乐秘籍' : '帮助中心'}
+        title={activeCategory ? L('极乐秘籍', 'Secret Guide') : L('帮助中心', 'Help Center')}
         onBack={() => (activeCategory ? setActiveCategory(null) : navigate(-1))}
       />
 
@@ -38,8 +42,8 @@ export default function HelpCenterPage() {
                   <MessageCircleHeart size={20} className="fill-current" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-[#F9EDF5]">专属私密管家</div>
-                  <div className="text-[10px] text-[#9B859D]">7×24h 随时解答您的感官难题</div>
+                  <div className="text-sm font-bold text-[#F9EDF5]">{L('专属私密管家', 'Private Assistant')}</div>
+                  <div className="text-[10px] text-[#9B859D]">{L('7×24h 随时解答您的感官难题', '7×24h ready to answer your questions')}</div>
                 </div>
               </div>
               <ChevronRight size={18} className="text-[#9B859D]" />
@@ -50,7 +54,7 @@ export default function HelpCenterPage() {
               <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9B859D]" />
               <input
                 type="text"
-                placeholder="搜索帮助内容..."
+                placeholder={L("搜索帮助内容...", "Search help...")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full bg-[#1E1324] border border-white/5 rounded-xl pl-12 pr-4 py-3.5 text-sm text-[#F9EDF5] focus:border-[#FF7DAF]/50 outline-none transition-all"
@@ -60,7 +64,7 @@ export default function HelpCenterPage() {
             {/* 分类网格 */}
             <div className="mb-8">
               <h3 className="text-xs font-semibold text-[#9B859D] mb-4 px-1 uppercase tracking-widest">
-                按类别浏览
+                {L('按类别浏览', 'Browse by Category')}
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 {CATEGORIES.map((cat, idx) => (
@@ -75,8 +79,8 @@ export default function HelpCenterPage() {
                     >
                       <cat.icon size={20} />
                     </div>
-                    <div className="text-sm font-bold text-[#F9EDF5] mb-1">{cat.label}</div>
-                    <div className="text-[10px] text-[#9B859D]">{cat.count}</div>
+                    <div className="text-sm font-bold text-[#F9EDF5] mb-1">{d(cat, 'label')}</div>
+                    <div className="text-[10px] text-[#9B859D]">{d(cat, 'count')}</div>
                   </div>
                 ))}
               </div>
@@ -85,7 +89,7 @@ export default function HelpCenterPage() {
             {/* FAQ */}
             <div>
               <h3 className="text-xs font-semibold text-[#9B859D] mb-4 px-1 uppercase tracking-widest">
-                常见问题
+                {L('常见问题', 'FAQ')}
               </h3>
               <div className="space-y-3">
                 {FAQS.map((faq, idx) => (
@@ -95,7 +99,7 @@ export default function HelpCenterPage() {
                       className="w-full flex items-center justify-between p-4 text-left active:bg-white/5 transition-colors"
                     >
                       <span className={`text-sm font-medium pr-4 ${openFaq === idx ? 'text-[#FF7DAF]' : 'text-[#F9EDF5]'}`}>
-                        {faq.q}
+                        {d(faq, 'q')}
                       </span>
                       <ChevronDown
                         size={18}
@@ -104,7 +108,7 @@ export default function HelpCenterPage() {
                     </button>
                     {openFaq === idx && (
                       <div className="px-4 pb-4 pt-1 text-xs text-[#9B859D] leading-relaxed">
-                        {faq.a}
+                        {d(faq, 'a')}
                       </div>
                     )}
                   </div>
@@ -117,7 +121,7 @@ export default function HelpCenterPage() {
           <div className="animate-in slide-in-from-right-4 duration-300">
             <div className="flex items-center space-x-2 mb-6 mt-2">
               <Sparkles size={18} className="text-[#FF7DAF]" />
-              <h2 className="text-lg font-bold text-[#F9EDF5]">{activeCategory}</h2>
+              <h2 className="text-lg font-bold text-[#F9EDF5]">{d(CATEGORIES.find(c => c.label === activeCategory), 'label') || activeCategory}</h2>
             </div>
             <div className="space-y-4">
               {(ARTICLES_DATA[activeCategory] ?? []).map((article, idx) => (
@@ -127,7 +131,7 @@ export default function HelpCenterPage() {
                     className="w-full flex items-center justify-between p-4 text-left active:bg-white/5 transition-colors"
                   >
                     <span className={`text-sm font-semibold pr-4 ${openArticle === idx ? 'text-[#FF7DAF]' : 'text-[#F9EDF5]'}`}>
-                      {article.title}
+                      {d(article, 'title')}
                     </span>
                     <ChevronDown
                       size={18}
@@ -136,7 +140,7 @@ export default function HelpCenterPage() {
                   </button>
                   {openArticle === idx && (
                     <div className="px-4 pb-5 pt-2 text-xs text-[#9B859D] leading-relaxed border-t border-white/5 bg-black/10">
-                      {article.content}
+                      {d(article, 'content')}
                     </div>
                   )}
                 </div>
@@ -146,7 +150,7 @@ export default function HelpCenterPage() {
               onClick={() => setActiveCategory(null)}
               className="w-full mt-10 py-3 text-sm font-medium text-[#9B859D] border border-white/10 rounded-xl active:scale-95 transition-transform"
             >
-              返回全部分类
+              {L('返回全部分类', 'Back to All Categories')}
             </button>
           </div>
         )}

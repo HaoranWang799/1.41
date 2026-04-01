@@ -14,12 +14,13 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft, Diamond, Crown, Check } from 'lucide-react'
 import { useApp } from '../context/AppContext'
+import { useL } from '../i18n/useL'
 
 const PHONE_W = 'max-w-[430px]'
 
 // ── 钻石充值档位 ──────────────────────────────────────────
 // TODO: 替换为 /api/shop/recharge-tiers 的真实档位数据
-const DIAMOND_TIERS = [
+const getDIAMOND_TIERS = (L) => [
   {
     id: 'd1', price: 6,   diamonds: 60,
     label: '60 💎', priceLabel: '$0.99',
@@ -28,73 +29,73 @@ const DIAMOND_TIERS = [
   {
     id: 'd2', price: 30,  diamonds: 300,
     label: '300 💎', priceLabel: '$4.99',
-    badge: '热门',
+    badge: L('热门', 'Popular'),
   },
   {
     id: 'd3', price: 68,  diamonds: 680,
     label: '680 💎', priceLabel: '$9.99',
-    badge: '超值',
+    badge: L('超值', 'Best Value'),
   },
   {
     id: 'd4', price: 198, diamonds: 2000,
     label: '2000 💎', priceLabel: '$27.99',
-    badge: '最划算',
+    badge: L('最划算', 'Best Deal'),
   },
 ]
 
 // ── 会员等级配置 ──────────────────────────────────────────
 // TODO: 替换为 /api/membership/tiers 的真实配置数据
-const MEMBER_TIERS = [
+const getMEMBER_TIERS = (L) => [
   {
     id: 'm1',
-    level: '心动会员',
+    level: L('心动会员', 'Heart Member'),
     emoji: '💕',
     isFree: true,
     priceMonthly: null,
     priceYearly: null,
-    priceLabel: '永久免费',
+    priceLabel: L('永久免费', 'Free Forever'),
     gradient: 'from-[#1e1228] to-[#251840]',
     accentColor: '#B380FF',
     perks: [
-      '可购买普通模板',
-      '每日签到领金币',
-      '基础社区功能',
+      L('可购买普通模板', 'Purchase standard templates'),
+      L('每日签到领金币', 'Daily check-in coins'),
+      L('基础社区功能', 'Basic community features'),
     ],
   },
   {
     id: 'm2',
-    level: '热恋会员',
+    level: L('热恋会员', 'Passion Member'),
     emoji: '🔥',
     isFree: false,
     priceMonthly: 30,
     priceYearly: 198,
-    priceLabel: '$4.99/月 · $27.99/年',
+    priceLabel: L('$4.99/月 · $27.99/年', '$4.99/mo · $27.99/yr'),
     gradient: 'from-[#2a1020] to-[#4a1535]',
     accentColor: '#FF9ACB',
     perks: [
-      '所有模板 8 折优惠',
-      '每月免费领 1 个热门模板',
-      '专属"热恋"身份标签',
-      '优先客服支持',
+      L('所有模板 8 折优惠', '20% off all templates'),
+      L('每月免费领 1 个热门模板', '1 free popular template/month'),
+      L('专属"热恋"身份标签', 'Exclusive "Passion" badge'),
+      L('优先客服支持', 'Priority customer support'),
     ],
     highlight: false,
   },
   {
     id: 'm3',
-    level: '灵魂伴侣',
+    level: L('灵魂伴侣', 'Soul Partner'),
     emoji: '👑',
     isFree: false,
     priceMonthly: 68,
     priceYearly: 488,
-    priceLabel: '$9.99/月 · $59.99/年',
+    priceLabel: L('$9.99/月 · $59.99/年', '$9.99/mo · $59.99/yr'),
     gradient: 'from-[#251840] to-[#3a2060]',
     accentColor: '#FFD700',
     perks: [
-      '全部模板永久免费',
-      '优先体验全新剧本',
-      '定制幻想生成加速 2×',
-      '专属 AI 客服（模拟）',
-      '独家"灵魂伴侣"金色标签',
+      L('全部模板永久免费', 'All templates free forever'),
+      L('优先体验全新剧本', 'Early access to new scripts'),
+      L('定制幻想生成加速 2×', '2× faster custom generation'),
+      L('专属 AI 客服（模拟）', 'Exclusive AI support (simulated)'),
+      L('独家"灵魂伴侣"金色标签', 'Exclusive "Soul Partner" gold badge'),
     ],
     highlight: true,
   },
@@ -106,6 +107,7 @@ const MEMBER_TIERS = [
 
 /** 钻石充值卡片 */
 function DiamondCard({ tier, onRecharge }) {
+  const L = useL()
   const isBest = tier.id === 'd4'
   return (
     <div
@@ -135,7 +137,7 @@ function DiamondCard({ tier, onRecharge }) {
       <div className="flex flex-col items-center gap-1 pt-2">
         <span className="text-3xl">💎</span>
         <p className="text-base font-bold text-[rgba(245,240,242,0.95)]">{tier.label}</p>
-        <p className="text-[10px] text-[rgba(245,240,242,0.4)]">钻石到账</p>
+        <p className="text-[10px] text-[rgba(245,240,242,0.4)]">{L('钻石到账', 'Diamonds credited')}</p>
       </div>
       {/* 充值按钮 */}
       <button
@@ -145,7 +147,7 @@ function DiamondCard({ tier, onRecharge }) {
             : 'bg-[rgba(179,128,255,0.15)] text-[#B380FF] border border-[rgba(179,128,255,0.3)]'
         }`}
       >
-        {tier.priceLabel} 立即充值
+        {tier.priceLabel} {L('立即充值', 'Top Up Now')}
       </button>
     </div>
   )
@@ -153,6 +155,7 @@ function DiamondCard({ tier, onRecharge }) {
 
 /** 会员等级卡片 */
 function MemberCard({ tier, currentLevel, onActivate }) {
+  const L = useL()
   const isActive  = currentLevel === tier.level
   const isCurrent = isActive
   return (
@@ -166,7 +169,7 @@ function MemberCard({ tier, currentLevel, onActivate }) {
         <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] font-bold rounded-full px-2.5 py-0.5 whitespace-nowrap"
           style={{ background: 'linear-gradient(90deg, #FFD700, #FF9ACB)', color: '#1a0a12' }}
         >
-          ✦ 最强权益
+          ✦ {L('最强权益', 'Best Benefits')}
         </span>
       )}
 
@@ -180,7 +183,7 @@ function MemberCard({ tier, currentLevel, onActivate }) {
         {/* 当前等级徽章 */}
         {isCurrent && (
           <span className="text-[9px] bg-[rgba(255,154,203,0.2)] text-[#FF9ACB] rounded-full px-2 py-0.5 border border-[rgba(255,154,203,0.3)]">
-            当前等级
+            {L('当前等级', 'Current')}
           </span>
         )}
       </div>
@@ -198,7 +201,7 @@ function MemberCard({ tier, currentLevel, onActivate }) {
       {/* 开通按钮 */}
       {tier.isFree ? (
         <div className="w-full py-2 rounded-xl text-[11px] font-medium text-center text-[rgba(245,240,242,0.4)] bg-[rgba(255,255,255,0.04)]">
-          {isCurrent ? '✓ 当前使用中' : '免费使用'}
+          {isCurrent ? L('✓ 当前使用中', '✓ Current Plan') : L('免费使用', 'Free')}
         </div>
       ) : (
         <button
@@ -210,7 +213,7 @@ function MemberCard({ tier, currentLevel, onActivate }) {
               : 'btn-main text-white'
           }`}
         >
-          {isCurrent ? '✓ 已开通' : '立即开通'}
+          {isCurrent ? L('✓ 已开通', '✓ Active') : L('立即开通', 'Activate')}
         </button>
       )}
     </div>
@@ -229,19 +232,22 @@ export default function RechargePage() {
   // ── 从全局 AppContext 读取（本页在 Layout 路由外）────────
   // TODO: 接入真实用户账户 API 后，此处改为 API 请求状态
   const { diamonds, setDiamonds, userLevel, setUserLevel } = useApp()
+  const L = useL()
+  const DIAMOND_TIERS = getDIAMOND_TIERS(L)
+  const MEMBER_TIERS = getMEMBER_TIERS(L)
 
   // ── 充值处理 ─────────────────────────────────────────────
   // TODO: 替换为真实支付 API（/api/payment/recharge）
   const handleRecharge = (tier) => {
     setDiamonds((prev) => prev + tier.diamonds)
-    alert(`✅ 充值成功！\n+${tier.label} 已到账，当前余额 💎 ${diamonds + tier.diamonds}`)
+    alert(L(`✅ 充值成功！\n+${tier.label} 已到账，当前余额 💎 ${diamonds + tier.diamonds}`, `✅ Top up successful!\n+${tier.label} credited, balance: 💎 ${diamonds + tier.diamonds}`))
   }
 
   // ── 开通会员 ─────────────────────────────────────────────
   // TODO: 替换为真实订阅 API（/api/membership/subscribe）
   const handleActivate = (tier) => {
     setUserLevel(tier.level)
-    alert(`🎉 恭喜开通「${tier.level}」！\n权益已立即生效，享受你的专属体验～`)
+    alert(L(`🎉 恭喜开通「${tier.level}」！\n权益已立即生效，享受你的专属体验～`, `🎉 ${tier.level} activated!\nBenefits are now active. Enjoy your exclusive experience!`))
   }
 
   return (
@@ -258,7 +264,7 @@ export default function RechargePage() {
             className="flex items-center gap-1.5 text-[rgba(245,240,242,0.6)] hover:text-[#FF9ACB] transition-colors"
           >
             <ArrowLeft size={18} />
-            <span className="text-[13px]">返回</span>
+            <span className="text-[13px]">{L('返回', 'Back')}</span>
           </button>
           {/* 居中标题 */}
           <h1
@@ -269,7 +275,7 @@ export default function RechargePage() {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            充值与会员
+            {L('充值与会员', 'Top Up & Membership')}
           </h1>
         </header>
 
@@ -296,8 +302,8 @@ export default function RechargePage() {
           {!fromProfile && <section>
             <div className="flex items-center gap-2 mb-3">
               <span className="text-base">💎</span>
-              <h2 className="text-sm font-semibold text-[rgba(245,240,242,0.85)]">钻石充值</h2>
-              <span className="text-[10px] text-[rgba(245,240,242,0.4)]">实时到账</span>
+              <h2 className="text-sm font-semibold text-[rgba(245,240,242,0.85)]">{L('钻石充值', 'Diamond Top Up')}</h2>
+              <span className="text-[10px] text-[rgba(245,240,242,0.4)]">{L('实时到账', 'Instant')}</span>
             </div>
             {/* TODO: 接入真实充值 API 后，每个档位价格从后端获取 */}
             <div className="grid grid-cols-2 gap-3">
@@ -306,7 +312,7 @@ export default function RechargePage() {
               ))}
             </div>
             <p className="text-center text-[10px] text-[rgba(245,240,242,0.25)] mt-3">
-              · 钻石为虚拟货币，充值后不支持退款 · 仅供平台内消费使用 ·
+              {L('· 钻石为虚拟货币，充值后不支持退款 · 仅供平台内消费使用 ·', '· Diamonds are virtual currency, non-refundable · For in-app use only ·')}
             </p>
           </section>}
 
@@ -314,8 +320,8 @@ export default function RechargePage() {
           <section>
             <div className="flex items-center gap-2 mb-3">
               <Crown size={15} style={{ color: '#FFD700' }} />
-              <h2 className="text-sm font-semibold text-[rgba(245,240,242,0.85)]">会员等级</h2>
-              <span className="text-[10px] text-[rgba(245,240,242,0.4)]">当前：{userLevel}</span>
+              <h2 className="text-sm font-semibold text-[rgba(245,240,242,0.85)]">{L('会员等级', 'Membership Tier')}</h2>
+              <span className="text-[10px] text-[rgba(245,240,242,0.4)]">{L('当前：', 'Current: ')}{userLevel}</span>
             </div>
             {/* TODO: 接入真实会员订阅 API（/api/membership/subscribe） */}
             <div className="space-y-4">
@@ -329,8 +335,8 @@ export default function RechargePage() {
               ))}
             </div>
             <p className="text-center text-[10px] text-[rgba(245,240,242,0.25)] mt-4 leading-relaxed">
-              · 会员功能为演示模式，支付系统尚未接入 ·<br />
-              · 开通后权益立即生效，随时可取消 ·
+              {L('· 会员功能为演示模式，支付系统尚未接入 ·', '· Membership features are in demo mode ·')}<br />
+              {L('· 开通后权益立即生效，随时可取消 ·', '· Benefits activate immediately, cancel anytime ·')}
             </p>
           </section>
 

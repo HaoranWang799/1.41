@@ -23,6 +23,7 @@
 
 import { useState } from 'react'
 import { Battery } from 'lucide-react'
+import { useL } from '../i18n/useL'
 
 // ─── Mock 数据（后续接入真实接口）─────────────────────────────────────
 // TODO: 接入蓝牙设备状态接口 (getBLEDeviceStatus)
@@ -52,6 +53,15 @@ const RHYTHM_MODES = [
   { id: 'sprint',   label: '冲刺',   icon: '▷▷', aiRecommend: false },
 ]
 
+// ─── i18n 英文映射 ──────────────────────────────────────────────────
+const EN = {
+  'AI智能模式': 'AI Smart Mode', '温柔型': 'Gentle', '成熟型': 'Mature',
+  '预热阶段': 'Warm-up', '进行中': 'In Progress', '高潮前奏': 'Pre-climax',
+  '爆发时刻': 'Peak', '余韵回落': 'Afterglow',
+  '自适应': 'Adaptive', '温和': 'Gentle', '波浪': 'Wave', '冲刺': 'Sprint',
+  '正常': 'Normal', '优秀': 'Excellent',
+}
+
 // ─── 工具：由进度百分比映射到当前阶段 index ─────────────────────────
 export function getStageIndexByProgress(pct) {
   let idx = 0
@@ -62,6 +72,7 @@ export function getStageIndexByProgress(pct) {
 }
 
 function ConnectionBatteryPill({ connected, battery }) {
+  const L = useL()
   const level = Math.max(0, Math.min(100, Number(battery) || 0))
 
   return (
@@ -76,7 +87,7 @@ function ConnectionBatteryPill({ connected, battery }) {
           />
         </div>
         <span>
-          {connected ? '已连接' : '未连接'}
+          {connected ? L('已连接', 'Connected') : L('未连接', 'Disconnected')}
         </span>
       </div>
 
@@ -109,6 +120,7 @@ export function HeaderStatusBar({
   personality = MOCK_DEVICE_STATUS.personality,
   maturity  = MOCK_DEVICE_STATUS.maturity,
 }) {
+  const L = useL()
   return (
     <div className="relative z-10 rounded-2xl px-3.5 py-2.5 card-glow bg-[rgba(15,8,15,0.72)] border border-[rgba(179,128,255,0.18)] flex items-center justify-between gap-2 flex-wrap">
       <div className="flex items-center gap-1.5 flex-wrap min-w-0">
@@ -117,12 +129,12 @@ export function HeaderStatusBar({
           className="text-[9px] font-medium rounded-full px-2 py-0.5"
           style={{ background: 'linear-gradient(135deg, rgba(179,128,255,0.25), rgba(255,154,203,0.15))', color: '#B380FF', border: '1px solid rgba(179,128,255,0.3)' }}
         >
-          ✦ {mode}
+          ✦ {L(mode, EN[mode] || mode)}
         </span>
         <span className="text-[9px] text-[rgba(245,240,242,0.45)]">·</span>
-        <span className="text-[9px] text-[rgba(245,240,242,0.55)]">{personality}</span>
+        <span className="text-[9px] text-[rgba(245,240,242,0.55)]">{L(personality, EN[personality] || personality)}</span>
         <span className="text-[9px] text-[rgba(245,240,242,0.45)]">·</span>
-        <span className="text-[9px] text-[rgba(245,240,242,0.55)]">{maturity}</span>
+        <span className="text-[9px] text-[rgba(245,240,242,0.55)]">{L(maturity, EN[maturity] || maturity)}</span>
       </div>
 
       <ConnectionBatteryPill connected={connected} battery={battery} />
@@ -144,6 +156,7 @@ export function HeaderStatusBar({
 // SceneTimeline：纯内容组件，无独立卡片外壳，嵌入主播放卡内部使用
 // 已移除重复的进度滑杆（主播放卡内已有进度条）
 export function SceneTimeline({ stageIndex = 0, onStageChange }) {
+  const L = useL()
   return (
     <div className="flex items-start justify-between">
       {STAGE_NODES.map((node, i) => {
@@ -174,7 +187,7 @@ export function SceneTimeline({ stageIndex = 0, onStageChange }) {
                 fontWeight: isActive ? 600 : 400,
               }}
             >
-              {node.label}
+              {L(node.label, EN[node.label] || node.label)}
             </span>
           </button>
         )
@@ -193,13 +206,14 @@ export function SceneTimeline({ stageIndex = 0, onStageChange }) {
  * TODO: aiRecommend 字段后续由 /api/ai/recommend-mode 接口返回
  */
 export function RhythmModeGrid({ selectedMode, onChange }) {
+  const L = useL()
   return (
     <div className="relative z-10 rounded-2xl p-4 card-glow bg-[rgba(15,8,15,0.72)]">
       {/* 标题行 */}
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[11px] font-semibold text-[rgba(245,240,242,0.8)]">节奏模式</p>
+        <p className="text-[11px] font-semibold text-[rgba(245,240,242,0.8)]">{L('节奏模式', 'Rhythm Mode')}</p>
         {/* TODO: 后端返回推荐后动态展示 */}
-        <span className="text-[8px] text-[rgba(179,128,255,0.4)]">AI 推荐：自适应</span>
+        <span className="text-[8px] text-[rgba(179,128,255,0.4)]">{L('AI 推荐：自适应', 'AI Pick: Adaptive')}</span>
       </div>
 
       {/* 4 个模式按钮 */}
@@ -236,7 +250,7 @@ export function RhythmModeGrid({ selectedMode, onChange }) {
                 className="text-[9px] font-medium"
                 style={{ color: isSelected ? 'rgba(245,240,242,0.9)' : 'rgba(245,240,242,0.45)' }}
               >
-                {m.label}
+                {L(m.label, EN[m.label] || m.label)}
               </span>
             </button>
           )
@@ -257,6 +271,7 @@ export function RhythmModeGrid({ selectedMode, onChange }) {
  * TODO: onChange 后续调用 /api/ai/set-param?intens=&freq=
  */
 export function AiParameterCards({ aiIntens, onAiIntensChange, aiFreq, onAiFreqChange }) {
+  const L = useL()
   const tempMin = 36.1
   const tempMax = 37.5
   const tempPct = Math.max(0, Math.min(100, ((aiFreq - tempMin) / (tempMax - tempMin)) * 100))
@@ -271,14 +286,14 @@ export function AiParameterCards({ aiIntens, onAiIntensChange, aiFreq, onAiFreqC
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span className="text-xs select-none">💧</span>
-            <span className="text-[10px] font-semibold text-[rgba(245,240,242,0.75)]">湿度</span>
+            <span className="text-[10px] font-semibold text-[rgba(245,240,242,0.75)]">{L('湿度', 'Humidity')}</span>
           </div>
           <span className="text-[13px] font-bold tabular-nums text-[#FF9ACB]">{aiIntens}%</span>
         </div>
         <div className="flex items-center gap-1 text-[8px] text-[rgba(245,240,242,0.3)]">
-          <span>干燥</span>
+          <span>{L('干燥', 'Dry')}</span>
           <div className="flex-1" />
-          <span>湿润</span>
+          <span>{L('湿润', 'Moist')}</span>
         </div>
         <input
           type="range"
@@ -299,14 +314,14 @@ export function AiParameterCards({ aiIntens, onAiIntensChange, aiFreq, onAiFreqC
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span className="text-xs select-none">🌡️</span>
-            <span className="text-[10px] font-semibold text-[rgba(245,240,242,0.75)]">温度</span>
+            <span className="text-[10px] font-semibold text-[rgba(245,240,242,0.75)]">{L('温度', 'Temp')}</span>
           </div>
           <span className="text-[13px] font-bold tabular-nums text-[#B380FF]">{Number(aiFreq).toFixed(1)}°</span>
         </div>
         <div className="flex items-center gap-1 text-[8px] text-[rgba(245,240,242,0.3)]">
-          <span>清凉</span>
+          <span>{L('清凉', 'Cool')}</span>
           <div className="flex-1" />
-          <span>炙热</span>
+          <span>{L('炙热', 'Hot')}</span>
         </div>
         <input
           type="range"
@@ -337,6 +352,7 @@ export function DeviceStatusFooter({
   battery = MOCK_DEVICE_STATUS.battery,
   signal  = '优秀',
 }) {
+  const L = useL()
   return (
     <div className="relative z-10 grid grid-cols-3 gap-1.5">
       {/* 设备温度 / 状态 */}
@@ -344,8 +360,8 @@ export function DeviceStatusFooter({
         className="rounded-xl p-2 flex flex-col items-center gap-0.5"
         style={{ background: 'rgba(12,6,12,0.6)', border: '1px solid rgba(255,255,255,0.06)' }}
       >
-        <span className="text-[7px] text-[rgba(245,240,242,0.28)] tracking-wide">设备温度</span>
-        <span className="text-[11px] font-semibold text-[rgba(245,240,242,0.65)]">{status}</span>
+        <span className="text-[7px] text-[rgba(245,240,242,0.28)] tracking-wide">{L('设备温度', 'Device Temp')}</span>
+        <span className="text-[11px] font-semibold text-[rgba(245,240,242,0.65)]">{L(status, EN[status] || status)}</span>
       </div>
 
       {/* 剩余电量 */}
@@ -353,7 +369,7 @@ export function DeviceStatusFooter({
         className="rounded-xl p-2 flex flex-col items-center gap-0.5"
         style={{ background: 'rgba(12,6,12,0.6)', border: '1px solid rgba(255,255,255,0.06)' }}
       >
-        <span className="text-[7px] text-[rgba(245,240,242,0.28)] tracking-wide">剩余电量</span>
+        <span className="text-[7px] text-[rgba(245,240,242,0.28)] tracking-wide">{L('剩余电量', 'Battery')}</span>
         <span className="text-[11px] font-semibold tabular-nums" style={{ color: battery > 30 ? 'rgba(34,197,94,0.75)' : '#ef4444' }}>
           {battery}%
         </span>
@@ -364,8 +380,8 @@ export function DeviceStatusFooter({
         className="rounded-xl p-2 flex flex-col items-center gap-0.5"
         style={{ background: 'rgba(12,6,12,0.6)', border: '1px solid rgba(255,255,255,0.06)' }}
       >
-        <span className="text-[7px] text-[rgba(245,240,242,0.28)] tracking-wide">信号质量</span>
-        <span className="text-[11px] font-semibold text-[rgba(179,128,255,0.7)]">{signal}</span>
+        <span className="text-[7px] text-[rgba(245,240,242,0.28)] tracking-wide">{L('信号质量', 'Signal')}</span>
+        <span className="text-[11px] font-semibold text-[rgba(179,128,255,0.7)]">{L(signal, EN[signal] || signal)}</span>
       </div>
     </div>
   )

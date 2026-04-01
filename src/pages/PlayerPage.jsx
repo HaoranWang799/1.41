@@ -1,16 +1,18 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Activity, Pause, Play, ChevronDown } from 'lucide-react'
+import { useL } from '../i18n/useL'
 
 // 全屏播放器，无底部导航
 export default function PlayerPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isPlaying, setIsPlaying] = useState(true)
+  const L = useL()
 
   const routeScript = location.state?.script
-  const title = routeScript?.title || '午夜调教：主人的失控'
-  const modeLabel = routeScript?.intensity || '默认模式'
+  const title = routeScript?.title || L('午夜调教：主人的失控', 'Midnight Session: Losing Control')
+  const modeLabel = routeScript?.intensity || L('默认模式', 'Default Mode')
 
   return (
     <div
@@ -47,7 +49,7 @@ export default function PlayerPage() {
 
       {/* 控制区（双击整屏也可返回，提示文字） */}
       <div className="p-8 pb-12 bg-black/50">
-        <p className="text-center text-[10px] text-white/20 mb-6">双击屏幕退出</p>
+        <p className="text-center text-[10px] text-white/20 mb-6">{L('双击屏幕退出', 'Double-tap to Exit')}</p>
         <div className="flex items-center justify-center">
           <button
             onClick={(e) => { e.stopPropagation(); setIsPlaying(!isPlaying) }}

@@ -19,6 +19,8 @@
 import { useState, useRef } from 'react'
 import { useOutletContext, useNavigate } from 'react-router-dom'
 import { X, Play, Crown } from 'lucide-react'
+import { useApp } from '../context/AppContext'
+import { useL } from '../i18n/useL'
 
 // 卡片封面使用视频的剧本 ID（视频文件放于 public/videos/{id}.mp4）
 // 包含：智能推荐区 'boss' + 官方更新区全部 6 张（o1–o6）
@@ -367,6 +369,75 @@ const BASE_TEMPLATES = [
 ]
 
 // ═══════════════════════════════════════════════════════════
+//  English translations for data items
+// ═══════════════════════════════════════════════════════════
+const DATA_EN = {
+  boss: { title: 'Late Night Office · Boss Lady', downloads: '23K', device: 'For Toy X' },
+  r2: { title: 'Summer Dorm · Sweet Junior', downloads: '51K', device: 'For Toy X / Pro' },
+  r3: { title: 'Midnight Balcony · Mystery Neighbor', downloads: '18K', device: 'For Toy Pro' },
+  o1: { title: 'Cold Boss Lady · Midnight', desc: 'Immersive', review: 'So immersive and realistic!' },
+  o2: { title: 'Sweet Junior · Dorm Whispers', desc: 'Multi-ending', review: 'Every ending is a surprise!' },
+  o3: { title: 'Elegant Teacher · After School', desc: 'New Voice Pack', review: 'Amazing voice acting, so gentle!' },
+  o4: { title: 'Mystery Neighbor · Moonlit Encounter', desc: 'New Chapter', review: 'Different ending every time!' },
+  o5: { title: 'Fox Spirit · Tonight on Earth', desc: 'Period Drama', review: 'Stunning period drama, beautiful BGM!' },
+  o6: { title: 'Tropical Island · Lost Holiday', desc: 'Summer Limited', review: 'Perfect for summer vibes!' },
+  fs1: { title: 'Beginner Template', desc: 'Gentle first choice', review: 'A must for beginners!' },
+  fs2: { title: 'Gentle Basic', desc: 'Relaxing vibe', review: 'Super relaxing, use it every night!' },
+  fs3: { title: 'Light Experience', desc: 'Progressive', review: 'Perfect pace, not too fast!' },
+  fs4: { title: 'Ocean Breath · Meditation', desc: 'Mind & body relax', review: 'So soothing, perfect for sleep!' },
+  fs5: { title: 'Forest Breath · Nature', desc: 'Ambient sounds', review: 'Nature vibes, so stress-relieving!' },
+  fs6: { title: 'Starry Night · Tranquil', desc: 'Bedtime companion', review: 'Fall asleep instantly, really works!' },
+  u1: { title: 'Dark Elf · Shadow Forest', desc: 'Immersive', author: 'by Creator Mia', review: 'Amazing atmosphere, must try!' },
+  u2: { title: 'Fox Spirit · Eternal Wait', desc: 'Emotional', author: 'by NightFox', review: 'So touching, cried many times...' },
+  u3: { title: 'Moon Goddess · Bamboo Realm', desc: 'Period immersion', author: 'by KittyMeow', review: 'Beautiful BGM, period vibes!' },
+  u4: { title: 'Dragon Clan · Starry Pact', desc: 'Epic', author: 'by DragonFly', review: 'So epic, like watching a movie!' },
+  u5: { title: 'Cherry Blossom · Spring Confession', desc: 'Campus youth', author: 'by SpringPaint', review: 'So sweet and nostalgic!' },
+  u6: { title: 'Masquerade · Midnight Maze', desc: 'Mystery', author: 'by DarkPen', review: 'So many twists, never predictable!' },
+  h1: { title: 'Sweet Junior · Weekend Dorm', desc: 'Monthly Top', downloads: '51K', review: 'Absolutely addictive!' },
+  h2: { title: 'Exclusive · Goddess Arrives', desc: 'Phenomenal', downloads: '38K', review: 'Worth it! Exceeded expectations.' },
+  h3: { title: 'Balcony Meet · Moonlit Whispers', desc: 'Emotional', downloads: '29K', review: 'Every word hits the heart.' },
+  h4: { title: 'Esports Queen · After Match', desc: 'Gap Moe', downloads: '22K', review: 'The contrast is heart-racing!' },
+  h5: { title: 'Tea House · Jiangnan', desc: 'Period Daily', downloads: '19K', review: 'So healing, instant mood boost!' },
+  h6: { title: 'Rock Girl · Backstage', desc: 'Cool Style', downloads: '14K', review: 'Her voice is incredible, so cool!' },
+  rb1: { title: 'Rainbow Promise · First Love', desc: 'Warm & Healing', review: 'So warm it brings tears!' },
+  rb2: { title: 'Purple Sky · Dance for Two', desc: 'Diverse Story', review: 'Respectful of all love, touching!' },
+  rb3: { title: 'Butterfly Garden · Free Breath', desc: 'Inclusive & Equal', review: 'Finally felt accepted.' },
+  rb4: { title: 'Tulip Garden · After Rain', desc: 'BL Heartwarming', review: 'Two boys\' story, super sweet!' },
+  rb5: { title: 'Sunflower Field · GL Afternoon', desc: 'GL Sunny', review: 'Beautiful friendship and love!' },
+  rb6: { title: 'Fireworks Night · Free Love', desc: 'Ensemble Cast', review: 'Every character has their story!' },
+  ex1: { title: 'AI Boss Lady · Deep Custom', desc: 'Voice / Video interactive', review: 'True immersion! So realistic!' },
+  ex2: { title: 'Dark Elf · AI Custom', desc: 'Voice / Video interactive', review: 'Video mode is next level!' },
+  ex3: { title: 'Medieval Queen · Royal', desc: 'Voice / Video interactive', review: 'Felt like royalty, amazing!' },
+  ex4: { title: 'Super Hero · Guardian', desc: 'Voice / Video interactive', review: 'Real-time AI response? Incredible!' },
+  ex5: { title: 'Moon Emissary · Starry Pact', desc: 'Voice / Video interactive', review: 'Unique every time!' },
+  f1: { title: 'New User Pack Vol.1', sub: '3 starter scenes', badge: 'Free' },
+  f2: { title: 'Popular Picks', sub: 'Monthly TOP5', badge: 'Free' },
+  f3: { title: 'Classic Memories', sub: 'Nostalgia collection', badge: 'Free' },
+  d1: { title: 'Daily Free · Peak Experience Pro', device: 'For Toy X / Pro', downloads: '47K' },
+  b1: { title: 'Beginner Template', desc: 'Gentle intro for new users' },
+  b2: { title: 'Light Experience', desc: 'Progressive, gentle pace' },
+  b3: { title: 'Gentle Basic', desc: 'Soft scenes, relaxation first' },
+  s1: { title: 'Overtime · Boss\'s Discipline', badge: '🔥 Fire' },
+  s2: { title: 'Late Night Dorm · Confession', badge: '💕 Sweet' },
+  s3: { title: 'Escape Room · Bound Secrets', badge: '🔒 Restricted' },
+  s4: { title: 'Fox Spirit · Soul Enchantment', badge: '🌶 Hot' },
+  s5: { title: 'Pool Party · Bikini Trap', badge: '💦 Splash' },
+  s6: { title: 'Luxury Hotel · CEO\'s Suite', badge: '👑 Noble' },
+  s7: { title: 'Midnight Stream · Off Camera', badge: '🆕 Just In' },
+  s8: { title: 'Underground Club · Contract', badge: '🔞 Extreme' },
+  s9: { title: 'Queen\'s Throne · Submission', badge: '🔒 Exclusive' },
+  s10: { title: 'Masquerade · Double Trap', badge: '🔒 Exclusive' },
+  s11: { title: 'Courtesan · Palace Night', badge: '🌸 Period' },
+  s12: { title: 'Esports Queen · Off Stage', badge: '🆕 Just In' },
+}
+
+// Helper: get English field for data items by id
+function te(item, field, lang) {
+  if (lang !== 'en') return item[field]
+  return DATA_EN[item.id]?.[field] ?? item[field]
+}
+
+// ═══════════════════════════════════════════════════════════
 //  子组件
 // ═══════════════════════════════════════════════════════════
 
@@ -402,6 +473,8 @@ function Stars({ rating }) {
  * 图片加载失败时自动回退到渐变色背景 + 大 emoji 水印占位
  */
 function RecommendedCard({ item, onBuy, onCardClick }) {
+  const { lang } = useApp()
+  const L = useL()
   const isVideo = CARD_VIDEO_IDS.includes(item.id)
   const [imgSrc, setImgSrc] = useState(`/images/covers/${item.id}.jpg`)
 
@@ -446,15 +519,15 @@ function RecommendedCard({ item, onBuy, onCardClick }) {
 
       {/* 内容层（底部对齐） */}
       <div className="relative z-10 p-3 flex flex-col justify-end h-full">
-        <p className="text-xs font-semibold text-white leading-tight mb-1">{item.title}</p>
+        <p className="text-xs font-semibold text-white leading-tight mb-1">{te(item, 'title', lang)}</p>
         <div className="flex items-center gap-1.5 mb-1">
           <Stars rating={item.rating} />
           <span className="text-[10px] text-[rgba(245,240,242,0.6)]">{item.rating}</span>
         </div>
         <div className="flex items-center gap-1 text-[9px] text-[rgba(245,240,242,0.5)] mb-1.5">
-          <span>{item.downloads} 下载</span>
+          <span>{te(item, 'downloads', lang)} {L('下载', 'downloads')}</span>
           <span>·</span>
-          <span>{item.device}</span>
+          <span>{te(item, 'device', lang)}</span>
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); onBuy(item) }}
@@ -464,7 +537,7 @@ function RecommendedCard({ item, onBuy, onCardClick }) {
               : 'btn-main text-white'
           }`}
         >
-          {item.price.label}
+          {item.price.type === 'free' ? L('免费', 'Free') : item.price.label}
         </button>
       </div>
     </div>
@@ -478,15 +551,17 @@ function RecommendedCard({ item, onBuy, onCardClick }) {
  * multimodal 属性：展示 🎬🎙️ 多模态角标
  */
 function SectionCard({ item, onBuy, badge, badgeStyle, showAuthor, showDownloads, isMember, isVIP, multimodal }) {
+  const { lang } = useApp()
+  const L = useL()
   const isFree = item.price.type === 'free'
   const isVideo = CARD_VIDEO_IDS.includes(item.id)
   const [imgSrc, setImgSrc] = useState(`/images/covers/${item.id}.jpg`)
 
   let btnLabel
   if (isFree) {
-    btnLabel = '免费获取'
+    btnLabel = L('免费获取', 'Get Free')
   } else if (isVIP) {
-    btnLabel = '会员免费'
+    btnLabel = L('会员免费', 'Member Free')
   } else if (isMember && item.memberPriceLabel) {
     btnLabel = item.memberPriceLabel
   } else {
@@ -558,11 +633,11 @@ function SectionCard({ item, onBuy, badge, badgeStyle, showAuthor, showDownloads
       {/* 内容层（底部对齐） */}
       <div className="relative z-10 p-2.5 flex flex-col justify-end h-full">
         <p className="text-[11px] font-semibold text-white leading-tight line-clamp-2 mb-1">
-          {item.title}
+          {te(item, 'title', lang)}
         </p>
         {item.desc && (
           <p className={`text-[9px] mb-1 ${multimodal ? 'text-[#C9A0FF]' : 'text-[rgba(245,240,242,0.65)]'}`}>
-            {item.desc}
+            {te(item, 'desc', lang)}
           </p>
         )}
         <div className="flex items-center gap-1 mb-1">
@@ -570,10 +645,10 @@ function SectionCard({ item, onBuy, badge, badgeStyle, showAuthor, showDownloads
           <span className="text-[9px] text-[rgba(245,240,242,0.5)]">{item.reviews}</span>
         </div>
         {showAuthor && item.author && (
-          <p className="text-[9px] text-[rgba(179,128,255,0.8)] mb-0.5">{item.author}</p>
+          <p className="text-[9px] text-[rgba(179,128,255,0.8)] mb-0.5">{te(item, 'author', lang)}</p>
         )}
         {showDownloads && item.downloads && (
-          <p className="text-[9px] text-[rgba(245,240,242,0.5)] mb-0.5">↓ {item.downloads}</p>
+          <p className="text-[9px] text-[rgba(245,240,242,0.5)] mb-0.5">↓ {te(item, 'downloads', lang)}</p>
         )}
 
         {/* 价格对比（仅付费项目显示） */}
@@ -594,7 +669,7 @@ function SectionCard({ item, onBuy, badge, badgeStyle, showAuthor, showDownloads
         {/* 用户评价引用 */}
         {item.review && (
           <p className="text-[8px] italic text-[rgba(245,240,242,0.45)] line-clamp-1 mb-1">
-            "{item.review}"
+            "{te(item, 'review', lang)}"
           </p>
         )}
 
@@ -615,19 +690,21 @@ function SectionCard({ item, onBuy, badge, badgeStyle, showAuthor, showDownloads
 
 /** 免费礼包卡片 */
 function FreePackCard({ item, onClick }) {
+  const { lang } = useApp()
+  const L = useL()
   return (
     <div
       className="relative flex-shrink-0 w-32 snap-start rounded-2xl p-3 cursor-pointer card-glow bg-[rgba(30,20,25,0.6)] hover:bg-[rgba(50,30,40,0.7)] transition-colors"
       onClick={onClick}
     >
       <span className="absolute top-2 right-2 bg-[#FF9ACB] text-[9px] font-bold text-[#1a0a12] rounded-full px-1.5 py-0.5">
-        {item.badge}
+        {te(item, 'badge', lang)}
       </span>
       <div className="text-2xl mb-2">{item.emoji}</div>
-      <p className="text-[11px] font-semibold text-[rgba(245,240,242,0.9)] mb-0.5 leading-tight">{item.title}</p>
-      <p className="text-[9px] text-[rgba(245,240,242,0.45)] mb-2">{item.sub}</p>
+      <p className="text-[11px] font-semibold text-[rgba(245,240,242,0.9)] mb-0.5 leading-tight">{te(item, 'title', lang)}</p>
+      <p className="text-[9px] text-[rgba(245,240,242,0.45)] mb-2">{te(item, 'sub', lang)}</p>
       <button className="w-full py-1 rounded-lg text-[10px] font-medium bg-[rgba(255,154,203,0.12)] text-[#FF9ACB] border border-[rgba(255,154,203,0.25)]">
-        免费领取
+        {L('免费领取', 'Get Free')}
       </button>
     </div>
   )
@@ -638,40 +715,40 @@ function FreePackCard({ item, onClick }) {
 // ═══════════════════════════════════════════════════════════
 
 const SCRIPT_TABS = [
-  { id: 'hot',     label: '💘 为你精选' },
-  { id: 'popular', label: '💦 热门推荐' },
-  { id: 'new',     label: '🌶 官方上新' },
-  { id: 'vip',     label: '🔒 会员专享' },
+  { id: 'hot',     label: '💘 为你精选', labelEn: '💘 For You' },
+  { id: 'popular', label: '💦 热门推荐', labelEn: '💦 Popular' },
+  { id: 'new',     label: '🌶 官方上新', labelEn: '🌶 New Releases' },
+  { id: 'vip',     label: '🔒 会员专享', labelEn: '🔒 VIP Only' },
 ]
 
 const SCRIPT_PERSONA_FILTERS = [
-  { id: 'all',       label: '全部风格' },
-  { id: 'xuemei',    label: '清新陪伴' },
-  { id: 'classmate', label: '校园氛围' },
-  { id: 'banhua',    label: '人气焦点' },
-  { id: 'boss',      label: '知性上司' },
-  { id: 'secretary', label: '知性助理' },
-  { id: 'nurse',     label: '暖心陪伴' },
-  { id: 'shaofu',    label: '成熟知性' },
-  { id: 'neighbor',  label: '邻家妹妹' },
-  { id: 'ex',        label: '熟悉旧识' },
-  { id: 'teacher',   label: '气质导师' },
-  { id: 'goddess',   label: '高冷魅力' },
-  { id: 'wildcat',   label: '俏皮灵动' },
+  { id: 'all',       label: '全部风格', labelEn: 'All Styles' },
+  { id: 'xuemei',    label: '清新陪伴', labelEn: 'Fresh Company' },
+  { id: 'classmate', label: '校园氛围', labelEn: 'Campus Vibe' },
+  { id: 'banhua',    label: '人气焦点', labelEn: 'Popular' },
+  { id: 'boss',      label: '知性上司', labelEn: 'Smart Boss' },
+  { id: 'secretary', label: '知性助理', labelEn: 'Smart Assistant' },
+  { id: 'nurse',     label: '暖心陪伴', labelEn: 'Warm Care' },
+  { id: 'shaofu',    label: '成熟知性', labelEn: 'Mature Elegant' },
+  { id: 'neighbor',  label: '邻家妹妹', labelEn: 'Girl Next Door' },
+  { id: 'ex',        label: '熟悉旧识', labelEn: 'Old Friend' },
+  { id: 'teacher',   label: '气质导师', labelEn: 'Elegant Mentor' },
+  { id: 'goddess',   label: '高冷魅力', labelEn: 'Cool Charm' },
+  { id: 'wildcat',   label: '俏皮灵动', labelEn: 'Playful Spirit' },
 ]
 
 const SCRIPT_INTENSITY_FILTERS = [
-  { id: 'all',    label: '全部强度' },
-  { id: 'light',  label: '轻度体验' },
-  { id: 'deep',   label: '中度体验' },
-  { id: 'max',    label: '高强体验' },
+  { id: 'all',    label: '全部强度', labelEn: 'All Intensity' },
+  { id: 'light',  label: '轻度体验', labelEn: 'Light' },
+  { id: 'deep',   label: '中度体验', labelEn: 'Medium' },
+  { id: 'max',    label: '高强体验', labelEn: 'Intense' },
 ]
 
 const SCRIPT_DURATION_FILTERS = [
-  { id: 'all',  label: '全部时长'  },
-  { id: 's',    label: '5-10分钟'  },
-  { id: 'm',    label: '10-20分钟' },
-  { id: 'l',    label: '20分钟+'   },
+  { id: 'all',  label: '全部时长',  labelEn: 'All Duration' },
+  { id: 's',    label: '5-10分钟',  labelEn: '5-10 min' },
+  { id: 'm',    label: '10-20分钟', labelEn: '10-20 min' },
+  { id: 'l',    label: '20分钟+',   labelEn: '20+ min' },
 ]
 
 const SCRIPTS = [
@@ -726,6 +803,8 @@ const SCRIPTS = [
 ]
 
 function ScriptCard({ item, onBuy }) {
+  const { lang } = useApp()
+  const L = useL()
   const isVIPOnly = item.price.memberAmount === 0 && item.price.type === 'diamonds'
   return (
     <div
@@ -742,12 +821,12 @@ function ScriptCard({ item, onBuy }) {
 
       {/* 角标 */}
       <span className={`absolute top-2 left-2 text-[9px] font-bold rounded-full px-1.5 py-0.5 z-10 ${item.badgeColor}`}>
-        {item.badge}
+        {te(item, 'badge', lang)}
       </span>
 
       {/* 底部内容 */}
       <div className="absolute bottom-0 left-0 right-0 p-2.5 z-10">
-        <p className="text-[11px] font-bold text-white leading-tight line-clamp-2 mb-1.5">{item.title}</p>
+        <p className="text-[11px] font-bold text-white leading-tight line-clamp-2 mb-1.5">{te(item, 'title', lang)}</p>
         <div className="flex items-center gap-1 mb-2">
           <Stars rating={item.rating} />
           <span className="text-[9px] text-white/50">{item.reviews}</span>
@@ -762,7 +841,7 @@ function ScriptCard({ item, onBuy }) {
                 : 'btn-main text-white'
           }`}
         >
-          {item.price.label}
+          {item.price.type === 'free' ? L('免费', 'Free') : isVIPOnly ? L('👑 会员专享', '👑 VIP Only') : item.price.label}
         </button>
       </div>
     </div>
@@ -834,6 +913,8 @@ function DragScrollRow({ className = '', children }) {
 }
 
 function ScriptLibrarySection({ onBuy }) {
+  const { lang } = useApp()
+  const L = useL()
   const [activeTab,       setActiveTab]       = useState('hot')
   const [personaFilter,   setPersonaFilter]   = useState('all')
   const [intensityFilter, setIntensityFilter] = useState('all')
@@ -854,9 +935,9 @@ function ScriptLibrarySection({ onBuy }) {
     <section className="page-section page-delay-4">
       {/* 标题 */}
       <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-[15px] font-black text-[#F9EDF5] tracking-wide">沉浸内容库</h2>
+        <h2 className="text-[15px] font-black text-[#F9EDF5] tracking-wide">{L('沉浸内容库', 'Content Library')}</h2>
         <span className="text-[9px] rounded-full px-2 py-0.5 bg-[#FF2A6D]/20 text-[#FF7DAF] border border-[#FF2A6D]/30 ml-auto">
-          精选推荐
+          {L('精选推荐', 'Curated')}
         </span>
       </div>
 
@@ -868,7 +949,7 @@ function ScriptLibrarySection({ onBuy }) {
         <input
           value={searchVal}
           onChange={e => setSearchVal(e.target.value)}
-          placeholder="搜索你想体验的内容…"
+          placeholder={L('搜索你想体验的内容…', 'Search experiences...')}
           className="w-full bg-[#1A0E1E] border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm text-[#F9EDF5] placeholder-[#9B859D]/60 focus:outline-none focus:border-[#FF2A6D]/40"
         />
         <button
@@ -902,7 +983,7 @@ function ScriptLibrarySection({ onBuy }) {
                   : 'bg-[#1A0E1E] border border-white/10 text-[#9B859D]'
               }`}
             >
-              {tab.label}
+              {lang === 'en' ? tab.labelEn : tab.label}
             </button>
           ))}
         </DragScrollRow>
@@ -913,26 +994,26 @@ function ScriptLibrarySection({ onBuy }) {
       {filterOpen && (
       <div className="space-y-3 mb-5">
         <div>
-          <p className="text-[10px] text-[#9B859D] mb-2 tracking-widest">角色风格</p>
+          <p className="text-[10px] text-[#9B859D] mb-2 tracking-widest">{L('角色风格', 'Character Style')}</p>
           <DragScrollRow>
             {SCRIPT_PERSONA_FILTERS.map(f => (
-              <FilterPill key={f.id} label={f.label} active={personaFilter === f.id} onClick={() => setPersonaFilter(f.id)} />
+              <FilterPill key={f.id} label={lang === 'en' ? f.labelEn : f.label} active={personaFilter === f.id} onClick={() => setPersonaFilter(f.id)} />
             ))}
           </DragScrollRow>
         </div>
         <div>
-          <p className="text-[10px] text-[#9B859D] mb-2 tracking-widest">互动强度</p>
+          <p className="text-[10px] text-[#9B859D] mb-2 tracking-widest">{L('互动强度', 'Intensity')}</p>
           <DragScrollRow>
             {SCRIPT_INTENSITY_FILTERS.map(f => (
-              <FilterPill key={f.id} label={f.label} active={intensityFilter === f.id} onClick={() => setIntensityFilter(f.id)} />
+              <FilterPill key={f.id} label={lang === 'en' ? f.labelEn : f.label} active={intensityFilter === f.id} onClick={() => setIntensityFilter(f.id)} />
             ))}
           </DragScrollRow>
         </div>
         <div>
-          <p className="text-[10px] text-[#9B859D] mb-2 tracking-widest">体验时长</p>
+          <p className="text-[10px] text-[#9B859D] mb-2 tracking-widest">{L('体验时长', 'Duration')}</p>
           <DragScrollRow>
             {SCRIPT_DURATION_FILTERS.map(f => (
-              <FilterPill key={f.id} label={f.label} active={durationFilter === f.id} onClick={() => setDurationFilter(f.id)} />
+              <FilterPill key={f.id} label={lang === 'en' ? f.labelEn : f.label} active={durationFilter === f.id} onClick={() => setDurationFilter(f.id)} />
             ))}
           </DragScrollRow>
         </div>
@@ -949,8 +1030,8 @@ function ScriptLibrarySection({ onBuy }) {
       ) : (
         <div className="py-12 text-center text-[#9B859D] text-sm">
           <p className="text-2xl mb-2">💧</p>
-          <p>暂无符合条件的禁忌内容</p>
-          <p className="text-xs mt-1 text-[#9B859D]/50">换个条件再试试…</p>
+          <p>{L('暂无符合条件的禁忌内容', 'No matching content found')}</p>
+          <p className="text-xs mt-1 text-[#9B859D]/50">{L('换个条件再试试…', 'Try different filters...')}</p>
         </div>
       )}
     </section>
@@ -1072,6 +1153,8 @@ function HorizontalScrollRow({ children, className = '', style }) {
 
 export default function ShopPage() {
   const navigate = useNavigate()
+  const { lang } = useApp()
+  const L = useL()
 
   // ── 从 Layout 获取全局货币与会员状态 ─────────────────────
   const { coins, setCoins, diamonds, setDiamonds, userLevel } = useOutletContext()
@@ -1161,7 +1244,7 @@ export default function ShopPage() {
           style={{ background: 'linear-gradient(90deg, #FF9ACB, #B380FF)' }}
         >
           <Crown size={11} />
-          充值
+          {L('充值', 'Top Up')}
         </button>
       </section>
 
@@ -1170,7 +1253,7 @@ export default function ShopPage() {
 
       {/* ═══ 智能推荐 ════════════════════════════════════════ */}
       <section className="page-section page-delay-1">
-        <SectionTitle icon="🎯" title="智能推荐为你" sub="根据你的偏好" />
+        <SectionTitle icon="🎯" title={L('智能推荐为你', 'Recommended')} sub={L('根据你的偏好', 'Based on your taste')} />
         {/* TODO: 替换推荐列表为真实个性化算法 API */}
         <HorizontalScrollRow>
           {RECOMMENDED.map((item) => (
@@ -1187,14 +1270,14 @@ export default function ShopPage() {
       {/* ═══ 官方更新专区 ════════════════════════════════════ */}
       {/* TODO: 替换为 /api/shop/official 的真实数据 */}
       <section className="page-section page-delay-2">
-        <SectionTitle icon="🏅" title="官方更新" sub="品质保障" />
+        <SectionTitle icon="🏅" title={L('官方更新', 'Official Updates')} sub={L('品质保障', 'Quality assured')} />
         <HorizontalScrollRow>
           {OFFICIAL_UPDATES.map((item) => (
             <SectionCard
               key={item.id}
               item={item}
               onBuy={handleBuy}
-              badge="官方"
+              badge={L('官方', 'Official')}
               badgeStyle="bg-[rgba(255,215,0,0.25)] text-yellow-300"
               isMember={isMember}
               isVIP={isVIP}
@@ -1214,8 +1297,8 @@ export default function ShopPage() {
           <Play size={18} className="text-[#B380FF]" fill="#B380FF" />
         </div>
         <div className="flex-1 text-left">
-          <p className="text-xs font-semibold text-[rgba(245,240,242,0.9)]">观看视频得 50 金币</p>
-          <p className="text-[10px] text-[rgba(245,240,242,0.45)]">每日可观看 5 次 · 广告时长约 15 秒</p>
+          <p className="text-xs font-semibold text-[rgba(245,240,242,0.9)]">{L('观看视频得 50 金币', 'Watch video for 50 coins')}</p>
+          <p className="text-[10px] text-[rgba(245,240,242,0.45)]">{L('每日可观看 5 次 · 广告时长约 15 秒', '5 times daily · ~15 sec')}</p>
         </div>
         <span className="text-xs font-bold text-[#B380FF]">💰+50</span>
       </button>
@@ -1223,14 +1306,14 @@ export default function ShopPage() {
       {/* ═══ 免费专区 ════════════════════════════════════════ */}
       {/* TODO: 替换为 /api/shop/free 的真实数据 */}
       <section className="page-section page-delay-2">
-        <SectionTitle icon="🆓" title="免费专区" sub="永久免费" />
+        <SectionTitle icon="🆓" title={L('免费专区', 'Free Zone')} sub={L('永久免费', 'Free forever')} />
         <HorizontalScrollRow>
           {FREE_SECTION_CARDS.map((item) => (
             <SectionCard
               key={item.id}
               item={item}
               onBuy={handleBuy}
-              badge="免费"
+              badge={L('免费', 'Free')}
               badgeStyle="bg-[rgba(255,154,203,0.25)] text-[#FF9ACB]"
               isMember={isMember}
               isVIP={isVIP}
@@ -1241,10 +1324,10 @@ export default function ShopPage() {
 
       {/* ═══ 免费内容专区（礼包 + 每日限免 + 基础库）════════ */}
       <section className="page-section page-delay-3">
-        <SectionTitle icon="🎁" title="免费内容专区" />
+        <SectionTitle icon="🎁" title={L('免费内容专区', 'Free Content Zone')} />
 
         {/* 新用户礼包 */}
-        <p className="text-[10px] text-[rgba(245,240,242,0.4)] mb-2 tracking-wider">新用户礼包</p>
+        <p className="text-[10px] text-[rgba(245,240,242,0.4)] mb-2 tracking-wider">{L('新用户礼包', 'New User Gifts')}</p>
         <HorizontalScrollRow
           className="pb-2 mb-4 px-1"
         >
@@ -1258,7 +1341,7 @@ export default function ShopPage() {
         </HorizontalScrollRow>
 
         {/* 每日限免 */}
-        <p className="text-[10px] text-[rgba(245,240,242,0.4)] mb-2 tracking-wider">每日限免</p>
+        <p className="text-[10px] text-[rgba(245,240,242,0.4)] mb-2 tracking-wider">{L('每日限免', 'Daily Free')}</p>
         <div
           className="relative overflow-hidden rounded-[24px] p-4 mb-4 card-glow cursor-pointer"
           style={{ background: 'linear-gradient(135deg, #231033 0%, #31194c 58%, #24112f 100%)' }}
@@ -1283,27 +1366,27 @@ export default function ShopPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-3 mb-1">
                 <span className="inline-flex items-center rounded-full px-2 py-1 text-[9px] font-bold tracking-wide text-[#2a1020] bg-[#FF9ACB] shadow-[0_4px_12px_rgba(255,154,203,0.25)]">
-                  今日限免
+                  {L('今日限免', 'Free Today')}
                 </span>
-                <span className="text-[9px] text-[rgba(245,240,242,0.42)] tracking-wider">24H 福利</span>
+                <span className="text-[9px] text-[rgba(245,240,242,0.42)] tracking-wider">{L('24H 福利', '24H Deal')}</span>
               </div>
               <p className="text-[15px] leading-tight font-bold text-[rgba(250,244,247,0.96)] mb-1">
-                {DAILY_FREE.title}
+                {te(DAILY_FREE, 'title', lang)}
               </p>
               <p className="text-[11px] text-[rgba(245,240,242,0.5)]">
-                {DAILY_FREE.device} · {DAILY_FREE.downloads} 下载
+                {te(DAILY_FREE, 'device', lang)} · {te(DAILY_FREE, 'downloads', lang)} {L('下载', 'downloads')}
               </p>
               <div className="flex items-end justify-between gap-3 mt-3">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[11px] line-through text-[rgba(245,240,242,0.28)]">
-                    原价 {DAILY_FREE.originalLabel}
+                    {L('原价', 'Was')} {DAILY_FREE.originalLabel}
                   </span>
                   <span className="text-[12px] font-bold text-[#FF9ACB]">
-                    今日免费
+                    {L('今日免费', 'Free Today')}
                   </span>
                 </div>
                 <button className="rounded-full px-4 py-2 text-[11px] font-semibold text-[#2a1020] bg-[linear-gradient(135deg,#ffb2d6,#ff8cc8)] shadow-[0_10px_24px_rgba(255,154,203,0.28)] active:scale-[0.98] transition-transform">
-                  免费领取
+                  {L('免费领取', 'Get Free')}
                 </button>
               </div>
             </div>
@@ -1311,7 +1394,7 @@ export default function ShopPage() {
         </div>
 
         {/* 基础模板库 */}
-        <p className="text-[10px] text-[rgba(245,240,242,0.4)] mb-2 tracking-wider">基础模板库（永久免费）</p>
+        <p className="text-[10px] text-[rgba(245,240,242,0.4)] mb-2 tracking-wider">{L('基础模板库（永久免费）', 'Basic Templates (Free forever)')}</p>
         <div className="space-y-2">
           {BASE_TEMPLATES.map((item) => (
             <div
@@ -1321,10 +1404,10 @@ export default function ShopPage() {
             >
               <span className="text-xl">{item.emoji}</span>
               <div className="flex-1">
-                <p className="text-xs font-medium text-[rgba(245,240,242,0.85)]">{item.title}</p>
-                <p className="text-[10px] text-[rgba(245,240,242,0.4)]">{item.desc}</p>
+                <p className="text-xs font-medium text-[rgba(245,240,242,0.85)]">{te(item, 'title', lang)}</p>
+                <p className="text-[10px] text-[rgba(245,240,242,0.4)]">{te(item, 'desc', lang)}</p>
               </div>
-              <span className="text-[11px] font-semibold text-[#FF9ACB]">免费</span>
+              <span className="text-[11px] font-semibold text-[#FF9ACB]">{L('免费', 'Free')}</span>
             </div>
           ))}
         </div>
@@ -1333,14 +1416,14 @@ export default function ShopPage() {
       {/* ═══ 用户二创专区 ════════════════════════════════════ */}
       {/* TODO: 替换为 /api/shop/user-creations 的真实数据 */}
       <section className="page-section page-delay-3">
-        <SectionTitle icon="✏️" title="用户二创" sub="社区精选" />
+        <SectionTitle icon="✏️" title={L('用户二创', 'User Created')} sub={L('社区精选', 'Community picks')} />
         <HorizontalScrollRow>
           {USER_CREATIONS.map((item) => (
             <SectionCard
               key={item.id}
               item={item}
               onBuy={handleBuy}
-              badge="二创"
+              badge={L('二创', 'Fan-made')}
               badgeStyle="bg-[rgba(179,128,255,0.25)] text-[#B380FF]"
               showAuthor
               isMember={isMember}
@@ -1353,14 +1436,14 @@ export default function ShopPage() {
       {/* ═══ 热门榜单 ════════════════════════════════════════ */}
       {/* TODO: 替换为 /api/shop/hot?sortBy=downloads 的真实数据 */}
       <section className="page-section page-delay-4">
-        <SectionTitle icon="🔥" title="热门榜单" sub="下载最多" />
+        <SectionTitle icon="🔥" title={L('热门榜单', 'Trending')} sub={L('下载最多', 'Most downloaded')} />
         <HorizontalScrollRow>
           {HOT_LIST.map((item) => (
             <SectionCard
               key={item.id}
               item={item}
               onBuy={handleBuy}
-              badge="🔥 热门"
+              badge={L('🔥 热门', '🔥 Hot')}
               badgeStyle="bg-[rgba(255,120,50,0.25)] text-orange-300"
               showDownloads
               isMember={isMember}
@@ -1373,7 +1456,7 @@ export default function ShopPage() {
       {/* ═══ 彩虹专区（LGBTQ+）══════════════════════════════ */}
       {/* TODO: 替换为 /api/shop/rainbow 的真实数据 */}
       <section className="page-section page-delay-4">
-        <SectionTitle icon="🌈" title="彩虹专区" sub="多元 · 包容 · 平等" />
+        <SectionTitle icon="🌈" title={L('彩虹专区', 'Rainbow Zone')} sub={L('多元 · 包容 · 平等', 'Diverse · Inclusive · Equal')} />
         <HorizontalScrollRow>
           {RAINBOW_LIST.map((item) => (
             <SectionCard
@@ -1394,14 +1477,14 @@ export default function ShopPage() {
       <section className="page-section page-delay-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-base">👑</span>
-          <span className="text-sm font-semibold text-[rgba(245,240,242,0.85)]">独家定制</span>
+          <span className="text-sm font-semibold text-[rgba(245,240,242,0.85)]">{L('独家定制', 'Exclusive Custom')}</span>
           <span
             className="text-[9px] rounded-full px-2 py-0.5 flex items-center gap-0.5"
             style={{ background: 'rgba(179,128,255,0.2)', color: '#C9A0FF', border: '1px solid rgba(179,128,255,0.3)' }}
           >
-            🎬🎙️ 多模态
+            🎬🎙️ {L('多模态', 'Multi-modal')}
           </span>
-          <span className="text-[10px] text-[rgba(245,240,242,0.4)] ml-auto">语音 / 视频互动</span>
+          <span className="text-[10px] text-[rgba(245,240,242,0.4)] ml-auto">{L('语音 / 视频互动', 'Voice / Video')}</span>
         </div>
         <HorizontalScrollRow>
           {EXCLUSIVE_CUSTOM.map((item) => (
@@ -1409,7 +1492,7 @@ export default function ShopPage() {
               key={item.id}
               item={item}
               onBuy={handleBuy}
-              badge="独家"
+              badge={L('独家', 'Exclusive')}
               badgeStyle="bg-[rgba(255,215,0,0.25)] text-yellow-300"
               multimodal
               isMember={isMember}
@@ -1418,7 +1501,7 @@ export default function ShopPage() {
           ))}
         </HorizontalScrollRow>
         <p className="text-[9px] text-[rgba(245,240,242,0.25)] text-center mt-2">
-          · 独家定制支持实时语音 / 视频互动，体验全面升级 ·
+          {L('· 独家定制支持实时语音 / 视频互动，体验全面升级 ·', '· Exclusive custom supports real-time voice/video interaction ·')}
         </p>
       </section>
 
@@ -1440,9 +1523,9 @@ export default function ShopPage() {
           >
             <div className="flex justify-between items-start mb-4">
               <div>
-                <span className="text-[10px] bg-[rgba(255,154,203,0.2)] text-[#FF9ACB] rounded-full px-2 py-0.5">限时推荐</span>
-                <h3 className="text-base font-semibold text-[rgba(245,240,242,0.95)] mt-2">独家剧情包 · 限时特惠</h3>
-                <p className="text-[11px] text-[rgba(245,240,242,0.5)] mt-0.5">今日 8 折，仅剩 2 小时</p>
+                <span className="text-[10px] bg-[rgba(255,154,203,0.2)] text-[#FF9ACB] rounded-full px-2 py-0.5">{L('限时推荐', 'Limited Offer')}</span>
+                <h3 className="text-base font-semibold text-[rgba(245,240,242,0.95)] mt-2">{L('独家剧情包 · 限时特惠', 'Exclusive Bundle · Flash Sale')}</h3>
+                <p className="text-[11px] text-[rgba(245,240,242,0.5)] mt-0.5">{L('今日 8 折，仅剩 2 小时', '20% off today, 2 hours left')}</p>
               </div>
               <button onClick={() => setShowInterstitial(false)} className="p-1">
                 <X size={18} className="text-[rgba(245,240,242,0.4)]" />
@@ -1457,13 +1540,13 @@ export default function ShopPage() {
                 onClick={() => { setShowInterstitial(false); alert('💳 即将跳转支付…（演示模式）') }}
                 className="flex-1 py-2.5 rounded-xl btn-main text-white text-sm font-medium"
               >
-                立即抢购 $3.99
+                {L('立即抢购', 'Buy Now')} $3.99
               </button>
               <button
                 onClick={() => setShowInterstitial(false)}
                 className="px-4 py-2.5 rounded-xl text-xs text-[rgba(245,240,242,0.4)]"
               >
-                稍后
+                {L('稍后', 'Later')}
               </button>
             </div>
           </div>

@@ -24,6 +24,7 @@ import { Heart, MessageCircle, Bookmark, Plus, Trash2 } from 'lucide-react'
 import { useVirtualLover } from '../hooks/useVirtualLover'
 import useCommunity from '../hooks/useCommunity'
 import { useApp } from '../context/AppContext'
+import { useL } from '../i18n/useL'
 
 // 遗留本地数据，当前页面已改为 useCommunity 实时数据流。
 const LEGACY_POSTS_V2 = {
@@ -251,6 +252,106 @@ const LEGACY_POSTS_V2 = {
   ],
 }
 
+// 英文翻译映射（按帖子 id）
+const LEGACY_POSTS_EN = {
+  1: {
+    time: '1h ago',
+    content: 'The opening line of the script made me blush instantly >//< Her voice carried this restrained allure that pulled me in completely… Listened secretly under the covers, replayed it again and again, just couldn\'t stop. That tingling sensation lingered on and on — this one is absolutely legendary!',
+    tags: ['#TonightExp', '#ForHer', '#HighlyRated'],
+    comments: ['Same here! That voice totally got me lol', 'The thrill of embarrassment is exactly the point!'],
+  },
+  2: {
+    time: '3h ago',
+    content: 'The moment intense mode kicked in, I literally ascended — temperature hit 80 and my whole body went numb… Paired with the gentle junior\'s voice, it felt more real than real. I just lay there motionless, mind completely blank. Regret not buying sooner, strongly recommend to all the bros still on the fence 💪',
+    tags: ['#TonightExp', '#ForHim', '#MustRead'],
+    comments: ['Bro that\'s exactly how I got hooked! No turning back', 'Intense mode is a blast, try extreme next time'],
+  },
+  3: {
+    time: '5h ago',
+    content: 'Tried the Rainbow section with my boyfriend, it was amazing! The duo script synced vibrations across two devices — we both burst out laughing the moment it connected, then felt really moved… A godsend for long-distance couples, feeling each other through the screen 🌈',
+    tags: ['#TonightExp', '#LGBT', '#RainbowZone', '#LongDistance'],
+    comments: ['Long-distance folks literally tearing up — this feature is so heartwarming', 'The duo sync truly achieves emotional connection!'],
+  },
+  4: {
+    time: 'Yesterday',
+    content: 'Tried the duo script with my husband — controlling each other\'s devices. We couldn\'t stop laughing at first lol… But as we settled in, it felt like our connection deepened. Recommend all couples to try it — a totally fresh shared experience!',
+    tags: ['#TonightExp', '#ForCouples', '#DuoInteraction'],
+    comments: ['Gotta share this with my partner!', 'Haha the laughing part is so real — same for us'],
+  },
+  5: {
+    time: 'Yesterday',
+    content: 'Late-night balcony with the mysterious neighbor — temperature hit 100 and I literally ascended… That deep opening line threw my heartbeat off rhythm, every word after felt whispered right into my ear. The city lights ambiance was perfect — like my private fantasy made real!',
+    tags: ['#TonightExp', '#MysteriousNeighbor', '#ScenePick'],
+    comments: ['The mysterious neighbor\'s intimate lines are just…', 'The lighting design for the balcony scene is truly thoughtful'],
+  },
+  6: {
+    time: '2 days ago',
+    content: 'The intellectual teacher has a new hidden dialogue — can\'t say what it is, but my ears turned completely red… Temperature 80–90 triggered it once but never again, three nights in a row QAQ. Please tell me the trigger conditions — those lines are killer, I MUST hear them again!',
+    tags: ['#SecretsHelp', '#IntellectualTeacher', '#MyFantasy'],
+    comments: ['Alternate voice button + main button — confirmed working!', 'Keep temperature above 82, too low won\'t trigger'],
+  },
+  7: {
+    time: '2h ago',
+    content: '[Beginner Must-Read] Quick temperature boost guide: Pick "Dorm" scene + Gentle Junior, press main button twice first, then use voice — 3x faster than just clicking! Tested and confirmed, save for later. Detailed character compatibility in comments.',
+    tags: ['#Secrets', '#Beginner', '#TempBoost'],
+    comments: ['Followed the guide, really way faster! Thanks!', 'Saved — following the map next time'],
+  },
+  8: {
+    time: '1 day ago',
+    content: 'Unlocked all 4 characters\' hidden endings! Trigger: temp 60–80, press voice button 5 times without pressing main. Each character has unique hidden lines — the mysterious neighbor one hit me hard. Details in comments 👇',
+    tags: ['#Secrets', '#HiddenContent', '#AllCharacters'],
+    comments: ['Thank you! Finally unlocked the teacher\'s one!', 'The mysterious neighbor\'s hidden line really got me'],
+  },
+  9: {
+    time: '2 days ago',
+    content: 'Compiled cold boss lady intimate line trigger conditions~ "Office" scene gives bonus effects. Press main button 5 times then switch to voice — highest hit rate reaches 87%. Note: different days have different rates, Friday is highest (lol)',
+    tags: ['#Secrets', '#ColdBossLady', '#HitRate'],
+    comments: ['Thanks for compiling! Bookmarked! Trying on Friday', 'The Friday rate difference is real — interesting finding'],
+  },
+  10: {
+    time: '3 days ago',
+    content: '[Couples Duo Guide] Two devices online simultaneously get an exclusive "Resonance" bonus! When one reaches high temp, the other\'s vibration auto-increases. Trick: keep both in sync — voice call while operating together for a completely different experience!',
+    tags: ['#Secrets', '#DuoSync', '#ForCouples'],
+    comments: ['Resonance bonus! I totally missed this mechanic', 'Tried it with my partner — definitely different!'],
+  },
+  11: {
+    time: '4 days ago',
+    content: 'Statistical analysis: after 20+ sessions, temp rises fastest 8–10 AM and 10 PM–12 AM — probably server load related. Also male character voice latency is consistently 0.3s lower than female characters — curious about that haha',
+    tags: ['#Secrets', '#DataAnalysis', '#Hardcore'],
+    comments: ['The server timing observation is really valuable!', 'Need to verify this latency difference'],
+  },
+  12: {
+    time: '1h ago',
+    content: 'Created a custom "Starry Seaside" scene script — ambiance inspired by winter night + waves + breeze, character is "The Silent Lighthouse Keeper." Would be amazing if devs published it… Sharing first, feel free to remix and adapt!',
+    tags: ['#MyFantasy', '#FanScene', '#StarrySeaside'],
+    comments: ['Atmosphere is incredible! "The Silent Lighthouse Keeper" speaks to my soul', 'Devs should just adopt this — quality is there'],
+  },
+  13: {
+    time: '6h ago',
+    content: 'Wrote an extended dialogue for the mysterious neighbor, tried to mimic official tone — restrained, alluring, leaving space. Let me know what you think~ Does it feel off? No confidence at all haha, genuinely want feedback! Full text in comments.',
+    tags: ['#MyFantasy', '#DialogueCreation', '#MysteriousNeighbor'],
+    comments: ['Can\'t even tell the difference! The use of space is brilliant', 'Third line totally nails it — official-quality feel'],
+  },
+  14: {
+    time: '1 day ago',
+    content: 'Compiled a "Progressive Interaction" script structure: IDLE → ACTIVE → AFTER_RESPONSE — ultra-smooth transitions. Core logic: emotional escalation, no skipping levels. Reference this structure for your own creations~',
+    tags: ['#MyFantasy', '#ScriptStructure', '#Methodology'],
+    comments: ['So useful! Directly applying this escalation logic', '"No skipping levels" is so right — skipping breaks immersion'],
+  },
+  15: {
+    time: '2 days ago',
+    content: 'Drew a "Character · Mood" concept illustration series, using color temperature for different states: cool tones = mysterious neighbor\'s detachment, warm rose = gentle junior\'s tenderness. Soft-focus style, feel free to use for fan creation covers~',
+    tags: ['#MyFantasy', '#Illustration', '#CharacterDesign'],
+    comments: ['Color-character mood matching is spot on!', 'Soft-focus treatment is beautiful — want the full version!'],
+  },
+  16: {
+    time: '3 days ago',
+    content: 'Wrote a "Male × Male" duo script — characters are "Childhood Friends · Reunion After Years." Official Rainbow section still has few similar content, hoping to fill the gap~ Fellow fans welcome, just credit the source!',
+    tags: ['#MyFantasy', '#LGBT', '#ScriptCreation', '#RainbowZone'],
+    comments: ['Childhood friends reunion hits right in the feels! Looking forward to full text!', 'So little of this content — thanks for filling the gap! Very delicately written'],
+  },
+}
+
 // ═══════════════════════════════════════════════════════════
 //  子组件
 // ═══════════════════════════════════════════════════════════
@@ -290,7 +391,9 @@ function TopComment({ comment }) {
 
 /** 性别/视角角标 */
 function GenderBadge({ gender }) {
+  const L = useL()
   if (!gender) return null
+  const GENDER_EN = { '女生': 'Female', '男生': 'Male', 'LGBT': 'LGBT', '情侣': 'Couple', '中性': 'Neutral' }
   const styles = {
     '女生':  'bg-[rgba(255,154,203,0.15)] text-[#FF9ACB]',
     '男生':  'bg-[rgba(100,180,255,0.15)] text-[#64b4ff]',
@@ -300,17 +403,21 @@ function GenderBadge({ gender }) {
   }
   return (
     <span className={`text-[8px] rounded-full px-1.5 py-0.5 font-medium ${styles[gender] ?? styles['中性']}`}>
-      {gender}
+      {L(gender, GENDER_EN[gender] || gender)}
     </span>
   )
 }
 
 /** 帖子卡片 */
 function PostCard({ post, likeState, onLike }) {
+  const L = useL()
   const { liked, count } = likeState
   const [imgSrc, setImgSrc] = useState(`/images/posts/${post.templateId}.jpg`)
+  const en = LEGACY_POSTS_EN[post.id]
   const tags = Array.isArray(post.tags) ? post.tags : []
+  const displayTags = en?.tags ? tags.map((t, i) => L(t, en.tags[i] || t)) : tags
   const topComments = Array.isArray(post.topComments) ? post.topComments : []
+  const displayComments = en?.comments ? topComments.map((c, i) => ({ ...c, text: L(c.text, en.comments[i] || c.text) })) : topComments
   const comments = Number(post.comments || 0)
   const bookmarks = Number(post.bookmarks || 0)
   const imgColor = post.imgColor || 'from-[#1a1028] to-[#251840]'
@@ -326,12 +433,12 @@ function PostCard({ post, likeState, onLike }) {
             <p className="text-xs font-semibold text-[rgba(245,240,242,0.9)] truncate">{post.name}</p>
             <GenderBadge gender={post.gender} />
           </div>
-          <p className="text-[10px] text-[rgba(245,240,242,0.4)]">{post.time}</p>
+          <p className="text-[10px] text-[rgba(245,240,242,0.4)]">{L(post.time, en?.time || post.time)}</p>
         </div>
       </div>
 
       {/* 正文 */}
-      <p className="text-[12px] text-[rgba(245,240,242,0.75)] leading-relaxed">{post.content}</p>
+      <p className="text-[12px] text-[rgba(245,240,242,0.75)] leading-relaxed">{L(post.content, en?.content || post.content)}</p>
 
       {/* 图片区（jpg → png → emoji+渐变 链式回退） */}
       <div className={`relative h-48 rounded-xl overflow-hidden bg-gradient-to-br ${imgColor} flex items-center justify-center`}>
@@ -353,7 +460,7 @@ function PostCard({ post, likeState, onLike }) {
 
       {/* 标签 */}
       <div className="flex gap-1.5 flex-wrap">
-        {tags.map((tag) => (
+        {displayTags.map((tag) => (
           <span
             key={tag}
             className="text-[10px] bg-[rgba(179,128,255,0.12)] text-[rgba(179,128,255,0.7)] rounded-full px-2 py-0.5"
@@ -366,10 +473,10 @@ function PostCard({ post, likeState, onLike }) {
       {/* 试用模板按钮 */}
       {post.templateName && (
         <button
-          onClick={() => alert('试用模板：' + post.templateName)}
+          onClick={() => alert(L('试用模板：', 'Try template: ') + post.templateName)}
           className="inline-flex items-center gap-1 text-xs bg-white/10 px-3 py-1 rounded-full hover:bg-white/20 transition mt-2"
         >
-          🔗 试用同款：{post.templateName}
+          🔗 {L('试用同款：', 'Try: ')}{post.templateName}
         </button>
       )}
 
@@ -391,7 +498,7 @@ function PostCard({ post, likeState, onLike }) {
         {/* 评论 */}
         <button
           className="flex items-center gap-1.5"
-          onClick={() => alert('💬 评论功能即将开放')}
+          onClick={() => alert(L('💬 评论功能即将开放', '💬 Comments coming soon'))}
         >
           <MessageCircle size={14} className="text-[rgba(245,240,242,0.4)]" />
           <span className="text-[11px] text-[rgba(245,240,242,0.45)]">{comments}</span>
@@ -399,7 +506,7 @@ function PostCard({ post, likeState, onLike }) {
         {/* 收藏 */}
         <button
           className="flex items-center gap-1.5"
-          onClick={() => alert('🔖 已收藏（演示）')}
+          onClick={() => alert(L('🔖 已收藏（演示）', '🔖 Saved (demo)'))}
         >
           <Bookmark size={14} className="text-[rgba(245,240,242,0.4)]" />
           <span className="text-[11px] text-[rgba(245,240,242,0.45)]">{bookmarks}</span>
@@ -409,7 +516,7 @@ function PostCard({ post, likeState, onLike }) {
       {/* 热门评论（带点赞数） */}
       {topComments.length > 0 && (
         <div className="space-y-1.5">
-          {topComments.map((c, i) => (
+          {displayComments.map((c, i) => (
             <TopComment key={i} comment={c} />
           ))}
         </div>
@@ -432,6 +539,12 @@ const RANDOM_LOADING_LINES = [
   '正在随机匹配体验内容…',
   '正在生成语音剧本…',
   '正在同步控制参数…',
+]
+
+const RANDOM_LOADING_LINES_EN = [
+  'Matching random experiences…',
+  'Generating voice script…',
+  'Syncing control parameters…',
 ]
 
 const RANDOM_SCRIPT_POOL = [
@@ -484,6 +597,7 @@ function LoverActionButtons({
   randomLoadingText,
   isChatDisabled,
 }) {
+  const L = useL()
   return (
     <div className="grid grid-cols-2 gap-2.5">
       <button
@@ -491,14 +605,14 @@ function LoverActionButtons({
         disabled={isChatDisabled || isRandomLoading}
         className="rounded-full py-2 text-[11px] font-semibold text-white bg-gradient-to-r from-[#FF7DAF] to-[#A87CFF] shadow-[0_0_12px_rgba(179,128,255,0.35)] disabled:opacity-45 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
       >
-        关心一下你的AI恋人
+        {L('关心一下你的AI恋人', 'Check on your AI Lover')}
       </button>
       <button
         onClick={onRandomExperience}
         disabled={isRandomLoading}
         className="rounded-full py-2 text-[11px] font-semibold text-[#E8DDF1] border border-[#B380FF]/35 bg-[rgba(179,128,255,0.12)] disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
       >
-        {isRandomLoading ? randomLoadingText : '随机体验'}
+        {isRandomLoading ? randomLoadingText : L('随机体验', 'Random')}
       </button>
     </div>
   )
@@ -514,6 +628,7 @@ function AiLoverCard({
   randomLoadingText,
   isChatDisabled,
 }) {
+  const L = useL()
   const { clearMemory, fadeIn, fallback, loading, metaText, mood, provider, refreshMessage, text, timestamp } = useVirtualLover()
 
   const moodStyle = MOOD_STYLES[mood] || MOOD_STYLES['温柔']
@@ -536,7 +651,7 @@ function AiLoverCard({
           🤖
         </div>
         <div className="flex-1">
-          <p className="text-xs font-semibold text-[rgba(245,240,242,0.9)]">你的虚拟恋人</p>
+          <p className="text-xs font-semibold text-[rgba(245,240,242,0.9)]">{L('你的虚拟恋人', 'Your AI Lover')}</p>
         </div>
         {/* 呼吸点 */}
         <span
@@ -563,7 +678,7 @@ function AiLoverCard({
             }}
           >
             {loading && !text ? (
-              <span className="inline-block text-[rgba(245,240,242,0.4)] animate-pulse">思念加载中…</span>
+              <span className="inline-block text-[rgba(245,240,242,0.4)] animate-pulse">{L('思念加载中…', 'Loading thoughts…')}</span>
             ) : text}
           </div>
 
@@ -592,14 +707,14 @@ function AiLoverCard({
               className="flex items-center gap-1.5 text-[10px] text-[rgba(245,240,242,0.35)] hover:text-[rgba(255,100,100,0.6)] transition-colors"
             >
               <Trash2 size={11} />
-              删除今晚的记忆
+              {L('删除今晚的记忆', "Delete tonight's memory")}
             </button>
-            <span className="text-[9px] text-[rgba(245,240,242,0.25)]">{loading ? '更新中…' : '点击卡片换一句'}</span>
+            <span className="text-[9px] text-[rgba(245,240,242,0.25)]">{loading ? L('更新中…', 'Updating…') : L('点击卡片换一句', 'Tap for new message')}</span>
           </div>
         </div>
       ) : (
         <div className="ml-13">
-          <p className="text-[11px] text-[rgba(245,240,242,0.3)] italic">记忆已清除，这段时光只存在于当时。</p>
+          <p className="text-[11px] text-[rgba(245,240,242,0.3)] italic">{L('记忆已清除，这段时光只存在于当时。', 'Memory cleared. That moment exists only in the past.')}</p>
         </div>
       )}
     </div>
@@ -612,8 +727,10 @@ function AiLoverCard({
 
 export default function CommunityPage() {
   const TABS = ['体验分享', '攻略教程', '创作展示']
+  const TAB_EN = { '体验分享': 'Experiences', '攻略教程': 'Guides', '创作展示': 'Creations' }
   const navigate = useNavigate()
   const { showToast } = useApp()
+  const L = useL()
 
   // ── 社区数据 Hook ────────────────────────────────────────
   const { posts, currentTab, loading, hasMore, error, switchTab, refresh } = useCommunity()
@@ -641,7 +758,7 @@ export default function CommunityPage() {
 
   const handleChatWithLover = () => {
     if (!currentLover?.id || aiMemoryDeleted) {
-      showToast('当前恋人暂不可对话')
+      showToast(L('当前恋人暂不可对话', 'Current lover unavailable for chat'))
       return
     }
     navigate('/ai-lover/chat', {
@@ -673,7 +790,7 @@ export default function CommunityPage() {
       })
     } catch {
       window.clearInterval(ticker)
-      showToast('生成失败，请稍后重试')
+      showToast(L('生成失败，请稍后重试', 'Generation failed, please try again'))
     } finally {
       setIsRandomLoading(false)
       setLoadingLineIdx(0)
@@ -719,7 +836,7 @@ export default function CommunityPage() {
               }
             `}
           >
-            {tab}
+            {L(tab, TAB_EN[tab])}
           </button>
         ))}
       </div>
@@ -730,15 +847,15 @@ export default function CommunityPage() {
           aiMemoryDeleted={aiMemoryDeleted}
           onResetMemory={() => setAiMemoryDeleted(false)}
           onDeleteMemory={() => {
-          if (window.confirm('确定删除今晚的记忆吗？此操作不可撤销。')) {
+          if (window.confirm(L('确定删除今晚的记忆吗？此操作不可撤销。', "Delete tonight's memory? This cannot be undone."))) {
             setAiMemoryDeleted(true)
-            alert('🗑️ 记忆已删除')
+            alert(L('🗑️ 记忆已删除', '🗑️ Memory deleted'))
           }
           }}
           onChatWithLover={handleChatWithLover}
           onRandomExperience={handleRandomExperience}
           isRandomLoading={isRandomLoading}
-          randomLoadingText={RANDOM_LOADING_LINES[loadingLineIdx]}
+          randomLoadingText={L(RANDOM_LOADING_LINES[loadingLineIdx], RANDOM_LOADING_LINES_EN[loadingLineIdx])}
           isChatDisabled={aiMemoryDeleted || !currentLover?.id}
         />
       </div>
@@ -747,7 +864,7 @@ export default function CommunityPage() {
       {loading && posts.length === 0 && (
         <div className="flex justify-center items-center py-12 page-section page-delay-3">
           <div className="text-center">
-            <p className="text-[12px] text-[rgba(245,240,242,0.4)] animate-pulse">加载社区帖子中…</p>
+            <p className="text-[12px] text-[rgba(245,240,242,0.4)] animate-pulse">{L('加载社区帖子中…', 'Loading community posts…')}</p>
           </div>
         </div>
       )}
@@ -760,7 +877,7 @@ export default function CommunityPage() {
             onClick={() => refresh()}
             className="mt-2 text-[11px] text-[#FF9ACB] hover:opacity-80"
           >
-            🔄 重试
+            {L('🔄 重试', '🔄 Retry')}
           </button>
         </div>
       )}
@@ -782,14 +899,14 @@ export default function CommunityPage() {
       {/* ═══ 空状态 ══════════════════════════════════════════ */}
       {!loading && posts.length === 0 && !error && (
         <div className="flex justify-center items-center py-12 page-section page-delay-3">
-          <p className="text-[12px] text-[rgba(245,240,242,0.4)]">暂无帖子，敬请期待</p>
+          <p className="text-[12px] text-[rgba(245,240,242,0.4)]">{L('暂无帖子，敬请期待', 'No posts yet, stay tuned')}</p>
         </div>
       )}
 
       {/* ═══ 隐私提示 ════════════════════════════════════════ */}
       <div className="pt-2 pb-4 text-center page-section page-delay-4">
         <p className="text-[10px] text-[rgba(245,240,242,0.25)] leading-relaxed">
-          所有内容匿名发布，本地加密。可随时清除记忆。
+          {L('所有内容匿名发布，本地加密。可随时清除记忆。', 'All content posted anonymously with local encryption. Memory can be cleared anytime.')}
         </p>
       </div>
 
@@ -801,7 +918,7 @@ export default function CommunityPage() {
        * TODO: 实现真实发帖功能（文本/图片上传 + 匿名加密）
        */}
       <button
-        onClick={() => alert('✍️ 创作功能即将开放！\n期待你的精彩内容~')}
+        onClick={() => alert(L('✍️ 创作功能即将开放！\n期待你的精彩内容~', '✍️ Creation feature coming soon!\nStay tuned for your amazing content~'))}
         className="
           fixed z-30
           w-12 h-12 rounded-2xl
@@ -813,7 +930,7 @@ export default function CommunityPage() {
           bottom: '88px',
           right: 'max(16px, calc((100vw - 430px) / 2 + 16px))',
         }}
-        aria-label="发布新帖"
+        aria-label={L('发布新帖', 'New Post')}
       >
         <Plus size={22} />
       </button>

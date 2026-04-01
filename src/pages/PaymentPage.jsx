@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import HeaderBar from '../components/ui/HeaderBar'
 import { useApp } from '../context/AppContext'
 import { CreditCard, Trash2, Plus, Shield, Smartphone } from 'lucide-react'
+import { useL } from '../i18n/useL'
 
 const CARD_BRANDS = { visa: 'Visa', mc: 'Mastercard', apple: 'Apple Pay', google: 'Google Pay' }
 
@@ -35,6 +36,7 @@ const INIT_CARDS = [
 export default function PaymentPage() {
   const navigate = useNavigate()
   const { showToast } = useApp()
+  const L = useL()
   const [cards, setCards] = useState(INIT_CARDS)
   const [form, setForm] = useState({ name: '', number: '', expiry: '', cvv: '' })
   const [showForm, setShowForm] = useState(false)
@@ -43,7 +45,7 @@ export default function PaymentPage() {
 
   const handleAdd = () => {
     if (!form.name || form.number.length < 4 || !form.expiry || !form.cvv) {
-      showToast('主人，信息未填完整呢 💔')
+      showToast(L('主人，信息未填完整呢 💔', 'Please fill in all fields 💔'))
       return
     }
     setCards(prev => [
@@ -52,25 +54,25 @@ export default function PaymentPage() {
     ])
     setForm({ name: '', number: '', expiry: '', cvv: '' })
     setShowForm(false)
-    showToast('新的包养通道已绑定 💳✨')
+    showToast(L('新的包养通道已绑定 💳✨', 'New payment method added 💳✨'))
   }
 
   const setDefault = (id) => {
     setCards(prev => prev.map(c => ({ ...c, isDefault: c.id === id })))
-    showToast('默认支付通道已更新')
+    showToast(L('默认支付通道已更新', 'Default payment updated'))
   }
 
   return (
     <div className="flex flex-col h-[100dvh] bg-[#0A0509] text-[#F9EDF5]">
-      <HeaderBar title="私密支付方式" onBack={() => navigate(-1)} />
+      <HeaderBar title={L('私密支付方式', 'Payment Methods')} onBack={() => navigate(-1)} />
       <div className="flex-1 overflow-y-auto px-4 pb-10 no-scrollbar space-y-5">
 
         {/* 快捷支付 */}
         <div>
-          <p className="text-xs font-bold text-[#9B859D] mb-3 tracking-widest">一键包养通道</p>
+          <p className="text-xs font-bold text-[#9B859D] mb-3 tracking-widest">{L('一键包养通道', 'Quick Payment')}</p>
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => showToast('Apple Pay 已准备好，包养随时到位 🍎')}
+              onClick={() => showToast(L('Apple Pay 已准备好，包养随时到位 🍎', 'Apple Pay is ready 🍎'))}
               className="bg-[#1C1C1E] border border-white/10 rounded-2xl py-4 flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white" xmlns="http://www.w3.org/2000/svg">
@@ -79,7 +81,7 @@ export default function PaymentPage() {
               <span className="text-[13px] font-semibold text-white">Apple Pay</span>
             </button>
             <button
-              onClick={() => showToast('Google Pay 绑定成功，主人的每笔包养保密到位 🎯')}
+              onClick={() => showToast(L('Google Pay 绑定成功，主人的每笔包养保密到位 🎯', 'Google Pay linked successfully 🎯'))}
               className="bg-[#1C1C1E] border border-white/10 rounded-2xl py-4 flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
               <svg viewBox="0 0 24 24" className="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
@@ -93,13 +95,13 @@ export default function PaymentPage() {
           </div>
           {/* USDT */}
           <button
-            onClick={() => showToast('USDT 地址已复制，匿名包养到位 🔒')}
+            onClick={() => showToast(L('USDT 地址已复制，匿名包养到位 🔒', 'USDT address copied, anonymous payment ready 🔒'))}
             className="mt-3 w-full bg-[#0D2A1F] border border-[#26A17B]/30 rounded-2xl py-4 flex items-center gap-2.5 px-5 active:scale-95 transition-transform"
           >
             <div className="w-5 h-5 rounded-full bg-[#26A17B] flex items-center justify-center shrink-0">
               <span className="text-[10px] font-black text-white">₮</span>
             </div>
-            <span className="text-[13px] font-semibold text-[#26A17B]">USDT 匿名加密支付</span>
+            <span className="text-[13px] font-semibold text-[#26A17B]">{L('USDT 匿名加密支付', 'USDT Anonymous Payment')}</span>
             <span className="text-[10px] text-[#26A17B]/60 ml-auto">TRC20 · ERC20</span>
           </button>
         </div>
@@ -107,13 +109,13 @@ export default function PaymentPage() {
         {/* 分割线 */}
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px bg-white/5" />
-          <span className="text-[10px] text-[#9B859D]">或使用银行卡</span>
+          <span className="text-[10px] text-[#9B859D]">{L('或使用银行卡', 'or use a bank card')}</span>
           <div className="flex-1 h-px bg-white/5" />
         </div>
 
         {/* 已保存的卡 */}
         <div>
-          <p className="text-xs font-bold text-[#9B859D] mb-3 tracking-widest">已绑定的包养通道</p>
+          <p className="text-xs font-bold text-[#9B859D] mb-3 tracking-widest">{L('已绑定的包养通道', 'Linked Payment Methods')}</p>
           <div className="space-y-2">
             {cards.map(card => (
               <div
@@ -130,13 +132,13 @@ export default function PaymentPage() {
                       {card.label || `${CARD_BRANDS[card.brand]} **** ${card.last4}`}
                     </span>
                     {card.isDefault && (
-                      <span className="text-[9px] font-bold bg-[#A87CFF]/20 text-[#A87CFF] px-2 py-0.5 rounded-full shrink-0">默认</span>
+                      <span className="text-[9px] font-bold bg-[#A87CFF]/20 text-[#A87CFF] px-2 py-0.5 rounded-full shrink-0">{L('默认', 'Default')}</span>
                     )}
                   </div>
-                  {card.expiry && <p className="text-[11px] text-[#9B859D] mt-0.5">有效期：{card.expiry}</p>}
+                  {card.expiry && <p className="text-[11px] text-[#9B859D] mt-0.5">{L('有效期：', 'Expires: ')}{card.expiry}</p>}
                 </div>
                 <button
-                  onClick={e => { e.stopPropagation(); setCards(prev => prev.filter(c => c.id !== card.id)); showToast('包养通道已解绑') }}
+                  onClick={e => { e.stopPropagation(); setCards(prev => prev.filter(c => c.id !== card.id)); showToast(L('包养通道已解绑', 'Payment method removed')) }}
                   className="text-[#FF7DAF]/40 hover:text-[#FF7DAF] transition-colors p-1 shrink-0"
                 >
                   <Trash2 size={15} />
@@ -154,22 +156,22 @@ export default function PaymentPage() {
               className="w-full bg-[#1A0E1E] border border-dashed border-[#A87CFF]/30 rounded-2xl py-4 text-sm text-[#A87CFF]/70 flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
               <Plus size={15} />
-              绑定新的包养通道
+              {L('绑定新的包养通道', 'Add Payment Method')}
             </button>
           ) : (
             <div className="bg-[#1A0E1E] border border-white/10 rounded-2xl p-4 space-y-3">
-              <p className="text-xs font-bold text-[#9B859D] tracking-widest">添加银行卡</p>
+              <p className="text-xs font-bold text-[#9B859D] tracking-widest">{L('添加银行卡', 'Add Bank Card')}</p>
               <input
                 value={form.name}
                 onChange={e => setForm({ ...form, name: e.target.value })}
-                placeholder="持卡人姓名"
+                placeholder={L('持卡人姓名', 'Cardholder Name')}
                 className="w-full bg-[#0A0509] border border-white/10 rounded-xl px-4 py-3.5 text-sm text-[#F9EDF5] placeholder-[#9B859D]/50 focus:outline-none focus:border-[#A87CFF]/60"
               />
               <div className="relative">
                 <input
                   value={form.number}
                   onChange={e => setForm({ ...form, number: e.target.value.replace(/\D/g, '').slice(0, 16) })}
-                  placeholder="卡号（支持 Visa · Mastercard）"
+                  placeholder={L('卡号（支持 Visa · Mastercard）', 'Card Number (Visa · Mastercard)')}
                   className="w-full bg-[#0A0509] border border-white/10 rounded-xl px-4 py-3.5 pr-16 text-sm text-[#F9EDF5] placeholder-[#9B859D]/50 focus:outline-none focus:border-[#A87CFF]/60"
                 />
                 {detectedBrand && (
@@ -182,7 +184,7 @@ export default function PaymentPage() {
                 <input
                   value={form.expiry}
                   onChange={e => setForm({ ...form, expiry: e.target.value })}
-                  placeholder="有效期 MM/YY"
+                  placeholder={L('有效期 MM/YY', 'Expiry MM/YY')}
                   className="w-full bg-[#0A0509] border border-white/10 rounded-xl px-4 py-3.5 text-sm text-[#F9EDF5] placeholder-[#9B859D]/50 focus:outline-none focus:border-[#A87CFF]/60"
                 />
                 <input
@@ -198,13 +200,13 @@ export default function PaymentPage() {
                   onClick={() => { setShowForm(false); setForm({ name: '', number: '', expiry: '', cvv: '' }) }}
                   className="py-3.5 rounded-xl text-sm text-[#9B859D] bg-white/5 active:scale-95 transition-transform"
                 >
-                  取消
+                  {L('取消', 'Cancel')}
                 </button>
                 <button
                   onClick={handleAdd}
                   className="py-3.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#A87CFF] to-[#FF2A6D] active:scale-95 transition-transform"
                 >
-                  确认绑定
+                  {L('确认绑定', 'Confirm')}
                 </button>
               </div>
             </div>
@@ -215,7 +217,7 @@ export default function PaymentPage() {
         <div className="flex items-start gap-2.5 bg-[#1A0E1E]/60 border border-white/5 rounded-2xl px-4 py-3.5">
           <Shield size={14} className="text-[#66E699] shrink-0 mt-0.5" />
           <p className="text-[10px] text-[#9B859D] leading-relaxed">
-            主人的每一笔包养行为均通过 256-bit 银行级加密通道保密传输，与她之间的一切绝对私密，永不外泄。
+            {L('主人的每一笔包养行为均通过 256-bit 银行级加密通道保密传输，与她之间的一切绝对私密，永不外泄。', 'All transactions are securely transmitted via 256-bit bank-grade encryption. Everything between you and her stays absolutely private.')}
           </p>
         </div>
 

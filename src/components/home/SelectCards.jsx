@@ -1,9 +1,14 @@
 /**
  * 角色 & 场景选择卡片（从 HomePage.jsx 提取）
  */
+import { useApp } from '../../context/AppContext'
+import { useL } from '../../i18n/useL'
 
 /** 角色选择卡片（定制区横向滚动，单选） */
 export function CharSelectCard({ char, selected, onSelect }) {
+  const { lang } = useApp()
+  const L = useL()
+  const d = (item, field) => (lang === 'en' && item?.[field + 'En']) || item?.[field]
   return (
     <button
       onClick={onSelect}
@@ -18,20 +23,20 @@ export function CharSelectCard({ char, selected, onSelect }) {
     >
       {selected && (
         <span className="absolute top-1.5 right-1.5 text-[8px] bg-[#FF9ACB] text-[#1a0a12] rounded-full px-1.5 py-0.5 font-bold leading-none">
-          ✓ 已选
+          {L('✓ 已选', '✓ Selected')}
         </span>
       )}
 
       <div className="text-3xl mb-1.5 select-none">{char.emoji}</div>
 
       <p className="text-[11px] font-semibold text-[rgba(245,240,242,0.95)] mb-0.5 pr-6 leading-tight">
-        {char.name}
+        {d(char, 'name')}
       </p>
 
-      <p className="text-[9px] text-[rgba(179,128,255,0.8)] mb-1.5">{char.tag}</p>
+      <p className="text-[9px] text-[rgba(179,128,255,0.8)] mb-1.5">{d(char, 'tag')}</p>
 
       <p className="text-[9px] text-[rgba(245,240,242,0.45)] italic leading-relaxed line-clamp-2">
-        &ldquo;{char.intro}&rdquo;
+        &ldquo;{d(char, 'intro')}&rdquo;
       </p>
     </button>
   )
@@ -39,6 +44,9 @@ export function CharSelectCard({ char, selected, onSelect }) {
 
 /** 场景选择卡片（定制区横向滚动，单选） */
 export function SceneSelectCard({ scene, selected, onSelect }) {
+  const { lang } = useApp()
+  const L = useL()
+  const d = (item, field) => (lang === 'en' && item?.[field + 'En']) || item?.[field]
   return (
     <button
       onClick={onSelect}
@@ -53,18 +61,18 @@ export function SceneSelectCard({ scene, selected, onSelect }) {
     >
       {selected && (
         <span className="absolute top-1.5 right-1.5 text-[8px] bg-[#B380FF] text-white rounded-full px-1.5 py-0.5 font-bold leading-none">
-          ✓ 已选
+          {L('✓ 已选', '✓ Selected')}
         </span>
       )}
 
       <div className="text-2xl mb-1.5 select-none">{scene.emoji}</div>
 
       <p className="text-[11px] font-semibold text-[rgba(245,240,242,0.95)] mb-1 pr-6 leading-tight">
-        {scene.name}
+        {d(scene, 'name')}
       </p>
 
       <p className="text-[9px] text-[rgba(245,240,242,0.45)] leading-relaxed line-clamp-3">
-        {scene.ambiance.idle}
+        {(lang === 'en' && scene.ambianceEn?.idle) || scene.ambiance.idle}
       </p>
     </button>
   )
